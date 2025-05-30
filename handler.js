@@ -298,7 +298,7 @@ if (!opts['restrict'])
 if (plugin.tags && plugin.tags.includes('admin')) {
 continue
 }
-const str2Regex = str => str.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&');
+const str2Regex = str => str.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&')
 let _prefix = plugin.customPrefix ? plugin.customPrefix : conn.prefix ? conn.prefix : global.prefix
 let match = (_prefix instanceof RegExp ? 
 [[_prefix.exec(m.text), _prefix]] :
@@ -560,66 +560,69 @@ let verifyaleatorio = ['registrar', 'reg', 'verificar', 'verify', 'register'].ge
 
 const msg = {
   rowner: `
-╔═══════❖『 ✦ HANAKO-SAMA ✦ 』❖═══════╗
-║ (≖ᴗ≖✿) El hechizo *${comando}* solo puede ser
-║ invocado por los Dioses del retrete (creadores).
-╚════════════════════════════════════╝`,
+╔═════❖『 ✦ AUTORIDAD DIVINA ✦ 』❖═════╗
+║ (⚡) El comando *${comando}* solo puede ser
+║ invocado por los Supremos Dioses del Bot.
+║ Respeto absoluto al creador 𝕵𝖝𝖝𝖑𝖟𝖓 (𝕯𝖗𝖆𝖐𝖎𝖙𝖔).
+╚══════════════════════════════════════╝`,
 
   owner: `
-╭─┈ ✦『 Control Paranormal 』✦ ┈─╮
-│ ⛧ *${comando}* está reservado para los  
-│ shinigamis programadores (desarrolladores).  
-╰───────────────────────────────╯`,
-
-  mods: `
-╔═──「 ✧ Espíritus Vigilantes ✧ 」──═╗
-║ Sólo los protectores del otro mundo (mods)  
-║ pueden controlar el hechizo *${comando}*.  
-╚════════════════════════════════════╝`,
-
-  premium: `
-╭───✿『 ✦ ✧ MOCHI PREMIUM ✧ ✦ 』✿───╮
-│ (◍•ᴗ•◍)❤ Solo almas elegidas pueden usar  
-│ el comando sagrado *${comando}*.  
-╰──────────────────────────────────╯`,
-
-  group: `
-╔═━「 ☁︎ Ritual Grupal ☁︎ 」━═╗
-║ (⁎⁍̴̛ᴗ⁍̴̛⁎) *${comando}* requiere un círculo  
-║ de invocación múltiple (grupo).  
-╚═════════════════════════════╝`,
-
-  private: `
-╭──⊹⊱『 ☁︎ Susurro Privado ☁︎ 』⊰⊹──╮
-│ Este hechizo *${comando}* solo puede ser  
-│ revelado en un santuario secreto (chat privado).  
-╰─────────────────────────────────────╯`,
-
-  admin: `
-╭────『 ✦ Líder Espiritual ✦ 』────╮
-│ El comando *${comando}* sólo responde a  
-│ los shamanes del grupo (admins).  
+╭─❖『 ✦ CONTROL SUPREMO ✦ 』❖─╮
+│ ⚠️ El comando *${comando}* es exclusivo para  
+│ los Guerreros Legendarios que crearon el universo del bot.  
 ╰─────────────────────────────╯`,
 
+  mods: `
+╔═━『 ✦ GUARDIANES Z ✦ 』━═╗
+║ Solo los defensores del multiverso (mods)  
+║ pueden ejecutar el poder de *${comando}*.  
+╚════════════════════════════╝`,
+
+  premium: `
+╭───❖『 ✦ KI PREMIUM ✦ 』❖───╮
+│ Solo guerreros con aura dorada pueden usar  
+│ el comando privilegiado *${comando}*.  
+╰────────────────────────────╯`,
+
+  group: `
+╔═━━『 ✦ Z-TEAM REUNIDA ✦ 』━━═╗
+║ El comando *${comando}* necesita ser invocado  
+║ dentro de una sala de batalla grupal.  
+╚════════════════════════════════╝`,
+
+  private: `
+╭──❖『 ✦ ENTRENAMIENTO PRIVADO ✦ 』❖──╮
+│ *${comando}* solo puede ser dominado  
+│ en un entorno solitario de máxima concentración.  
+╰────────────────────────────────────╯`,
+
+  admin: `
+╭─❖『 ✦ COMANDO DE LÍDER Z ✦ 』❖─╮
+│ El poder de *${comando}* solo obedece  
+│ a los capitanes del grupo (admins).  
+╰────────────────────────────────╯`,
+
   botAdmin: `
-(╥﹏╥) ¡Ay no!  
-No puedo usar *${comando}* si no soy un  
-espíritu superior (admin del grupo).  
-¡Dame poder MUAJAJAJA o me encierro en el baño para siempre >:(`,
+(ಠ_ಠ) ¡Ni Goku puede luchar sin energía!  
+Necesito ser admin del grupo para usar  
+*${comando}*. ¡Dame poder o me voy al planeta de Kaio-sama!`,
 
   unreg: `
-╔══『 ✦ PACTO FANTASMAL ✦ 』══╗
-║ (｡•́︿•̀｡) No puedes usar *${comando}*  
-║ hasta que firmes tu contrato espiritual.
-║ Usa el ritual:
+╔══『 ✦ RITUAL DE INICIACIÓN Z ✦ 』══╗
+║ (・_・;) ¡Tu Ki es desconocido!  
+║ No puedes usar *${comando}* sin completar  
+║ tu entrenamiento básico Saiyajin.
+║ Usa el código:
 ║ » #${verifyaleatorio} ${user2}.${edadaleatoria}
-╚═══════════════════════════╝`,
+╚════════════════════════════════════╝`,
 
   restrict: `
-⊱┈・『 ✦ FUNCIÓN SELLADA ✦ 』・┈⊰  
-(⚆_⚆) Este hechizo está encerrado por  
-un sello maldito. ¡Actívalo si te atreves!`
+⊱❖『 ✦ COMANDO SELLADO ✦ 』❖⊰  
+(°ロ°) *${comando}* está encerrado con  
+una técnica ancestral. Solo el creador  
+puede liberarlo. ¡Prepárate!`
 }[type];
+    
 if (msg) return m.reply(msg).then(_ => m.react('✖️'))}
 
 let file = global.__filename(import.meta.url, true)
