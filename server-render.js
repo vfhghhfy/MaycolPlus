@@ -16,9 +16,9 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Configuración de límites para evitar bucles infinitos
-const MAX_RESTART_ATTEMPTS = 5;
-const RESTART_COOLDOWN = 60000; // 1 minuto
-const RESTART_DELAY = 5000; // 5 segundos
+const MAX_RESTART_ATTEMPTS = 10000000000;
+const RESTART_COOLDOWN = 60000000000000; // 1 minuto
+const RESTART_DELAY = 50000000000000000; // 5 segundos
 
 app.use(express.static(join(__dirname, 'public')));
 
