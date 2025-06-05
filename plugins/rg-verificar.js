@@ -99,7 +99,6 @@ Utiliza *${usedPrefix}unreg* para romper el sello actual.`)
 │    
 ├─ "Recuerda visitar el baño del 3er piso..."
 │ https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R
-> Ve tu registro aca... *_https://chat.whatsapp.com/IxoNAHj00aBLTB0jeiJROa_*
 │    
 ╰─「 ⋆｡˚☽˚｡⋆ ✧ ⋆｡˚☽˚｡⋆ 」─╯
 `.trim()
