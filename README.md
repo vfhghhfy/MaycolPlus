@@ -75,6 +75,10 @@ https://miweb.onrender.com/auth/51921826391
 ```
    
 </details>
+---
+# Instalacion Koyeb
+
+[![Deploy to Koyeb](https://www.koyeb.com/static/images/deploy/button.svg)](https://app.koyeb.com/deploy?name=maycolaiultramd&repository=SoySapo6%2FMaycolAIUltraMD&branch=main&build_command=npm+install+--force+%26%26+npm+update&run_command=node+server-render.js&instance_type=free&regions=was&instances_min=0&autoscaling_sleep_idle_delay=300)
 
 ---
 ### Instalacion por SYAHosting 🌐
@@ -140,7 +144,7 @@ mkdir temp && npm start
    ```bash
     npm start
    ```
-
+---
 ### **⭐ Volverte owner del Bot**
 
 > Si deseas agregar tu número como owner del bot:
