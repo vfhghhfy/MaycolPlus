@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const handler = async (m, { conn }) => {
   const texto = m.text || '';
-  const regex = /^peticion\s+(https?:\/\/[^\s]+)$/i;
+  const regex = "peticion";
   const match = texto.match(regex);
 
   if (!match) {
