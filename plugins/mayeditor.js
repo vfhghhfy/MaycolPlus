@@ -76,29 +76,26 @@ let handler = async (m, { conn, args, command, usedPrefix, groupMetadata }) => {
       ffmpeg(inputVideoPath)
         .input(profilePath)
         .complexFilter([
-          // Aplicar colorkey para remover el fondo morado (#ba00ff)
           '[0:v]colorkey=0xba00ff:0.3:0.2[ckout]',
-          // Escalar la imagen de fondo al tamaño del video y redimensionar todo
           '[1:v][ckout]scale2ref=720:1280[bg][fg]',
-          // Superponer el video procesado sobre el fondo
           '[bg][fg]overlay=format=auto[final]'
         ])
-        .map('[final]') // Mapear el video procesado
-        .map('0:a') // Mapear el audio del video original
-        .audioCodec('aac') // AAC es mejor para WhatsApp
-        .audioFrequency(44100)
-        .audioBitrate('128k')
-        .videoCodec('libx264')
-        .videoBitrate('1000k') // Bitrate optimizado
-        .fps(30) // FPS estándar
-        .format('mp4') // Formato compatible
         .outputOptions([
-          '-pix_fmt yuv420p', // Formato de píxeles compatible
-          '-movflags +faststart', // Optimización for streaming
-          '-preset ultrafast', // Velocidad de codificación muy rápida
-          '-crf 23', // Calidad optimizada
-          '-maxrate 1500k',
-          '-bufsize 2000k'
+          '-map', '[final]',         // Video filtrado
+          '-map', '0:a?',            // Audio original, ? evita error si no hay audio
+          '-c:v', 'libx264',
+          '-b:v', '1000k',
+          '-c:a', 'aac',
+          '-b:a', '128k',
+          '-ar', '44100',
+          '-pix_fmt', 'yuv420p',
+          '-movflags', '+faststart',
+          '-preset', 'ultrafast',
+          '-crf', '23',
+          '-maxrate', '1500k',
+          '-bufsize', '2000k',
+          '-r', '30',
+          '-f', 'mp4'
         ])
         .output(outputVideoPath)
         .on('start', (commandLine) => {
@@ -106,7 +103,7 @@ let handler = async (m, { conn, args, command, usedPrefix, groupMetadata }) => {
         })
         .on('progress', (progress) => {
           const percent = Math.round(progress.percent || 0)
-          if (percent % 25 === 0) { // Solo mostrar cada 25%
+          if (percent % 25 === 0) {
             console.log(`Procesando... ${percent}%`)
           }
         })
@@ -124,20 +121,20 @@ let handler = async (m, { conn, args, command, usedPrefix, groupMetadata }) => {
     // Leer el video procesado
     const processedVideo = fs.readFileSync(outputVideoPath)
     
-    // Crear mensaje de contexto falso para el estilo
+    // Crear mensaje de contacto falso para estilo
     const fkontak = {
-      "key": {
-        "participants": "0@s.whatsapp.net",
-        "remoteJid": "status@broadcast",
-        "fromMe": false,
-        "id": "MayEditor-Magic"
+      key: {
+        participants: '0@s.whatsapp.net',
+        remoteJid: 'status@broadcast',
+        fromMe: false,
+        id: 'MayEditor-Magic'
       },
-      "message": {
-        "contactMessage": {
-          "vcard": `BEGIN:VCARD\nVERSION:3.0\nN:MayEditor;Magic;;;\nFN:MayEditor Magic\nitem1.TEL;waid=${targetUserId}:${targetUserId}\nitem1.X-ABLabel:Magia\nEND:VCARD`
+      message: {
+        contactMessage: {
+          vcard: `BEGIN:VCARD\nVERSION:3.0\nN:MayEditor;Magic;;;\nFN:MayEditor Magic\nitem1.TEL;waid=${targetUserId}:${targetUserId}\nitem1.X-ABLabel:Magia\nEND:VCARD`
         }
       },
-      "participant": "0@s.whatsapp.net"
+      participant: '0@s.whatsapp.net'
     }
     
     // Mensaje personalizado
@@ -158,7 +155,7 @@ let handler = async (m, { conn, args, command, usedPrefix, groupMetadata }) => {
       mimetype: 'video/mp4'
     }, { quoted: fkontak })
     
-    // Limpiar archivos temporales
+    // Limpiar archivos temporales después de 10 segundos
     setTimeout(() => {
       try {
         if (fs.existsSync(profilePath)) fs.unlinkSync(profilePath)
@@ -166,7 +163,7 @@ let handler = async (m, { conn, args, command, usedPrefix, groupMetadata }) => {
       } catch (err) {
         console.error('Error limpiando archivos temporales:', err)
       }
-    }, 10000) // Esperar 10 segundos antes de limpiar
+    }, 10000)
     
   } catch (error) {
     console.error('Error procesando video:', error)
@@ -188,6 +185,6 @@ handler.help = ['mayeditor <1>']
 handler.tags = ['group', 'fun', 'media']
 handler.command = ['mayeditor']
 handler.group = true
-handler.limit = true // Opcional: limitar uso por ser proceso pesado
+handler.limit = true
 
 export default handler
