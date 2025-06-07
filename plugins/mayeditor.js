@@ -15,7 +15,8 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
   const videosMap = {
     '1': './videos/lv_7507655713968164149_20250607160908.mp4',
     '2': './videos/lv_7463895997605743933_20250607164555.mp4',
-    '3': './videos/lv_7404392617884028176_20250607165541.mp4'
+    '3': './videos/lv_7404392617884028176_20250607165541.mp4',
+    '4': './videos/lv_7497686403254373693_20250607170616.mp4'
   }
 
   // Elegimos la ruta del video según el número
