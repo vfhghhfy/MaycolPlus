@@ -8,7 +8,7 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
   // Aquí leemos el número que ponen después de mayeditor
   let type = args[0]?.toLowerCase()
   if (!type || !['1','2','3','4','5'].includes(type)) {
-    return m.reply(`✧ Usa el comando así:\n\n${usedPrefix + command} 1\nO prueba con 2, 3, 4 o 5.`)
+    return m.reply(`✧ Usa el comando así:\n\n${usedPrefix + command} 1\nO prueba con 2, 3.`)
   }
 
   // Map de videos según el número que pongan
@@ -49,7 +49,7 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
   const targetUserId = userId.split('@')[0]
   
   try {
-    m.reply(`🎬 Procesando tu video mágico tipo ${type}... (${userLimit.count}/3 usos hoy)\n✧ Esto tomará unos momentos...`)
+    m.reply(`🎬 Procesando tu video mágico tipo ${type}... (${userLimit.count}/3 usos hoy)\n✧ Esto tomará unos momentos...\n\n> Hecho por SoyMaycol`)
     
     const pp = await conn.profilePictureUrl(userId, 'image').catch(_ =>
       'https://raw.githubusercontent.com/The-King-Destroy/Adiciones/main/Contenido/1745522645448.jpeg')
