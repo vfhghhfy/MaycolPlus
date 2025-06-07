@@ -2,13 +2,24 @@ import ffmpeg from 'fluent-ffmpeg'
 import fs from 'fs'
 import path from 'path'
 
-let handler = async (m, { conn, args, command, usedPrefix, groupMetadata }) => {
+let handler = async (m, { conn, args, command, usedPrefix }) => {
   if (!m.isGroup) return m.reply('👻 Este comando solo funciona en grupos, espíritu.')
-  
+
+  // Aquí leemos el número que ponen después de mayeditor
   let type = args[0]?.toLowerCase()
-  if (type !== '1') {
-    return m.reply(`✧ Usa el comando así:\n\n${usedPrefix + command} 1`)
+  if (!type || !['1','2','3','4','5'].includes(type)) {
+    return m.reply(`✧ Usa el comando así:\n\n${usedPrefix + command} 1\nO prueba con 2, 3, 4 o 5.`)
   }
+
+  // Map de videos según el número que pongan
+  const videosMap = {
+    '1': './videos/lv_7507655713968164149_20250607160908.mp4',
+    '2': './videos/lv_7463895997605743933_20250607164555.mp4',
+    '3': './videos/lv_7495448057157340469_20250607164932.mp4'
+  }
+
+  // Elegimos la ruta del video según el número
+  const inputVideoPath = videosMap[type]
 
   // Rate limiting: 3 veces al día por usuario
   const userId = m.sender
@@ -24,54 +35,42 @@ let handler = async (m, { conn, args, command, usedPrefix, groupMetadata }) => {
   
   const userLimit = global.db.data.users[userId].mayeditor
   
-  // Resetear contador si es un nuevo día
   if (userLimit.date !== today) {
     userLimit.count = 0
     userLimit.date = today
   }
   
-  // Verificar límite
   if (userLimit.count >= 3) {
     return m.reply('✧ Ya has usado tu magia 3 veces hoy, espíritu.\n✧ Vuelve mañana para más hechizos visuales... 🌙')
   }
   
-  // Incrementar contador
   userLimit.count++
 
-  // Obtener información del usuario
   const targetUserId = userId.split('@')[0]
   
   try {
-    m.reply(`🎬 Procesando tu video mágico... (${userLimit.count}/3 usos hoy)\n✧ Esto tomará unos momentos...`)
+    m.reply(`🎬 Procesando tu video mágico tipo ${type}... (${userLimit.count}/3 usos hoy)\n✧ Esto tomará unos momentos...`)
     
-    // Obtener foto de perfil del usuario
     const pp = await conn.profilePictureUrl(userId, 'image').catch(_ =>
       'https://raw.githubusercontent.com/The-King-Destroy/Adiciones/main/Contenido/1745522645448.jpeg')
     
-    // Descargar la foto de perfil
     const profileResponse = await fetch(pp)
     const profileBuffer = await profileResponse.buffer()
     
-    // Crear directorios temporales si no existen
     const tempDir = './temp'
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir, { recursive: true })
     }
     
-    // Rutas de archivos
     const profilePath = path.join(tempDir, `profile_${targetUserId}.jpg`)
-    const inputVideoPath = './videos/lv_7507655713968164149_20250607160908.mp4'
     const outputVideoPath = path.join(tempDir, `output_${targetUserId}_${Date.now()}.mp4`)
     
-    // Verificar que el video de entrada existe
     if (!fs.existsSync(inputVideoPath)) {
       return m.reply('❌ No se encontró el video base. Verifica la ruta del archivo.')
     }
     
-    // Guardar foto de perfil temporalmente
     fs.writeFileSync(profilePath, profileBuffer)
     
-    // Procesar video con ffmpeg (optimizado para WhatsApp)
     await new Promise((resolve, reject) => {
       ffmpeg(inputVideoPath)
         .input(profilePath)
@@ -81,8 +80,8 @@ let handler = async (m, { conn, args, command, usedPrefix, groupMetadata }) => {
           '[bg][fg]overlay=format=auto[final]'
         ])
         .outputOptions([
-          '-map', '[final]',         // Video filtrado
-          '-map', '0:a?',            // Audio original, ? evita error si no hay audio
+          '-map', '[final]',
+          '-map', '0:a?',
           '-c:v', 'libx264',
           '-b:v', '1000k',
           '-c:a', 'aac',
@@ -98,30 +97,25 @@ let handler = async (m, { conn, args, command, usedPrefix, groupMetadata }) => {
           '-f', 'mp4'
         ])
         .output(outputVideoPath)
-        .on('start', (commandLine) => {
-          console.log('FFmpeg iniciado:', commandLine)
-        })
+        .on('start', (cmd) => console.log('FFmpeg started:', cmd))
         .on('progress', (progress) => {
-          const percent = Math.round(progress.percent || 0)
-          if (percent % 25 === 0) {
-            console.log(`Procesando... ${percent}%`)
+          if (progress.percent && Math.round(progress.percent) % 25 === 0) {
+            console.log(`Processing... ${Math.round(progress.percent)}%`)
           }
         })
         .on('end', () => {
-          console.log('✅ Procesamiento completado')
+          console.log('✅ Processing finished')
           resolve()
         })
         .on('error', (err) => {
-          console.error('❌ Error en FFmpeg:', err)
+          console.error('❌ FFmpeg error:', err)
           reject(err)
         })
         .run()
     })
     
-    // Leer el video procesado
     const processedVideo = fs.readFileSync(outputVideoPath)
     
-    // Crear mensaje de contacto falso para estilo
     const fkontak = {
       key: {
         participants: '0@s.whatsapp.net',
@@ -137,17 +131,15 @@ let handler = async (m, { conn, args, command, usedPrefix, groupMetadata }) => {
       participant: '0@s.whatsapp.net'
     }
     
-    // Mensaje personalizado
     const magicMessage = `
 ✧･ﾟ: *✧･ﾟ:* 𝑀𝒶𝑔𝒾𝒸 𝒱𝒾𝒹𝑒𝑜 *:･ﾟ✧*:･ﾟ✧
-𓂃𓈒𓏸 Video mágico creado para @${targetUserId}
+𓂃𓈒𓏸 Video mágico tipo ${type} creado para @${targetUserId}
 ✦ Procesado con tecnología sobrenatural
 ✧ Tu esencia ha sido capturada en este hechizo visual
 ✧ Usos restantes hoy: ${3 - userLimit.count}/3
 𓆩𓆪 ━━━━━━━━━━━━━━━━
     `.trim()
     
-    // Enviar el video procesado
     await conn.sendMessage(m.chat, {
       video: processedVideo,
       caption: magicMessage,
@@ -155,33 +147,31 @@ let handler = async (m, { conn, args, command, usedPrefix, groupMetadata }) => {
       mimetype: 'video/mp4'
     }, { quoted: fkontak })
     
-    // Limpiar archivos temporales después de 10 segundos
     setTimeout(() => {
       try {
         if (fs.existsSync(profilePath)) fs.unlinkSync(profilePath)
         if (fs.existsSync(outputVideoPath)) fs.unlinkSync(outputVideoPath)
-      } catch (err) {
-        console.error('Error limpiando archivos temporales:', err)
+      } catch (e) {
+        console.error('Error limpiando archivos temporales:', e)
       }
     }, 10000)
     
   } catch (error) {
     console.error('Error procesando video:', error)
-    // Revertir contador en caso de error
     userLimit.count--
     m.reply('❌ Ocurrió un error al procesar tu video mágico. Inténtalo de nuevo más tarde.')
     
-    // Limpiar archivos en caso de error
     try {
-      const profilePath = path.join('./temp', `profile_${targetUserId}.jpg`)
-      if (fs.existsSync(profilePath)) fs.unlinkSync(profilePath)
-    } catch (cleanupError) {
-      console.error('Error en limpieza:', cleanupError)
+      if (fs.existsSync(path.join('./temp', `profile_${targetUserId}.jpg`))) {
+        fs.unlinkSync(path.join('./temp', `profile_${targetUserId}.jpg`))
+      }
+    } catch (e) {
+      console.error('Error en limpieza:', e)
     }
   }
 }
 
-handler.help = ['mayeditor <1>']
+handler.help = ['mayeditor <1|2|3|4|5>']
 handler.tags = ['group', 'fun', 'media']
 handler.command = ['mayeditor']
 handler.group = true
