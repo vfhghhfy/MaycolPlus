@@ -49,7 +49,7 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
   const targetUserId = userId.split('@')[0]
   
   try {
-    m.reply(`🎬 Procesando tu video mágico tipo ${type}... (${userLimit.count}/3 usos hoy)\n✧ Esto tomará unos momentos...\n\n> Hecho por SoyMaycol`)
+    m.reply(`🎬 Procesando tu video mágico tipo ${type}... (${userLimit.count}/10 usos hoy)\n✧ Esto tomará unos momentos...\n\n> Hecho por SoyMaycol`)
     
     const pp = await conn.profilePictureUrl(userId, 'image').catch(_ =>
       'https://raw.githubusercontent.com/The-King-Destroy/Adiciones/main/Contenido/1745522645448.jpeg')
