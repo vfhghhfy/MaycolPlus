@@ -1,44 +1,46 @@
 import axios from 'axios';
-import { fileTypeFromBuffer } from 'file-type';
-import fs from 'fs';
 
-const handler = async (m, { conn, text }) => {
-  if (!text) throw '*¡Necesitas darme una URL programadorcito bello!* (≧◡≦)';
+const handler = async (m, { conn }) => {
+  const texto = m.text || '';
+  const regex = /^peticion\s+(https?:\/\/[^\s]+)$/i;
+  const match = texto.match(regex);
+
+  if (!match) {
+    await conn.reply(m.chat, 'Usa: peticion <URL>', m);
+    return;
+  }
+
+  const url = match[1];
 
   try {
-    const url = text;
-    const response = await axios.get(url, { responseType: 'arraybuffer' });
+    const response = await axios.get(url, {
+      responseType: 'arraybuffer', // Importante para archivos binarios
+    });
+
+    const contentType = response.headers['content-type'];
     const buffer = Buffer.from(response.data, 'binary');
-    const fileType = await fileTypeFromBuffer(buffer);
 
-    if (fileType) {
-      // Es una imagen u otro tipo de archivo
-      const { mime, ext } = fileType;
-      const fileName = `downloaded.${ext}`;
-      fs.writeFileSync(fileName, buffer);
-
-      await conn.sendFile(m.chat, fileName, fileName, '*¡Aquí está tu archivo descargado!*', m, false, { mimetype: mime });
-
-      fs.unlinkSync(fileName); // Elimina el archivo después de enviarlo
+    if (contentType.startsWith('image')) {
+      // Envía la imagen
+      await conn.sendFile(m.chat, buffer, 'image', 'Aquí tienes tu imagen', m);
+    } else if (contentType.startsWith('application/json')) {
+      // Envía el JSON formateado
+      const json = JSON.stringify(response.data, null, 2);
+      await conn.reply(m.chat, `\`\`\`${json}\`\`\``, m);
     } else {
-      // Intentar analizar como JSON
-      try {
-        const jsonData = JSON.parse(buffer.toString('utf8'));
-        const prettyJson = JSON.stringify(jsonData, null, 2);
-        await conn.reply(m.chat, `*¡JSON Detectado!*\n\n${prettyJson}`, m);
-      } catch (jsonError) {
-        await conn.reply(m.chat, '*¡No pude detectar ni archivo ni JSON! (｡>﹏<｡)*', m);
-      }
+      // Envía como texto (si es posible)
+      const text = buffer.toString('utf8');
+      await conn.reply(m.chat, text, m);
     }
   } catch (error) {
     console.error(error);
-    await conn.reply(m.chat, '*¡Ocurrió un error al procesar la URL! (╥﹏╥)*', m);
+    await conn.reply(m.chat, `Error: ${error}`, m);
   }
 };
 
-handler.help = ['petición <url>'];
-handler.tags = ['downloader'];
-handler.command = /^petición$/i;
+handler.help = ['peticion <URL>'];
+handler.tags = ['herramienta'];
+handler.command = ['peticion'];
 handler.register = true;
 
 export default handler;
