@@ -39,14 +39,14 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
       if (isUrl(args[0])) {
         stiker = await sticker(false, args[0], global.packsticker, global.packsticker2)
       } else {
-        return m.reply(`⚠︎ El URL es incorrecto...`)
+        return m.reply(`🇯🇵 Hanako: Oye ya te pasaste no crees? hasta la url esta mal... Ash ;c`)
       }
     }
   } finally {
     if (stiker) {
       conn.sendFile(m.chat, stiker, 'sticker.webp', '', m)
     } else {
-      return conn.reply(m.chat, `❀ Por favor, envía una imagen o video para hacer un sticker.`, m)
+      return conn.reply(m.chat, `🇯🇵 Hanako: Oye... Todavia no sabes usar este comando?... Bueno ya que, no doy tutorial, Esta gente de hoy cada vez mas floja ;/`, m)
     }
   }
 }
