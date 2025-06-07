@@ -78,17 +78,16 @@ let handler = async (m, { conn, args, command, usedPrefix, groupMetadata }) => {
         .complexFilter([
           // Aplicar colorkey para remover el fondo morado (#ba00ff)
           '[0:v]colorkey=0xba00ff:0.3:0.2[ckout]',
-          // Escalar la imagen de fondo al tamaño del video
-          '[1:v][ckout]scale2ref[bg][fg]',
+          // Escalar la imagen de fondo al tamaño del video y redimensionar todo
+          '[1:v][ckout]scale2ref=720:1280[bg][fg]',
           // Superponer el video procesado sobre el fondo
-          '[bg][fg]overlay=format=auto'
-        ])
+          '[bg][fg]overlay=format=auto[final]'
+        ], 'final')
         .audioCodec('aac') // AAC es mejor para WhatsApp
         .audioFrequency(44100)
         .audioBitrate('128k')
         .videoCodec('libx264')
         .videoBitrate('1000k') // Bitrate optimizado
-        .size('720x1280') // Resolución optimizada para móviles
         .fps(30) // FPS estándar
         .format('mp4') // Formato compatible
         .outputOptions([
