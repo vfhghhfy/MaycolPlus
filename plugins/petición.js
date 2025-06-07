@@ -27,7 +27,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     if (contentType.startsWith('image')) {
       // Si es una imagen, la enviamos como sticker (≧◡≦)
       const buffer = await res.buffer();
-      conn.sendFile(m.chat, stiker, 'sticker.webp', '', m)
+      conn.sendFile(m.chat, sticker, 'sticker.webp', '', m)
     } else if (contentType.startsWith('application/json')) {
       // Si es JSON, lo enviamos como texto formateado (≧◡≦)
       const json = await res.json();
