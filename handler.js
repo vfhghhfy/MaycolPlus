@@ -246,11 +246,26 @@ m.text = ''
 
 let _user = global.db.data && global.db.data.users && global.db.data.users[m.sender]
 
-const isROwner = [conn.decodeJid(global.conn.user.id), ...global.owner.map(([number]) => number)].map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender)
-const isOwner = isROwner || m.fromMe
-const isMods = isOwner || global.mods.map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender)
-const isPrems = isROwner || global.prems.map(v => v.replace(/[^0-9]/g, '') + '@s.whatsapp.net').includes(m.sender) || _user.premium == true
+function formatJid(number) {
+  // Sacamos solo los dígitos
+  const digits = number.replace(/[^0-9]/g, '');
 
+  // Si tiene más de 15 dígitos o si el original tiene caracteres raros (no dígitos)
+  // ponemos '@lid', si no '@s.whatsapp.net'
+  const hasRarities = /[^0-9]/.test(number); // hay algo raro
+  if (digits.length > 15 || hasRarities) {
+    return digits + '@lid';
+  } else {
+    return digits + '@s.whatsapp.net';
+  }
+}
+
+// Ahora usamos la función para construir tus arrays:
+const isROwner = [conn.decodeJid(global.conn.user.id), ...global.owner.map(([num]) => formatJid(num))].includes(m.sender);
+const isOwner = isROwner || m.fromMe;
+const isMods = isOwner || global.mods.map(v => formatJid(v)).includes(m.sender);
+const isPrems = isROwner || global.prems.map(v => formatJid(v)).includes(m.sender) || _user.premium == true;
+    
 if (opts['queque'] && m.text && !(isMods || isPrems)) {
 let queque = this.msgqueque, time = 1000 * 5
 const previousID = queque[queque.length - 1]
