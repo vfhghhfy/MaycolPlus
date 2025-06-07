@@ -12,7 +12,7 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
   // Aquí leemos el número que ponen después de mayeditor
   let type = args[0]?.toLowerCase()
   if (!type || !['1','2','3','4','5'].includes(type)) {
-    return m.reply(`✧ Usa el comando así:\n\n${usedPrefix + command} 1\nO prueba con 2, 3.`)
+    return m.reply(`✧ Usa el comando así:\n\n${usedPrefix + command} 1\nO prueba con 2, 3, 4, 5.`)
   }
 
   // Map de videos según el número que pongan
