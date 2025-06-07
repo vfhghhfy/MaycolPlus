@@ -82,7 +82,9 @@ let handler = async (m, { conn, args, command, usedPrefix, groupMetadata }) => {
           '[1:v][ckout]scale2ref=720:1280[bg][fg]',
           // Superponer el video procesado sobre el fondo
           '[bg][fg]overlay=format=auto[final]'
-        ], 'final')
+        ])
+        .map('[final]') // Mapear el video procesado
+        .map('0:a') // Mapear el audio del video original
         .audioCodec('aac') // AAC es mejor para WhatsApp
         .audioFrequency(44100)
         .audioBitrate('128k')
