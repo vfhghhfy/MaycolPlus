@@ -1,5 +1,9 @@
 // Importamos las librerías necesarias (≧◡≦)
 import fetch from 'node-fetch'; // Para hacer las peticiones HTTP
+import { sticker } from '../lib/sticker.js'
+import uploadFile from '../lib/uploadFile.js'
+import uploadImage from '../lib/uploadImage.js'
+import { webp2png } from '../lib/webp2mp4.js'
 
 const handler = async (m, { conn, text, usedPrefix, command }) => {
   // Verificamos si el usuario proporcionó una URL (≧◡≦)
@@ -23,7 +27,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     if (contentType.startsWith('image')) {
       // Si es una imagen, la enviamos como sticker (≧◡≦)
       const buffer = await res.buffer();
-      await conn.sendImageAsSticker(m.chat, buffer, m, { packname: "Peticion Sticker UwU", author: "MayCode-V2" });
+      conn.sendFile(m.chat, stiker, 'sticker.webp', '', m)
     } else if (contentType.startsWith('application/json')) {
       // Si es JSON, lo enviamos como texto formateado (≧◡≦)
       const json = await res.json();
