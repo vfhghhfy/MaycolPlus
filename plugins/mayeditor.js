@@ -136,7 +136,7 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
 𓂃𓈒𓏸 Video mágico tipo ${type} creado para @${targetUserId}
 ✦ Procesado con tecnología sobrenatural
 ✧ Tu esencia ha sido capturada en este hechizo visual
-✧ Usos restantes hoy: ${3 - userLimit.count}/3
+✧ Usos restantes hoy: ${3 - userLimit.count}/10
 𓆩𓆪 ━━━━━━━━━━━━━━━━
     `.trim()
     
