@@ -15,7 +15,11 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
       let img = await q.download?.()
 
       if (!img) {
-        return conn.reply(m.chat, `🇯🇵 Hanako: Oye... Todavia no sabes usar este comando?... Bueno ya que, no doy tutorial, Esta gente de hoy cada vez mas floja ;/`, m)
+        return conn.reply(m.chat, `🇯🇵 Hanako: Oye...
+        Todavia no sabes usar este comando?...
+        Bueno ya que, no doy tutorial.
+        Esta gente de hoy cada vez mas floja ;/
+        > Hecho Por SoyMaycol <3`, m)
       }
 
       let out
@@ -39,14 +43,20 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
       if (isUrl(args[0])) {
         stiker = await sticker(false, args[0], global.packsticker, global.packsticker2)
       } else {
-        return m.reply(`🇯🇵 Hanako: Oye ya te pasaste no crees? hasta la url esta mal... Ash ;c`)
+        return m.reply(`🇯🇵 Hanako: Oye ya te pasaste no crees?
+        hasta la url esta mal... Ash ;c
+        > Hecho por SoyMaycol <3`)
       }
     }
   } finally {
     if (stiker) {
-      conn.sendFile(m.chat, stiker, 'sticker.webp', '', m)
+      conn.sendFile(m.chat, stiker, 'SoyMaycol.webp', '', m)
     } else {
-      return conn.reply(m.chat, `🇯🇵 Hanako: Oye... Todavia no sabes usar este comando?... Bueno ya que, no doy tutorial, Esta gente de hoy cada vez mas floja ;/`, m)
+      return conn.reply(m.chat, `🇯🇵 Hanako: Oye...
+        Todavia no sabes usar este comando?...
+        Bueno ya que, no doy tutorial.
+        Esta gente de hoy cada vez mas floja ;/
+        > Hecho Por SoyMaycol <3`, m)
     }
   }
 }
