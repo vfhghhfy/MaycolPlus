@@ -15,7 +15,7 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
   const videosMap = {
     '1': './videos/lv_7507655713968164149_20250607160908.mp4',
     '2': './videos/lv_7463895997605743933_20250607164555.mp4',
-    '3': './videos/lv_7495448057157340469_20250607164932.mp4'
+    '3': './videos/lv_7404392617884028176_20250607165541.mp4'
   }
 
   // Elegimos la ruta del video según el número
@@ -40,8 +40,8 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
     userLimit.date = today
   }
   
-  if (userLimit.count >= 3) {
-    return m.reply('✧ Ya has usado tu magia 3 veces hoy, espíritu.\n✧ Vuelve mañana para más hechizos visuales... 🌙')
+  if (userLimit.count >= 10) {
+    return m.reply('✧ Ya has usado tu magia 10 veces hoy, espíritu.\n✧ Vuelve mañana para más hechizos visuales... 🌙')
   }
   
   userLimit.count++
