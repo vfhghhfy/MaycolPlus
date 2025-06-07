@@ -1,3 +1,7 @@
+// CODIGO HECHO POR SOYMAYCOL 
+// DEJAR CREDITOS AL CREADOR UWU
+// github: SoySapo6
+
 import ffmpeg from 'fluent-ffmpeg'
 import fs from 'fs'
 import path from 'path'
