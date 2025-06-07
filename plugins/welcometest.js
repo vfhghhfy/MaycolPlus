@@ -71,6 +71,6 @@ ${global.welcom2}
 
 handler.help = ['hanakotest <join|leave>']
 handler.tags = ['group', 'fun']
-handler.command = ['welcome']
+handler.command = ['welcometest']
 
 export default handler
