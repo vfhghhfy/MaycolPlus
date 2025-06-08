@@ -1,6 +1,5 @@
 let handler = async (m, { conn, args }) => {
   let userId = m.mentionedJid?.[0] || m.sender;
-  let user = global.db.data.users[userId];
   let name = conn.getName(userId);
   let _uptime = process.uptime() * 1000;
   let uptime = clockString(_uptime);
@@ -17,92 +16,51 @@ let handler = async (m, { conn, args }) => {
                hour < 18 ? "🌄 Buenas tardes, viajero astral~" :
                "🌃 Buenas noches, sombra errante~";
 
+  // Agrupar comandos por tags
   let categories = {};
   for (let plugin of Object.values(global.plugins)) {
     if (!plugin.help || !plugin.tags) continue;
     for (let tag of plugin.tags) {
       if (!categories[tag]) categories[tag] = [];
-      categories[tag].push(...plugin.help.map(cmd => `#${cmd}`));
+      categories[tag].push(...plugin.help.map(cmd => cmd));
     }
   }
 
   let decoEmojis = ['✨', '🌸', '👻', '⭐', '🔮', '💫', '☁️', '🦋', '🪄'];
   let emojiRandom = () => decoEmojis[Math.floor(Math.random() * decoEmojis.length)];
 
-  let menuText = `
-╭───❖ 𝓗𝓪𝓷𝓪𝓴𝓸 𝓑𝓸𝓽 ❖───╮
-
-｡ﾟ☆: *.${name}.* :☆ﾟ｡          
-> *_${saludo}_*
-
-╰─────❖ 𝓜𝓮𝓷𝓾 ❖─────╯
-
-✦ 𝙸𝙽𝙵𝙾 𝙳𝙴 𝚂𝚄𝙼𝙾𝙽 ✦
-
-💻 Sistema: Multi-Device
-👤 Espíritu: @${userId.split('@')[0]}
-⏰ Tiempo activo: ${uptime}
-👥 Espíritus: ${totalreg} Espíritus
-⌚ Hora: ${hour}
-
-> Hecho con amor por: *_SoyMaycol_* (⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤
-
-≪──── ⋆𓆩✧𓆪⋆ ────≫
-`.trim();
-
+  // Crear secciones con los comandos
+  let sections = [];
   for (let [tag, cmds] of Object.entries(categories)) {
-    let tagName = tag.toUpperCase().replace(/_/g, ' ');
     let deco = emojiRandom();
-    menuText += `
-
-╭─━━━ ${deco} ${tagName} ${deco} ━━━╮
-${cmds.map(cmd => `│ ➯ ${cmd}`).join('\n')}
-╰─━━━━━━━━━━━━━━━━╯`;
+    let section = {
+      title: `${deco} ${tag.toUpperCase().replace(/_/g, ' ')} ${deco}`,
+      rows: cmds.map(cmd => ({
+        title: `/${cmd}`,
+        rowId: `/${cmd}`,
+        description: `Usar el comando /${cmd}`
+      }))
+    };
+    sections.push(section);
   }
 
-  await conn.reply(m.chat, '⌜ ⊹ Espera tantito, espíritu curioso... ⊹ ⌟', m, {
-    contextInfo: {
-      externalAdReply: {
-        title: botname,
-        body: "Un amor que nunca se acaba Jeje <3",
-        thumbnailUrl: 'https://files.catbox.moe/x9hw62.png',
-        sourceUrl: redes,
-        mediaType: 1,
-        showAdAttribution: true,
-        renderLargerThumbnail: true,
-      }
-    }
-  });
+  // Texto del menú interactivo
+  let menuList = {
+    text: `｡ﾟ☆: *.${name}.* :☆ﾟ｡\n\n${saludo}\n\n💻 Sistema: Multi-Device\n👤 Espíritu: @${userId.split('@')[0]}\n⏰ Tiempo activo: ${uptime}\n👥 Espíritus: ${totalreg}\n⌚ Hora: ${hour}`,
+    footer: "Hecho con amor por: SoyMaycol (⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤",
+    title: "✨ 𝓜𝓮𝓷𝓾 𝓲𝓷𝓽𝓮𝓻𝓪𝓬𝓽𝓲𝓿𝓸 𝓭𝓮 𝓗𝓪𝓷𝓪𝓴𝓸 ✨",
+    buttonText: "📜 Ver categorías",
+    sections
+  };
 
-  await conn.sendMessage(m.chat, {
-  video: { url: 'https://files.catbox.moe/i74z9e.mp4', gifPlayback: true },
-  caption: menuText,
-  gifPlayback: true,
-  footer: '✨ Hanako Bot by SoyMaycol ✨',
-  templateButtons: [
-    { index: 1, urlButton: { displayText: '📰 Entrar al Canal', url: 'https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R' } },
-    { index: 2, quickReplyButton: { displayText: '👑 Ver Staff', id: '.staff' } }
-  ],
-  contextInfo: {
-    mentionedJid: [m.sender, userId],
-    forwardingScore: 999,
-    isForwarded: true,
-    externalAdReply: {
-      title: botname,
-      body: "Un amor que nunca se acaba Jeje <3",
-      thumbnailUrl: banner,
-      sourceUrl: redes,
-      mediaType: 1,
-      showAdAttribution: true,
-      renderLargerThumbnail: true,
-    },
-  }
-}, { quoted: m });
+  await conn.sendMessage(m.chat, menuList, { quoted: m });
+};
 
-handler.help = ['menu'];
+handler.help = ['menu', 'menú', 'help', 'ayuda'];
 handler.tags = ['main'];
 handler.command = ['menu', 'menú', 'help', 'ayuda'];
 handler.register = true;
+handler.channel = true;
 
 export default handler;
 
