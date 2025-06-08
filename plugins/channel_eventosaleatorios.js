@@ -33,7 +33,7 @@ const handler = async (m, { conn }) => {
 };
 
 handler.help = ['evento'];
-handler.tags = ['fun'];
+handler.tags = ['canal'];
 handler.command = ['evento', 'eventoaleatorio'];
 handler.register = true;
 handler.channel = true;
