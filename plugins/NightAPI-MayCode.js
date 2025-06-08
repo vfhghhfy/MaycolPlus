@@ -8,7 +8,7 @@ const NIGHT_API_ENDPOINTS = [
 
 async function fetchMayCode(version, prompt) {
   const paths = {
-    v1: `/api/maycode?message=${encodeURIComponent(prompt)}`,
+    v1: `/api/maycode/models/v2/?message=${encodeURIComponent(prompt)}`,
     v2: `/api/maycode/models/v2/?message=${encodeURIComponent(prompt)}`
   };
 
@@ -60,7 +60,7 @@ const handler = async (m, { conn, text }) => {
 
     const userText = data.user || prompt;
     const mayCodeText = data.MayCode || '(⁄ ⁄•⁄ω⁄•⁄ ⁄)⁄ No pude darte una respuesta, lo siento';
-    const codeBlock = data.code || '// (｡•́︿•̀｡) No se generó código… intenta de nuevo más tarde';
+    const codeBlock = data.code || '(⁠・⁠∀⁠・⁠) Al Parecer MayCode solo te Hablo ^^';
 
     const respuesta = `
 *┏━━━━━━✦°•✦°•✦━━━━━━┓*
