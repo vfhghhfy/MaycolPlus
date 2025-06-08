@@ -1,16 +1,17 @@
 import axios from 'axios';
 import fetch from 'node-fetch';
 
-const pendingQueries = new Map(); // Para guardar preguntas a resolver tras elegir botón
+const pendingQueries = new Map();
 
-const handler = async (msg, { conn, args, usedPrefix, command, isButton }) => {
+const handler = async (msg, { conn, args, usedPrefix, command }) => {
   const chatId = msg.key.remoteJid;
   const userId = msg.sender;
-  
-  // Caso: respuesta al botón
-  if (isButton) {
-    // Aquí 'msg.selectedButtonId' es el id del botón que presionó el usuario
-    const selected = msg.selectedButtonId;
+
+  // Detectar si es respuesta a botón
+  const isButtonResponse = !!msg.message?.buttonsResponseMessage;
+  const selectedButtonId = isButtonResponse ? msg.message.buttonsResponseMessage.selectedButtonId : null;
+
+  if (isButtonResponse) {
     const originalQuestion = pendingQueries.get(userId);
     if (!originalQuestion) {
       return conn.sendMessage(chatId, { text: 'No tengo ninguna pregunta pendiente, escribe tu pregunta primero.' }, { quoted: msg });
@@ -18,17 +19,16 @@ const handler = async (msg, { conn, args, usedPrefix, command, isButton }) => {
     pendingQueries.delete(userId);
 
     let prefix = '';
-    if (selected === 'xex') prefix = 'Comportate como xex: ';
-    else if (selected === 'china') prefix = 'Comportate como china: ';
+    if (selectedButtonId === 'xex') prefix = 'Comportate como xex: ';
+    else if (selectedButtonId === 'china') prefix = 'Comportate como china: ';
     else prefix = '';
 
-    // Ejecutar la consulta con el prefijo
     const finalQuery = prefix + originalQuestion;
     await processQuery(finalQuery, msg, conn);
     return;
   }
 
-  // Caso: usuario escribe el comando con pregunta
+  // Si no es botón, es la pregunta inicial
   const text = args.join(' ');
   if (!text) {
     return conn.sendMessage(chatId, {
@@ -36,10 +36,9 @@ const handler = async (msg, { conn, args, usedPrefix, command, isButton }) => {
     }, { quoted: msg });
   }
 
-  // Guardamos la pregunta para cuando el usuario elija el botón
+  // Guardamos la pregunta para después cuando elijan botón
   pendingQueries.set(userId, text);
 
-  // Enviar mensaje con botones para elegir entre Xex o China
   const textoBotones = `¿Con quién quieres hablar? Escoge una opción:`;
   const botones = [
     { buttonId: 'xex', buttonText: { displayText: 'Xex' }, type: 1 },
@@ -56,7 +55,6 @@ const handler = async (msg, { conn, args, usedPrefix, command, isButton }) => {
   await conn.sendMessage(chatId, mensaje, { quoted: msg });
 };
 
-// Función para procesar la consulta a las APIs
 async function processQuery(query, msg, conn) {
   const chatId = msg.key.remoteJid;
   try {
