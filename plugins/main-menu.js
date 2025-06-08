@@ -1,5 +1,6 @@
-let handler = async (m, { conn }) => {
+let handler = async (m, { conn, args }) => {
   let userId = m.mentionedJid?.[0] || m.sender;
+  let user = global.db.data.users[userId];
   let name = conn.getName(userId);
   let _uptime = process.uptime() * 1000;
   let uptime = clockString(_uptime);
@@ -11,63 +12,114 @@ let handler = async (m, { conn }) => {
     timeZone: 'America/Lima'
   }).format(new Date());
 
-  let saludo = hour < 6 ? "🌌 Buenas madrugadas, espíritu insomne... 🌙" :
-               hour < 12 ? "🌅 Buenos días, alma luminosa~ ✨" :
-               hour < 18 ? "🌄 Buenas tardes, viajero astral~ 🌟" :
-               "🌃 Buenas noches, sombra errante~ 🌌";
+  let saludo = hour < 6 ? "🌌 Buenas madrugadas, espíritu insomne..." :
+               hour < 12 ? "🌅 Buenos días, alma luminosa~" :
+               hour < 18 ? "🌄 Buenas tardes, viajero astral~" :
+               "🌃 Buenas noches, sombra errante~";
 
-  // Agrupar comandos por categorías
   let categories = {};
   for (let plugin of Object.values(global.plugins)) {
     if (!plugin.help || !plugin.tags) continue;
     for (let tag of plugin.tags) {
       if (!categories[tag]) categories[tag] = [];
-      categories[tag].push(...plugin.help.map(cmd => cmd));
+      categories[tag].push(...plugin.help.map(cmd => `#${cmd}`));
     }
   }
 
-  let decoEmojis = ['✨', '🌸', '👻', '⭐', '🔮', '💫', '☁️', '🦋', '🪄', '🔥', '🌈', '💥', '🎉', '🎊'];
+  let decoEmojis = ['✨', '🌸', '👻', '⭐', '🔮', '💫', '☁️', '🦋', '🪄'];
   let emojiRandom = () => decoEmojis[Math.floor(Math.random() * decoEmojis.length)];
 
-  let sections = [];
+  let menuText = `
+╭───❖ 𝓗𝓪𝓷𝓪𝓴𝓸 𝓑𝓸𝓽 ❖───╮
+
+ ｡ﾟ☆: *.${name}.* :☆ﾟ｡  
+> *_${saludo}_*
+
+╰─────❖ 𝓜𝓮𝓷𝓾 ❖─────╯
+
+✦ 𝙸𝙽𝙵𝙾 𝙳𝙴 𝚂𝚄𝙼𝙾𝙽 ✦
+
+💻 Sistema: Multi-Device
+👤 Espíritu: @${userId.split('@')[0]}
+⏰ Tiempo activo: ${uptime}
+👥 Espíritus: ${totalreg} Espiritus
+⌚ Hora: ${hour}
+
+> Hecho con amor por: *_SoyMaycol_* (⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤
+
+≪──── ⋆𓆩✧𓆪⋆ ────≫`.trim();
+
   for (let [tag, cmds] of Object.entries(categories)) {
+    let tagName = tag.toUpperCase().replace(/_/g, ' ');
     let deco = emojiRandom();
-    let title = `${deco} 𝓒𝓪𝓽𝓮𝓰𝓸𝓻𝓲́𝓪: ${tag.toUpperCase().replace(/_/g, ' ')} ${deco}`;
-    let rows = cmds.map(cmd => ({
-      title: `/${cmd}`,
-      rowId: `/${cmd}`,
-      description: `🌟 Usa /${cmd} para brillar~`
-    }));
-    sections.push({ title, rows });
+    menuText += `
+
+╭─━━━ ${deco} ${tagName} ${deco} ━━━╮
+${cmds.map(cmd => `│ ➯ ${cmd}`).join('\n')}
+╰─━━━━━━━━━━━━━━━━╯`;
   }
 
-  // Miniatura en base64 o búscala desde una URL
-  let thumbnail = await (await fetch('https://files.catbox.moe/x9hw62.png')).buffer(); // Usa tu imagen estilo Hanako~ kawaii aquí
+  // Mensaje previo cute
+  await conn.reply(m.chat, '⌜ ⊹ Espera tantito, espíritu curioso... ⊹ ⌟', m, {
+    contextInfo: {
+      externalAdReply: {
+        title: botname,
+        body: "Un amor que nunca se acaba Jeje <3",
+        thumbnailUrl: 'https://files.catbox.moe/x9hw62.png',
+        sourceUrl: redes,
+        mediaType: 1,
+        showAdAttribution: true,
+        renderLargerThumbnail: true,
+      }
+    }
+  });
 
+  // Botones mágicos ✨
+  const botones = [
+    {
+      buttonId: '.staff',
+      buttonText: { displayText: '𝐒𝐓𝐀𝐅𝐅 ♪' },
+      type: 1
+    },
+    {
+      buttonId: '.canal',
+      buttonText: { displayText: '𝐂𝐀𝐍𝐀𝐋' },
+      type: 1
+    }
+  ];
+
+  // Enviar menú con botones
   await conn.sendMessage(m.chat, {
-    text: `*✨ MaycolAI — Menú Principal ✨*
-
-👤 𝙷𝚘𝚕𝚊: *${name}*
-⏳ 𝙰𝚌𝚝𝚒𝚟𝚘: *${uptime}*
-🌎 𝙷𝚘𝚛𝚊 𝚙𝚎𝚛𝚞𝚊𝚗𝚊: *${hour}*
-📊 𝙴𝚜𝚙𝚒𝚛𝚒𝚝𝚞𝚜: *${totalreg}*
-
-${saludo}
-
-🪄 Selecciona una categoría para ver sus comandos 👇
-`,
-    footer: '💫 Made with ♡ by SoyMaycol',
-    title: '🌟 Menú de Comandos Interactivo 🌟',
-    buttonText: '❤️ Ver categorías ❤️',
-    sections,
-    jpegThumbnail: thumbnail // Imagen como miniatura decorada
+    video: { url: 'https://files.catbox.moe/i74z9e.mp4', gifPlayback: true },
+    caption: menuText,
+    gifPlayback: true,
+    buttons: botones,
+    headerType: 4,
+    contextInfo: {
+      mentionedJid: [m.sender, userId],
+      isForwarded: true,
+      forwardedNewsletterMessageInfo: {
+        newsletterJid: '120363372883715167@newsletter',
+        newsletterName: 'SoyMaycol <3',
+        serverMessageId: -1,
+      },
+      forwardingScore: 999,
+      externalAdReply: {
+        title: botname,
+        body: "Un amor que nunca se acaba Jeje <3",
+        thumbnailUrl: banner,
+        sourceUrl: redes,
+        mediaType: 1,
+        showAdAttribution: true,
+        renderLargerThumbnail: true,
+      },
+    }
   }, { quoted: m });
 };
 
-handler.help = ['menu', 'menú', 'help', 'ayuda'];
+handler.help = ['menu'];
 handler.tags = ['main'];
 handler.command = ['menu', 'menú', 'help', 'ayuda'];
-handler.register = true;
 
 export default handler;
 
