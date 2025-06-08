@@ -108,7 +108,6 @@ handler.help = ['menu'];
 handler.tags = ['main'];
 handler.command = ['menu', 'menú', 'help', 'ayuda'];
 handler.register = true;
-handler.channel = true;
 
 export default handler;
 
