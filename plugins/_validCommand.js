@@ -34,7 +34,7 @@ export async function before(m) {
       headerType: 1
     }
 
-    await m.reply(buttonMessage)
+    await conn.sendMessage(m.chat, buttonMessage, { quoted: m })
     return
   }
 
