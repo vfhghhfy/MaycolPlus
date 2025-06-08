@@ -29,7 +29,7 @@ const handler = async (m, { conn }) => {
     } catch (error) {
       // Captura cualquier error que ocurra durante la petición o procesamiento de la respuesta.
       console.error('Error al obtener el mensaje:', error); // Imprime el error en la consola del servidor.
-      await conn.reply(m.chat, 'Hubo un error al obtener el mensaje :(', m); // Envía un mensaje de error al chat.
+      await conn.reply(m.chat, '¡Ups! Te olvidaste ingresar tu frase.', m); // Envía un mensaje de error al chat.
     }
   }
 };
