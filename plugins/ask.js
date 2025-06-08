@@ -57,8 +57,8 @@ const handler = async (msg, { conn, args, usedPrefix, command }) => {
     {
       title: '¿Cómo quieres que responda?',
       rows: [
-        { title: 'Xex', rowId: `.xex xex | ${text}`, description: 'Que responda como Xex' },
-        { title: 'China', rowId: `.xex china | ${text}`, description: 'Que responda como China' }
+        { title: 'XEX', rowId: `.xex xex | ${text}`, description: 'El que mas insulta 🔥' },
+        { title: 'China', rowId: `.xex china | ${text}`, description: 'La mas caliente 🔥' }
       ]
     }
   ];
