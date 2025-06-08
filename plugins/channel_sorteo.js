@@ -19,7 +19,7 @@ const handler = async (m, { conn, text }) => {
 };
 
 handler.help = ['sorteo ps5'];
-handler.tags = ['fun'];
+handler.tags = ['canal'];
 handler.command = ['sorteo'];
 handler.register = true;
 handler.channel = true;
