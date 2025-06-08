@@ -25,7 +25,7 @@ const handler = async (m, { args, text, conn, command }) => {
 };
 
 handler.help = ['recordatorio <tiempo> | <mensaje>'];
-handler.tags = ['tools'];
+handler.tags = ['canal'];
 handler.command = ['recordatorio', 'remindme'];
 handler.register = true;
 handler.channel = true;
