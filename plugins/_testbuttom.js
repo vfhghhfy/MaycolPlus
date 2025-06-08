@@ -37,6 +37,5 @@ handler.help = ['testboton'];
 handler.tags = ['test', 'fun'];
 handler.command = ['testboton'];
 handler.register = true;
-handler.channel = true;
 
 export default handler;
