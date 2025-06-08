@@ -134,6 +134,5 @@ handler.help = ['xex <pregunta>'];
 handler.command = ['xex', 'ai', 'ask'];
 handler.tags = ['ai'];
 handler.register = true;
-handler.channel = true;
 
 export default handler;
