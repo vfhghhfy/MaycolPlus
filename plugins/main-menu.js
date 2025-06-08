@@ -1,9 +1,7 @@
 let handler = async (m, { conn }) => {
   let userId = m.mentionedJid?.[0] || m.sender;
-  let user = global.db.data.users[userId];
-  let name = conn.getName(userId);
-  let _uptime = process.uptime() * 1000;
-  let uptime = clockString(_uptime);
+  let name = await conn.getName(userId);
+  let uptime = clockString(process.uptime() * 1000);
   let totalreg = Object.keys(global.db.data.users).length;
 
   let hour = new Intl.DateTimeFormat('es-PE', {
@@ -17,18 +15,6 @@ let handler = async (m, { conn }) => {
                hour < 18 ? "🌄 Buenas tardes, viajero astral~" :
                "🌃 Buenas noches, sombra errante~";
 
-  let categories = {};
-  for (let plugin of Object.values(global.plugins)) {
-    if (!plugin.help || !plugin.tags) continue;
-    for (let tag of plugin.tags) {
-      if (!categories[tag]) categories[tag] = [];
-      categories[tag].push(...plugin.help.map(cmd => `#${cmd}`));
-    }
-  }
-
-  let decoEmojis = ['✨', '🌸', '👻', '⭐', '🔮', '💫', '☁️', '🦋', '🪄'];
-  let emojiRandom = () => decoEmojis[Math.floor(Math.random() * decoEmojis.length)];
-
   let menuText = `
 ╭───❖ 𝓗𝓪𝓷𝓪𝓴𝓸 𝓑𝓸𝓽 ❖───╮
 
@@ -37,51 +23,28 @@ let handler = async (m, { conn }) => {
 
 ╰─────❖ 𝓜𝓮𝓷𝓾 ❖─────╯
 
-✦ 𝙸𝙽𝙵𝙾 𝙳𝙴 𝚂𝚄𝙼𝙾𝙽 ✦
-
 💻 Sistema: Multi-Device
 👤 Espíritu: @${userId.split('@')[0]}
 ⏰ Tiempo activo: ${uptime}
-👥 Espíritus: ${totalreg} Espiritus
+👥 Espíritus: ${totalreg} Espíritus
 ⌚ Hora: ${hour}
 
-> Hecho con amor por: *_SoyMaycol_* (⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤
+> Hecho con amor por: *_SoyMaycol_* (◍•ᴗ•◍)❤
+`.trim();
 
-≪──── ⋆𓆩✧𓆪⋆ ────≫`.trim();
-
-  for (let [tag, cmds] of Object.entries(categories)) {
-    let tagName = tag.toUpperCase().replace(/_/g, ' ');
-    let deco = emojiRandom();
-    menuText += `
-
-╭─━━━ ${deco} ${tagName} ${deco} ━━━╮
-${cmds.map(cmd => `│ ➯ ${cmd}`).join('\n')}
-╰─━━━━━━━━━━━━━━━━╯`;
-  }
-
-  // Botones para el menú
-  const botones = [
-    {
-      buttonId: '.staff',
-      buttonText: { displayText: '🌐 GitHub & Info' },
-      type: 1
-    },
-    {
-      buttonId: '.canal',
-      buttonText: { displayText: '📣 Canal de WhatsApp' },
-      type: 1
-    }
+  const buttons = [
+    { buttonId: '.staff', buttonText: { displayText: '🌐 GitHub & Info' }, type: 1 },
+    { buttonId: '.canal', buttonText: { displayText: '📣 Canal de WhatsApp' }, type: 1 }
   ];
 
-  // Enviar solo foto + botones + texto, sin video ni adReply extra
   await conn.sendMessage(m.chat, {
     image: { url: 'https://files.catbox.moe/x9hw62.png' },
     caption: menuText,
-    buttons: botones,
+    buttons: buttons,
     headerType: 4,
     contextInfo: {
-      mentionedJid: [m.sender, userId],
-    }
+      mentionedJid: [userId],
+    },
   }, { quoted: m });
 };
 
