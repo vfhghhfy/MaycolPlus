@@ -16,7 +16,6 @@ let handler = async (m, { conn, args }) => {
                hour < 18 ? "🌄 Buenas tardes, viajero astral~" :
                "🌃 Buenas noches, sombra errante~";
 
-  // Agrupar comandos por tags
   let categories = {};
   for (let plugin of Object.values(global.plugins)) {
     if (!plugin.help || !plugin.tags) continue;
@@ -29,27 +28,52 @@ let handler = async (m, { conn, args }) => {
   let decoEmojis = ['✨', '🌸', '👻', '⭐', '🔮', '💫', '☁️', '🦋', '🪄'];
   let emojiRandom = () => decoEmojis[Math.floor(Math.random() * decoEmojis.length)];
 
-  // Crear secciones con los comandos
   let sections = [];
   for (let [tag, cmds] of Object.entries(categories)) {
     let deco = emojiRandom();
     let section = {
       title: `${deco} ${tag.toUpperCase().replace(/_/g, ' ')} ${deco}`,
       rows: cmds.map(cmd => ({
-        title: `/${cmd}`,
+        title: `🧩 /${cmd}`,
         rowId: `/${cmd}`,
-        description: `Usar el comando /${cmd}`
+        description: `✨ Toca para usar /${cmd}`
       }))
     };
     sections.push(section);
   }
 
-  // Texto del menú interactivo
+  let textIntro = `⌜ ⊹ Espera tantito, espíritu curioso... ⊹ ⌟`;
+  await conn.sendMessage(m.chat, { text: textIntro }, { quoted: m });
+
+  // Esperar 2 segundos para más drama jeje
+  await new Promise(resolve => setTimeout(resolve, 2000));
+
+  // Enviar imagen épica decorativa
+  await conn.sendMessage(m.chat, {
+    image: { url: 'https://files.catbox.moe/x9hw62.png' },
+    caption: `🌟 Bienvenido, ${name}...\n\nTu viaje espiritual comienza ahora...\n\n🕯️ Prepárate para descubrir los comandos ocultos...`,
+    contextInfo: {
+      externalAdReply: {
+        title: "Menú de Hanako-Bot",
+        body: "Invoca poderes y comandos ✨",
+        thumbnailUrl: 'https://files.catbox.moe/x9hw62.png',
+        sourceUrl: 'https://soy-maycol.is-a.dev',
+        mediaType: 1,
+        showAdAttribution: true,
+        renderLargerThumbnail: true,
+      }
+    }
+  }, { quoted: m });
+
+  // Esperar otro poco pa' que cargue como juego de PS2 jeje
+  await new Promise(resolve => setTimeout(resolve, 2500));
+
+  // Ahora sí, menú de secciones
   let menuList = {
     text: `｡ﾟ☆: *.${name}.* :☆ﾟ｡\n\n${saludo}\n\n💻 Sistema: Multi-Device\n👤 Espíritu: @${userId.split('@')[0]}\n⏰ Tiempo activo: ${uptime}\n👥 Espíritus: ${totalreg}\n⌚ Hora: ${hour}`,
     footer: "Hecho con amor por: SoyMaycol (⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤",
-    title: "✨ 𝓜𝓮𝓷𝓾 𝓲𝓷𝓽𝓮𝓻𝓪𝓬𝓽𝓲𝓿𝓸 𝓭𝓮 𝓗𝓪𝓷𝓪𝓴𝓸 ✨",
-    buttonText: "📜 Ver categorías",
+    title: "╭─[ 🌸 𝓜𝓮𝓷𝓾 𝓜𝓪𝓰𝓲𝓬𝓸 🌸 ]─╮",
+    buttonText: "✨ Ver comandos disponibles ✨",
     sections
   };
 
@@ -60,6 +84,7 @@ handler.help = ['menu', 'menú', 'help', 'ayuda'];
 handler.tags = ['main'];
 handler.command = ['menu', 'menú', 'help', 'ayuda'];
 handler.register = true;
+handler.channel = true;
 
 export default handler;
 
