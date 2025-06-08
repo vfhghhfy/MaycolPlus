@@ -1,4 +1,4 @@
-let handler = async (m, { conn, args }) => {
+let handler = async (m, { conn }) => {
   let userId = m.mentionedJid?.[0] || m.sender;
   let user = global.db.data.users[userId];
   let name = conn.getName(userId);
@@ -59,6 +59,7 @@ ${cmds.map(cmd => `│ ➯ ${cmd}`).join('\n')}
 ╰─━━━━━━━━━━━━━━━━╯`;
   }
 
+  // Botones para el menú
   const botones = [
     {
       buttonId: '.staff',
@@ -72,17 +73,17 @@ ${cmds.map(cmd => `│ ➯ ${cmd}`).join('\n')}
     }
   ];
 
+  // Enviar solo foto + botones + texto, sin video ni adReply extra
   await conn.sendMessage(m.chat, {
-  image: { url: 'https://files.catbox.moe/x9hw62.png' },
-  caption: menuText,
-  buttons: botones,
-  headerType: 4,
-  contextInfo: {
-    mentionedJid: [m.sender],
-    forwardingScore: 999,
-    isForwarded: true
-  }
-}, { quoted: m });
+    image: { url: 'https://files.catbox.moe/x9hw62.png' },
+    caption: menuText,
+    buttons: botones,
+    headerType: 4,
+    contextInfo: {
+      mentionedJid: [m.sender, userId],
+    }
+  }, { quoted: m });
+};
 
 handler.help = ['menu'];
 handler.tags = ['main'];
