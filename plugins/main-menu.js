@@ -16,7 +16,6 @@ let handler = async (m, { conn }) => {
                hour < 18 ? "🌄 Buenas tardes, viajero astral~ 🌟" :
                "🌃 Buenas noches, sombra errante~ 🌌";
 
-  // Agrupar comandos por categorías
   let categories = {};
   for (let plugin of Object.values(global.plugins)) {
     if (!plugin.help || !plugin.tags) continue;
@@ -29,32 +28,35 @@ let handler = async (m, { conn }) => {
   let decoEmojis = ['✨', '🌸', '👻', '⭐', '🔮', '💫', '☁️', '🦋', '🪄', '🔥', '🌈', '💥', '🎉', '🎊'];
   let emojiRandom = () => decoEmojis[Math.floor(Math.random() * decoEmojis.length)];
 
-  // Crear secciones con los comandos decoradísimos
   let sections = [];
   for (let [tag, cmds] of Object.entries(categories)) {
     let deco = emojiRandom();
     let title = `${deco} 𝓒𝓪𝓽𝓮𝓰𝓸𝓻𝓲́𝓪: ${tag.toUpperCase().replace(/_/g, ' ')} ${deco}`;
     let rows = cmds.map(cmd => ({
-      title: `✨ /${cmd} ✨`,
+      title: `🔮 /${cmd}`,
       rowId: `/${cmd}`,
-      description: `🌟 Usa el comando /${cmd} para brillar en el chat!`
+      description: `✨ ¡Explora el comando /${cmd} y brilla como una estrella!`
     }));
     sections.push({ title, rows });
   }
 
   let menuList = {
-    text: `✨╔═══ ✪ MaycolAI ✪═══╗✨
-  
-🌟 𝓗𝓸𝓵𝓪, *${name}* (⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤  
-⏰ 𝐓𝐢𝐞𝐦𝐩𝐨 𝐀𝐜𝐭𝐢𝐯𝐨: *${uptime}*  
-👥 𝐄𝐬𝐩𝐢𝐫𝐢𝐭𝐮𝐬: *${totalreg}*  
-⌚ 𝐇𝐨𝐫𝐚: *${hour}*  
-${saludo}
+    title: ``,
+    text: `
+╭─╼[ *🌟 MENÚ MÁGICO 🌟* ]╾─╮
 
-> Sigueme <3: https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R
+✨ ¡Hola, *${name}*! Bienvenido/a a tu zona segura ✨  
+📌 *Tiempo activo:* ${uptime}  
+👥 *Usuarios registrados:* ${totalreg}  
+⌚ *Hora actual:* ${hour}  
+💬 *Saludo:* ${saludo}
+
+📣 *SÍGUEME EN MI CANAL!*  
+👉 https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R
+
+╰─╼[ ✧ 𝓢𝓮𝓵𝓮𝓬𝓬𝓲𝓸𝓷𝓪 𝓾𝓷𝓪 𝓬𝓪𝓽𝓮𝓰𝓸𝓻𝓲́𝓪 ✧ ]╾─╯
 `,
-    footer: 'Hecho por *_SoyMaycol_*',
-    title: '',
+    footer: `🧸 Con cariño por *_SoyMaycol_*`,
     buttonText: '♥ Comandos ♥',
     sections
   };
