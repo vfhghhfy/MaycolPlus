@@ -43,7 +43,7 @@ let handler = async (m, { conn }) => {
   let menuList = {
     title: ``,
     text: `
-╭─╼[ *🌟 MENÚ MÁGICO 🌟* ]╾─╮
+╭─╼[ *❤️ Menu ❤️* ]╾─╮
 
 ✨ ¡Hola, *${name}*! Bienvenido/a a tu zona segura ✨  
 📌 *Tiempo activo:* ${uptime}  
@@ -54,7 +54,7 @@ let handler = async (m, { conn }) => {
 📣 *SÍGUEME EN MI CANAL!*  
 👉 https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R
 
-╰─╼[ ✧ 𝓢𝓮𝓵𝓮𝓬𝓬𝓲𝓸𝓷𝓪 𝓾𝓷𝓪 𝓬𝓪𝓽𝓮𝓰𝓸𝓻𝓲́𝓪 ✧ ]╾─╯
+╰─╼[ ✧ ᴱˡⁱʲᵉ ᵘⁿ ᶜᵒᵐᵃⁿᵈᵒ ✧ ]╾─╯
 `,
     footer: `🧸 Con cariño por *_SoyMaycol_*`,
     buttonText: '♥ Comandos ♥',
