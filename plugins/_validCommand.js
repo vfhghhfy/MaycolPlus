@@ -1,6 +1,8 @@
 import stringSimilarity from 'string-similarity'
 
-export async function before(m, { conn }) {
+export async function before(m) {
+  const conn = global.conn // <--- 🔧 usamos conn global
+
   if (!m.text || !global.prefix.test(m.text)) return
 
   const usedPrefix = global.prefix.exec(m.text)[0]
@@ -25,14 +27,18 @@ export async function before(m, { conn }) {
 
     const texto = `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ El hechizo *${usedPrefix}${command}* no existe.\n│\n├─ ${suggestion || 'Consulta los comandos disponibles:'}\n╰─✦`
 
-    const buttons = [
-      { buttonId: `${usedPrefix}menu`, buttonText: { displayText: '📜 Ver Menú' }, type: 1 }
+    const botones = [
+      {
+        buttonId: `${usedPrefix}menu`,
+        buttonText: { displayText: '📜 Ver Menú' },
+        type: 1
+      }
     ]
 
     const mensaje = {
       text: texto,
-      footer: 'By MaycolBot ❤️‍🔥',
-      buttons,
+      footer: 'By MaycolBot 🤖❤️',
+      buttons: botones,
       headerType: 1
     }
 
