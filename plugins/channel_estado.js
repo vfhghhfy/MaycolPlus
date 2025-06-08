@@ -34,7 +34,7 @@ const contarMensajes = (m) => {
 // ultimaEncuesta = "Minijuego fuego vs agua" (o lo que sea)
 
 handlerEstado.help = ['estado'];
-handlerEstado.tags = ['info'];
+handlerEstado.tags = ['canal'];
 handlerEstado.command = ['estado'];
 handlerEstado.register = true;
 handlerEstado.channel = true;
