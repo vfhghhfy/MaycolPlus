@@ -46,15 +46,15 @@ let handler = async (m, { conn }) => {
     text: `✨╔═══ ✪ MaycolAI ✪═══╗✨
   
 🌟 𝓗𝓸𝓵𝓪, *${name}* (⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤  
-⏰ 𝓣𝓲𝓮𝓶𝓹𝓸 𝓪𝓬𝓽𝓲𝓿𝓸: *${uptime}*  
-👥 𝓔𝓼𝓹𝓲𝓻𝓲𝓽𝓾𝓼: *${totalreg}*  
-⌚ 𝓗𝓸𝓻𝓪 𝓵𝓸𝓬𝓪𝓵: *${hour}*  
+⏰ 𝐓𝐢𝐞𝐦𝐩𝐨 𝐀𝐜𝐭𝐢𝐯𝐨: *${uptime}*  
+👥 𝐄𝐬𝐩𝐢𝐫𝐢𝐭𝐮𝐬: *${totalreg}*  
+⌚ 𝐇𝐨𝐫𝐚: *${hour}*  
 ${saludo}
 
 > Sigueme <3: https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R
 `,
     footer: 'Hecho por *_SoyMaycol_*',
-    title: 'Hola Jeje ^^',
+    title: '',
     buttonText: '♪ Ver Comandos ^^',
     sections
   };
