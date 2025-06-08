@@ -7,7 +7,9 @@ const handler = async (m, { conn }) => {
     // Verifica si el mensaje contiene la palabra "maycute" (insensible a mayúsculas/minúsculas).
     try {
       // Intenta realizar la petición a la API.
-      const apiUrl = 'https://nightapi.is-a.dev/api/maycute?message=hola'; // URL de la API a la que se hará la petición.
+      const userInput = m.text.replace(/^\.?maycute/i, '').trim() || '';
+      const apiUrl = `https://nightapi.is-a.dev/api/maycute?message=${encodeURIComponent(userInput)}`;
+      
       const response = await fetch(apiUrl); // Realiza la petición a la API y espera la respuesta.
 
       if (!response.ok) {
