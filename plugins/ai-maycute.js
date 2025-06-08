@@ -17,12 +17,12 @@ const handler = async (m, { conn }) => {
 
       const data = await response.json(); // Convierte la respuesta de la API a formato JSON y espera el resultado.
 
-      if (data && data.message) {
+      if (data && data.Message) {
         // Verifica si la respuesta JSON contiene un campo "message".
-        await conn.reply(m.chat, data.message, m); // Envía el mensaje extraído de la API como respuesta al chat.
+        await conn.reply(m.chat, data.Message, m); // Envía el mensaje extraído de la API como respuesta al chat.
       } else {
         // Si no se encuentra el campo "message" en la respuesta JSON.
-        await conn.reply(m.chat, 'No se encontró el mensaje :(', m); // Envía un mensaje de error indicando que no se encontró el mensaje.
+        await conn.reply(m.chat, '¡Ups! Te olvidaste ingresar tu frase.', m); // Envía un mensaje de error indicando que no se encontró el mensaje.
       }
     } catch (error) {
       // Captura cualquier error que ocurra durante la petición o procesamiento de la respuesta.
