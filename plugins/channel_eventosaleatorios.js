@@ -1,14 +1,14 @@
 const encuestas = [
   {
-    pregunta: "¿Tienes amigos? 👀",
+    pregunta: "RETO DEL DIA 🗣️🔥: ¿Tienes amigos? 👀",
     opciones: ["😃 Sí", "😔 No"]
   },
   {
-    pregunta: "¿Volverías con tu ex? 💔",
+    pregunta: "RETO DEL DIA 🗣️🔥: ¿Volverías con tu ex? 💔",
     opciones: ["Sí 💘", "¡Jamás! 🚫"]
   },
   {
-    pregunta: "¿Reaccionarías a este mensaje? 😏",
+    pregunta: "RETO DEL DIA 🗣️🔥: ¿Reaccionarías a este mensaje? 😏",
     opciones: ["Claro 🫡", "No gracias 😶"]
   }
 ];
