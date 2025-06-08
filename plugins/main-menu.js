@@ -59,36 +59,19 @@ ${cmds.map(cmd => `│ ➯ ${cmd}`).join('\n')}
 ╰─━━━━━━━━━━━━━━━━╯`;
   }
 
-  // Mensaje previo cute
-  await conn.reply(m.chat, '⌜ ⊹ Espera tantito, espíritu curioso... ⊹ ⌟', m, {
-    contextInfo: {
-      externalAdReply: {
-        title: botname,
-        body: "Un amor que nunca se acaba Jeje <3",
-        thumbnailUrl: 'https://files.catbox.moe/x9hw62.png',
-        sourceUrl: redes,
-        mediaType: 1,
-        showAdAttribution: true,
-        renderLargerThumbnail: true,
-      }
-    }
-  });
-
-  // Botones mágicos ✨
   const botones = [
     {
       buttonId: '.staff',
-      buttonText: { displayText: '𝐒𝐓𝐀𝐅𝐅 ♪' },
+      buttonText: { displayText: '🌐 GitHub & Info' },
       type: 1
     },
     {
       buttonId: '.canal',
-      buttonText: { displayText: '𝐂𝐀𝐍𝐀𝐋' },
+      buttonText: { displayText: '📣 Canal de WhatsApp' },
       type: 1
     }
   ];
 
-  // Enviar menú con botones
   await conn.sendMessage(m.chat, {
     video: { url: 'https://files.catbox.moe/i74z9e.mp4', gifPlayback: true },
     caption: menuText,
@@ -97,22 +80,8 @@ ${cmds.map(cmd => `│ ➯ ${cmd}`).join('\n')}
     headerType: 4,
     contextInfo: {
       mentionedJid: [m.sender, userId],
-      isForwarded: true,
-      forwardedNewsletterMessageInfo: {
-        newsletterJid: '120363372883715167@newsletter',
-        newsletterName: 'SoyMaycol <3',
-        serverMessageId: -1,
-      },
       forwardingScore: 999,
-      externalAdReply: {
-        title: botname,
-        body: "Un amor que nunca se acaba Jeje <3",
-        thumbnailUrl: banner,
-        sourceUrl: redes,
-        mediaType: 1,
-        showAdAttribution: true,
-        renderLargerThumbnail: true,
-      },
+      isForwarded: true
     }
   }, { quoted: m });
 };
