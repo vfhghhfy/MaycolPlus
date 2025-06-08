@@ -1,4 +1,4 @@
-let handler = async (m, { conn, args }) => {
+let handler = async (m, { conn }) => {
   let userId = m.mentionedJid?.[0] || m.sender;
   let name = conn.getName(userId);
   let _uptime = process.uptime() * 1000;
@@ -16,6 +16,10 @@ let handler = async (m, { conn, args }) => {
                hour < 18 ? "🌄 Buenas tardes, viajero astral~" :
                "🌃 Buenas noches, sombra errante~";
 
+  let decoEmojis = ['✨', '🌸', '👻', '⭐', '🔮', '💫', '☁️', '🦋', '🪄'];
+  let emojiRandom = () => decoEmojis[Math.floor(Math.random() * decoEmojis.length)];
+
+  // Agrupar comandos por categoría
   let categories = {};
   for (let plugin of Object.values(global.plugins)) {
     if (!plugin.help || !plugin.tags) continue;
@@ -25,65 +29,48 @@ let handler = async (m, { conn, args }) => {
     }
   }
 
-  let decoEmojis = ['✨', '🌸', '👻', '⭐', '🔮', '💫', '☁️', '🦋', '🪄'];
-  let emojiRandom = () => decoEmojis[Math.floor(Math.random() * decoEmojis.length)];
-
+  // Armar secciones para el menú tipo lista
   let sections = [];
   for (let [tag, cmds] of Object.entries(categories)) {
-    let deco = emojiRandom();
     let section = {
-      title: `${deco} ${tag.toUpperCase().replace(/_/g, ' ')} ${deco}`,
+      title: `${emojiRandom()} ${tag.toUpperCase().replace(/_/g, ' ')} ${emojiRandom()}`,
       rows: cmds.map(cmd => ({
-        title: `🧩 /${cmd}`,
+        title: `💠 /${cmd}`,
         rowId: `/${cmd}`,
-        description: `✨ Toca para usar /${cmd}`
+        description: `✨ Usa /${cmd}`
       }))
     };
     sections.push(section);
   }
 
-  let textIntro = `⌜ ⊹ Espera tantito, espíritu curioso... ⊹ ⌟`;
-  await conn.sendMessage(m.chat, { text: textIntro }, { quoted: m });
+  // Armar el texto de cabecera con stats
+  let header = `｡ﾟ☆: *${name}* :☆ﾟ｡\n\n${saludo}\n\n🧿 *Sistema:* Multi-Device\n👻 *Espíritu:* @${userId.split('@')[0]}\n🕰️ *Tiempo activo:* ${uptime}\n🌍 *Espíritus registrados:* ${totalreg}\n⌚ *Hora actual:* ${hour}`;
 
-  // Esperar 2 segundos para más drama jeje
-  await new Promise(resolve => setTimeout(resolve, 2000));
-
-  // Enviar imagen épica decorativa
   await conn.sendMessage(m.chat, {
-    image: { url: 'https://files.catbox.moe/x9hw62.png' },
-    caption: `🌟 Bienvenido, ${name}...\n\nTu viaje espiritual comienza ahora...\n\n🕯️ Prepárate para descubrir los comandos ocultos...`,
+    image: { url: 'https://files.catbox.moe/x9hw62.png' }, // imagen decorativa
+    caption: header,
+    footer: "Hecho con amor por: SoyMaycol (⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤",
+    title: "✧ 𝓜𝓮𝓷𝓾 𝓜𝓪𝓰𝓲𝓬𝓸 ✧",
+    buttonText: "✨ Abrir comandos mágicos ✨",
+    sections,
     contextInfo: {
+      mentionedJid: [m.sender, userId],
       externalAdReply: {
-        title: "Menú de Hanako-Bot",
-        body: "Invoca poderes y comandos ✨",
+        title: "Hanako-Bot Menu 🌸",
+        body: "Invoca poderes ocultos del código",
         thumbnailUrl: 'https://files.catbox.moe/x9hw62.png',
         sourceUrl: 'https://soy-maycol.is-a.dev',
         mediaType: 1,
-        showAdAttribution: true,
         renderLargerThumbnail: true,
+        showAdAttribution: true,
       }
     }
   }, { quoted: m });
-
-  // Esperar otro poco pa' que cargue como juego de PS2 jeje
-  await new Promise(resolve => setTimeout(resolve, 2500));
-
-  // Ahora sí, menú de secciones
-  let menuList = {
-    text: `｡ﾟ☆: *.${name}.* :☆ﾟ｡\n\n${saludo}\n\n💻 Sistema: Multi-Device\n👤 Espíritu: @${userId.split('@')[0]}\n⏰ Tiempo activo: ${uptime}\n👥 Espíritus: ${totalreg}\n⌚ Hora: ${hour}`,
-    footer: "Hecho con amor por: SoyMaycol (⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤",
-    title: "╭─[ 🌸 𝓜𝓮𝓷𝓾 𝓜𝓪𝓰𝓲𝓬𝓸 🌸 ]─╮",
-    buttonText: "✨ Ver comandos disponibles ✨",
-    sections
-  };
-
-  await conn.sendMessage(m.chat, menuList, { quoted: m });
 };
 
 handler.help = ['menu', 'menú', 'help', 'ayuda'];
 handler.tags = ['main'];
 handler.command = ['menu', 'menú', 'help', 'ayuda'];
-handler.register = true;
 
 export default handler;
 
