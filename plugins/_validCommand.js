@@ -24,7 +24,17 @@ export async function before(m) {
     const suggestion = bestMatch.rating > 0.3 ? `¿Quisiste decir *${usedPrefix}${bestMatch.target}*?` : ''
 
     const mensaje = `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ El hechizo *${usedPrefix}${command}* no existe en los registros del más allá.\n│\n├─ ${suggestion || 'Consulta los conjuros disponibles con:'}\n│   ⇝ *${usedPrefix}help*\n╰─✦`
-    await m.reply(mensaje)
+
+    const buttonMessage = {
+      text: mensaje,
+      footer: 'MaycolAIUltraMD',
+      buttons: [
+        { buttonId: `${usedPrefix}menu`, buttonText: { displayText: '𝐌𝐄𝐍𝐔 𝐌𝐀𝐆𝐈𝐂𝐎' }, type: 1 }
+      ],
+      headerType: 1
+    }
+
+    await m.reply(buttonMessage)
     return
   }
 
