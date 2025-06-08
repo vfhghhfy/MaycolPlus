@@ -73,18 +73,16 @@ ${cmds.map(cmd => `│ ➯ ${cmd}`).join('\n')}
   ];
 
   await conn.sendMessage(m.chat, {
-    video: { url: 'https://files.catbox.moe/i74z9e.mp4', gifPlayback: true },
-    caption: menuText,
-    gifPlayback: true,
-    buttons: botones,
-    headerType: 4,
-    contextInfo: {
-      mentionedJid: [m.sender, userId],
-      forwardingScore: 999,
-      isForwarded: true
-    }
-  }, { quoted: m });
-};
+  image: { url: 'https://files.catbox.moe/x9hw62.png' },
+  caption: menuText,
+  buttons: botones,
+  headerType: 4,
+  contextInfo: {
+    mentionedJid: [m.sender],
+    forwardingScore: 999,
+    isForwarded: true
+  }
+}, { quoted: m });
 
 handler.help = ['menu'];
 handler.tags = ['main'];
