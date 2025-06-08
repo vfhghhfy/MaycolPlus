@@ -104,6 +104,6 @@ handler.tags = ['tools'];
 handler.command = ['maycode', 'codigo'];
 handler.group = false;
 handler.register = true;
-handler.channel = true;
+handler.channel = false;
 
 export default handler;
