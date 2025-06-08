@@ -16,6 +16,7 @@ let handler = async (m, { conn }) => {
                hour < 18 ? "🌄 Buenas tardes, viajero astral~ 🌟" :
                "🌃 Buenas noches, sombra errante~ 🌌";
 
+  // Agrupar comandos por categorías
   let categories = {};
   for (let plugin of Object.values(global.plugins)) {
     if (!plugin.help || !plugin.tags) continue;
@@ -33,35 +34,34 @@ let handler = async (m, { conn }) => {
     let deco = emojiRandom();
     let title = `${deco} 𝓒𝓪𝓽𝓮𝓰𝓸𝓻𝓲́𝓪: ${tag.toUpperCase().replace(/_/g, ' ')} ${deco}`;
     let rows = cmds.map(cmd => ({
-      title: `🔮 /${cmd}`,
+      title: `/${cmd}`,
       rowId: `/${cmd}`,
-      description: `✨ ¡Explora el comando /${cmd} y brilla como una estrella!`
+      description: `🌟 Usa /${cmd} para brillar~`
     }));
     sections.push({ title, rows });
   }
 
-  let menuList = {
-    title: ``,
-    text: `
-╭─╼[ *❤️ Menu ❤️* ]╾─╮
+  // Miniatura en base64 o búscala desde una URL
+  let thumbnail = await (await fetch('https://files.catbox.moe/x9hw62.png')).buffer(); // Usa tu imagen estilo Hanako~ kawaii aquí
 
-✨ ¡Hola, *${name}*! Bienvenido/a a tu zona segura ✨  
-📌 *Tiempo activo:* ${uptime}  
-👥 *Usuarios registrados:* ${totalreg}  
-⌚ *Hora actual:* ${hour}  
-💬 *Saludo:* ${saludo}
+  await conn.sendMessage(m.chat, {
+    text: `*✨ MaycolAI — Menú Principal ✨*
 
-📣 *SÍGUEME EN MI CANAL!*  
-👉 https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R
+👤 𝙷𝚘𝚕𝚊: *${name}*
+⏳ 𝙰𝚌𝚝𝚒𝚟𝚘: *${uptime}*
+🌎 𝙷𝚘𝚛𝚊 𝚙𝚎𝚛𝚞𝚊𝚗𝚊: *${hour}*
+📊 𝙴𝚜𝚙𝚒𝚛𝚒𝚝𝚞𝚜: *${totalreg}*
 
-╰─╼[ ✧ ᴱˡⁱʲᵉ ᵘⁿ ᶜᵒᵐᵃⁿᵈᵒ ✧ ]╾─╯
+${saludo}
+
+🪄 Selecciona una categoría para ver sus comandos 👇
 `,
-    footer: `🧸 Con cariño por *_SoyMaycol_*`,
-    buttonText: '♥ Comandos ♥',
-    sections
-  };
-
-  await conn.sendMessage(m.chat, menuList, { quoted: m });
+    footer: '💫 Made with ♡ by SoyMaycol',
+    title: '🌟 Menú de Comandos Interactivo 🌟',
+    buttonText: '❤️ Ver categorías ❤️',
+    sections,
+    jpegThumbnail: thumbnail // Imagen como miniatura decorada
+  }, { quoted: m });
 };
 
 handler.help = ['menu', 'menú', 'help', 'ayuda'];
