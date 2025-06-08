@@ -55,7 +55,7 @@ ${saludo}
 `,
     footer: 'Hecho por *_SoyMaycol_*',
     title: '',
-    buttonText: '♪ Ver Comandos ^^',
+    buttonText: '♥ Comandos ♥',
     sections
   };
 
