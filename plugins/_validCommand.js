@@ -25,22 +25,15 @@ export async function before(m) {
 
     const texto = `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ El hechizo *${usedPrefix}${command}* no existe en los registros del más allá.\n│\n├─ ${suggestion || 'Consulta los conjuros disponibles con:'}\n│   ⇝ *${usedPrefix}help*\n╰─✦`
 
-    const botones = [
-      {
-        buttonId: `${usedPrefix}menu`,
-        buttonText: { displayText: '📜 Ver Menú' },
-        type: 1
-      }
-    ]
-
     const mensaje = {
       text: texto,
-      footer: 'By MaycolAIUltraMD',
-      buttons: botones,
-      headerType: 1
+      footer: '✨ MaycolBot ✨',
+      templateButtons: [
+        { index: 1, quickReplyButton: { displayText: '📜 Ver Menú', id: `${usedPrefix}menu` } }
+      ]
     }
 
-    await global.conn.sendMessage(m.chat, mensaje, { quoted: m })
+    await conn.sendMessage(m.chat, mensaje, { quoted: m })
     return
   }
 
