@@ -2,21 +2,27 @@ import axios from 'axios';
 
 const NIGHT_API_ENDPOINTS = [
   'https://nightapioficial.onrender.com',
-  'https://nightapi-2a6l.onrender.com'
+  'https://nightapi-2a6l.onrender.com',
+  'https://nightapi.is-a.dev'
 ];
 
 async function fetchMayCode(version, prompt) {
   const paths = {
-    v1: `/api/maycode?messsge=${encodeURIComponent(prompt)}`,
-    v2: `/api/maycode/models/v2/?messsge=${encodeURIComponent(prompt)}`
+    v1: `/api/maycode?message=${encodeURIComponent(prompt)}`,
+    v2: `/api/maycode/models/v2/?message=${encodeURIComponent(prompt)}`
   };
 
   for (let baseURL of NIGHT_API_ENDPOINTS) {
     try {
       const res = await axios.get(baseURL + paths[version]);
-      return res.data;
+      const data = res.data;
+
+      // Verifica si la API devolvió lo esperado
+      if (data && (data.MayCode || data.code)) return data;
+
+      console.log(`⚠️ Respuesta vacía de ${baseURL}, intentando con otro...`);
     } catch (err) {
-      console.log(`❌ Falló ${baseURL}, probando siguiente...`);
+      console.log(`❌ Falló ${baseURL}: ${err.message}`);
     }
   }
 
@@ -29,7 +35,6 @@ const handler = async (m, { conn, text }) => {
     return;
   }
 
-  // Detectar versión
   let version = 'v1';
   let prompt = text;
 
@@ -41,7 +46,6 @@ const handler = async (m, { conn, text }) => {
     prompt = text.substring(5).trim();
   }
 
-  // Mensaje de espera
   await conn.reply(m.chat, `━━━━━━━━━━━━━━━━━━━━━  
 ✧･ﾟ: *✧･ﾟ:* *𝙈𝙖𝙮𝘾𝙤𝙙𝙚* *:･ﾟ✧*:･ﾟ✧  
 ━━━━━━━━━━━━━━━━━━━━━  
@@ -54,7 +58,9 @@ const handler = async (m, { conn, text }) => {
   try {
     const data = await fetchMayCode(version, prompt);
 
-    const { User = prompt, MayCode = data.response, Code = data.code } = data;
+    const userText = data.user || prompt;
+    const mayCodeText = data.MayCode || '(⁄ ⁄•⁄ω⁄•⁄ ⁄)⁄ No pude darte una respuesta, lo siento';
+    const codeBlock = data.code || '// (｡•́︿•̀｡) No se generó código… intenta de nuevo más tarde';
 
     const respuesta = `
 *┏━━━━━━✦°•✦°•✦━━━━━━┓*
@@ -62,16 +68,16 @@ const handler = async (m, { conn, text }) => {
 *┗━━━━━━✦°•✦°•✦━━━━━━┛*
 
 ╭───────────────╮  
-│ 🧑‍💻 𝙏𝙪: *${User}*  
-│ ✨ 𝙈𝙖𝙮𝘾𝙤𝙙𝙚: *${MayCode}*  
+│ 🧑‍💻 𝙏𝙪: *${userText}*  
+│ ✨ 𝙈𝙖𝙮𝘾𝙤𝙙𝙚: *${mayCodeText}*  
 ╰───────────────╯
 
 ⊹︰𝗖𝗼𝗱𝗶𝗴𝗼 𝗘𝗻𝘁𝗿𝗲𝗴𝗮𝗱𝗼:
 \`\`\`
-${Code}
+${codeBlock}
 \`\`\`
 
-> (｡･ω･｡)ﾉ♡ Usando NightAPI — powered by Hanako-kun
+> (｡･ω･｡)ﾉ♡ Usando NightAPI — powered by SoyMaycol
 
 ━━━━━━━━━━━━━━━━━━━━━`;
 
@@ -84,10 +90,10 @@ ${Code}
 
 (｡╯︵╰｡) Ay no… ¡algo falló con NightAPI!
 
-Las dos instancias están caídas…  
-Vuelve a intentarlo más tarde, konpeito~
+Todas las instancias están fuera de servicio…  
+Intenta de nuevo más tardecito, mi cielito ☁️✨
 
-> Código con amor por *SoyMaycol* ✨
+> Código con amor por *SoyMaycol* 💖
 `
     }, { quoted: m });
   }
