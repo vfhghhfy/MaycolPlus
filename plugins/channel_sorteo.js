@@ -18,7 +18,7 @@ const handler = async (m, { conn, text }) => {
   await conn.sendPoll(m.chat, pregunta, opciones);
 };
 
-handler.help = ['sorteo ps5'];
+handler.help = ['sorteo <cosa a sortear>'];
 handler.tags = ['canal'];
 handler.command = ['sorteo'];
 handler.register = true;
