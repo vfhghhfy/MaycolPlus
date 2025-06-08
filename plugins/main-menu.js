@@ -75,34 +75,29 @@ ${cmds.map(cmd => `│ ➯ ${cmd}`).join('\n')}
   });
 
   await conn.sendMessage(m.chat, {
-    video: { url: 'https://files.catbox.moe/i74z9e.mp4', gifPlayback: true },
-    caption: menuText,
-    gifPlayback: true,
-    buttons: [
-      { buttonId: '.staff', buttonText: { displayText: '👑 Ver Staff' }, type: 1 },
-      { buttonId: '.canal', buttonText: { displayText: '📰 Entrar al Canal' }, type: 1 }
-    ],
-    contextInfo: {
-      mentionedJid: [m.sender, userId],
-      isForwarded: true,
-      forwardedNewsletterMessageInfo: {
-        newsletterJid: '120363372883715167@newsletter',
-        newsletterName: 'SoyMaycol <3',
-        serverMessageId: -1,
-      },
-      forwardingScore: 999,
-      externalAdReply: {
-        title: botname,
-        body: "Un amor que nunca se acaba Jeje <3",
-        thumbnailUrl: banner,
-        sourceUrl: redes,
-        mediaType: 1,
-        showAdAttribution: true,
-        renderLargerThumbnail: true,
-      },
-    }
-  }, { quoted: m });
-};
+  video: { url: 'https://files.catbox.moe/i74z9e.mp4', gifPlayback: true },
+  caption: menuText,
+  gifPlayback: true,
+  footer: '✨ Hanako Bot by SoyMaycol ✨',
+  templateButtons: [
+    { index: 1, urlButton: { displayText: '📰 Entrar al Canal', url: 'https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R' } },
+    { index: 2, quickReplyButton: { displayText: '👑 Ver Staff', id: '.staff' } }
+  ],
+  contextInfo: {
+    mentionedJid: [m.sender, userId],
+    forwardingScore: 999,
+    isForwarded: true,
+    externalAdReply: {
+      title: botname,
+      body: "Un amor que nunca se acaba Jeje <3",
+      thumbnailUrl: banner,
+      sourceUrl: redes,
+      mediaType: 1,
+      showAdAttribution: true,
+      renderLargerThumbnail: true,
+    },
+  }
+}, { quoted: m });
 
 handler.help = ['menu'];
 handler.tags = ['main'];
