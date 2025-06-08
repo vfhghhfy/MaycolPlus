@@ -1,8 +1,6 @@
 import stringSimilarity from 'string-similarity'
 
 export async function before(m) {
-  const conn = global.conn // <--- 🔧 usamos conn global
-
   if (!m.text || !global.prefix.test(m.text)) return
 
   const usedPrefix = global.prefix.exec(m.text)[0]
@@ -25,30 +23,14 @@ export async function before(m) {
     const { bestMatch } = stringSimilarity.findBestMatch(command, allCommands)
     const suggestion = bestMatch.rating > 0.3 ? `¿Quisiste decir *${usedPrefix}${bestMatch.target}*?` : ''
 
-    const texto = `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ El hechizo *${usedPrefix}${command}* no existe.\n│\n├─ ${suggestion || 'Consulta los comandos disponibles:'}\n╰─✦`
-
-    const botones = [
-      {
-        buttonId: `${usedPrefix}menu`,
-        buttonText: { displayText: '📜 Ver Menú' },
-        type: 1
-      }
-    ]
-
-    const mensaje = {
-      text: texto,
-      footer: 'By MaycolBot 🤖❤️',
-      buttons: botones,
-      headerType: 1
-    }
-
-    await conn.sendMessage(m.chat, mensaje, { quoted: m })
+    const mensaje = `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ El hechizo *${usedPrefix}${command}* no existe en los registros del más allá.\n│\n├─ ${suggestion || 'Consulta los conjuros disponibles con:'}\n│   ⇝ *${usedPrefix}help*\n╰─✦`
+    await m.reply(mensaje)
     return
   }
 
   if (chat?.isBanned) {
-    const aviso = `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 ✦ 」\n│ El bot fue *desactivado* en este grupo.\n╰─ Usa: *${usedPrefix}bot on*`
-    await m.reply(aviso)
+    const avisoDesactivado = `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ El poder de Hanako ha sido *sellado* en este grupo.\n│\n├─ Invoca su regreso con:\n│   ⇝ *${usedPrefix}bot on*\n╰─✦`
+    await m.reply(avisoDesactivado)
     return
   }
 
