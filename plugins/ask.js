@@ -1,16 +1,64 @@
 import axios from 'axios';
 import fetch from 'node-fetch';
 
-const handler = async (msg, { conn, args, usedPrefix, command }) => {
-  const text = args.join(' ');
-  const chatId = msg.key.remoteJid;
+const pendingQueries = new Map(); // Para guardar preguntas a resolver tras elegir botón
 
+const handler = async (msg, { conn, args, usedPrefix, command, isButton }) => {
+  const chatId = msg.key.remoteJid;
+  const userId = msg.sender;
+  
+  // Caso: respuesta al botón
+  if (isButton) {
+    // Aquí 'msg.selectedButtonId' es el id del botón que presionó el usuario
+    const selected = msg.selectedButtonId;
+    const originalQuestion = pendingQueries.get(userId);
+    if (!originalQuestion) {
+      return conn.sendMessage(chatId, { text: 'No tengo ninguna pregunta pendiente, escribe tu pregunta primero.' }, { quoted: msg });
+    }
+    pendingQueries.delete(userId);
+
+    let prefix = '';
+    if (selected === 'xex') prefix = 'Comportate como xex: ';
+    else if (selected === 'china') prefix = 'Comportate como china: ';
+    else prefix = '';
+
+    // Ejecutar la consulta con el prefijo
+    const finalQuery = prefix + originalQuestion;
+    await processQuery(finalQuery, msg, conn);
+    return;
+  }
+
+  // Caso: usuario escribe el comando con pregunta
+  const text = args.join(' ');
   if (!text) {
     return conn.sendMessage(chatId, {
       text: `✳️ Ingresa tu pregunta\nEjemplo: *${usedPrefix + command}* ¿quién inventó WhatsApp?`
     }, { quoted: msg });
   }
 
+  // Guardamos la pregunta para cuando el usuario elija el botón
+  pendingQueries.set(userId, text);
+
+  // Enviar mensaje con botones para elegir entre Xex o China
+  const textoBotones = `¿Con quién quieres hablar? Escoge una opción:`;
+  const botones = [
+    { buttonId: 'xex', buttonText: { displayText: 'Xex' }, type: 1 },
+    { buttonId: 'china', buttonText: { displayText: 'China' }, type: 1 },
+  ];
+
+  const mensaje = {
+    text: textoBotones,
+    footer: 'By MaycolAI 🤖❤',
+    buttons: botones,
+    headerType: 1
+  };
+
+  await conn.sendMessage(chatId, mensaje, { quoted: msg });
+};
+
+// Función para procesar la consulta a las APIs
+async function processQuery(query, msg, conn) {
+  const chatId = msg.key.remoteJid;
   try {
     await conn.sendMessage(chatId, { react: { text: '🕳️', key: msg.key } });
 
@@ -19,24 +67,19 @@ const handler = async (msg, { conn, args, usedPrefix, command }) => {
     let result = '';
 
     try {
-      result = await luminaiQuery(text, name, prompt);
+      result = await luminaiQuery(query, name, prompt);
       result = cleanResponse(result);
     } catch (e) {
       console.error('Error Luminai:', e);
       try {
-        result = await perplexityQuery(text, prompt);
+        result = await perplexityQuery(query, prompt);
       } catch (e) {
         console.error('Error Perplexity:', e);
         throw new Error('No se obtuvo respuesta de los servicios');
       }
     }
 
-    const responseMsg = `${result}`;
-
-    await conn.sendMessage(chatId, {
-      text: responseMsg
-    }, { quoted: msg });
-
+    await conn.sendMessage(chatId, { text: result }, { quoted: msg });
     await conn.sendMessage(chatId, { react: { text: '💩', key: msg.key } });
 
   } catch (error) {
@@ -47,7 +90,7 @@ const handler = async (msg, { conn, args, usedPrefix, command }) => {
 
     await conn.sendMessage(chatId, { react: { text: '❌', key: msg.key } });
   }
-};
+}
 
 async function getPrompt() {
   try {
@@ -87,9 +130,10 @@ async function perplexityQuery(q, prompt) {
   return data.response;
 }
 
-handler.help = ['luminai <pregunta>'];
+handler.help = ['xex <pregunta>'];
 handler.command = ['xex', 'ai', 'ask'];
 handler.tags = ['ai'];
 handler.register = true;
+handler.channel = true;
 
 export default handler;
