@@ -1,41 +1,38 @@
-// ♥ 𝙼𝚎𝚗𝚞 𝚍𝚎 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 ♥
-// ᵁˢᵃ ᵉˢᵗᵉ ᶜᵒᵈⁱᵍᵒ ˢⁱᵉᵐᵖʳᵉ ᶜᵒⁿ ᶜʳᵉᵈⁱᵗᵒˢ
-
 let handler = async (m, { conn, args }) => {
-  let userId = m.mentionedJid?.[0] || m.sender
-  let user = global.db.data.users[userId]
-  let name = conn.getName(userId)
-  let _uptime = process.uptime() * 1000
-  let uptime = clockString(_uptime)
-  let totalreg = Object.keys(global.db.data.users).length
+  let userId = m.mentionedJid?.[0] || m.sender;
+  let user = global.db.data.users[userId];
+  let name = conn.getName(userId);
+  let _uptime = process.uptime() * 1000;
+  let uptime = clockString(_uptime);
+  let totalreg = Object.keys(global.db.data.users).length;
 
   let hour = new Intl.DateTimeFormat('es-PE', {
     hour: 'numeric',
     hour12: false,
     timeZone: 'America/Lima'
-  }).format(new Date())
+  }).format(new Date());
 
   let saludo = hour < 6 ? "🌌 Buenas madrugadas, espíritu insomne..." :
                hour < 12 ? "🌅 Buenos días, alma luminosa~" :
                hour < 18 ? "🌄 Buenas tardes, viajero astral~" :
-               "🌃 Buenas noches, sombra errante~"
+               "🌃 Buenas noches, sombra errante~";
 
-  let categories = {}
+  let categories = {};
   for (let plugin of Object.values(global.plugins)) {
-    if (!plugin.help || !plugin.tags) continue
+    if (!plugin.help || !plugin.tags) continue;
     for (let tag of plugin.tags) {
-      if (!categories[tag]) categories[tag] = []
-      categories[tag].push(...plugin.help.map(cmd => `#${cmd}`))
+      if (!categories[tag]) categories[tag] = [];
+      categories[tag].push(...plugin.help.map(cmd => `#${cmd}`));
     }
   }
 
-  let decoEmojis = ['✨', '🌸', '👻', '⭐', '🔮', '💫', '☁️', '🦋', '🪄']
-  let emojiRandom = () => decoEmojis[Math.floor(Math.random() * decoEmojis.length)]
+  let decoEmojis = ['✨', '🌸', '👻', '⭐', '🔮', '💫', '☁️', '🦋', '🪄'];
+  let emojiRandom = () => decoEmojis[Math.floor(Math.random() * decoEmojis.length)];
 
   let menuText = `
 ╭───❖ 𝓗𝓪𝓷𝓪𝓴𝓸 𝓑𝓸𝓽 ❖───╮
 
- ｡ﾟ☆: *.${name}.* :☆ﾟ｡  
+｡ﾟ☆: *.${name}.* :☆ﾟ｡          
 > *_${saludo}_*
 
 ╰─────❖ 𝓜𝓮𝓷𝓾 ❖─────╯
@@ -45,22 +42,22 @@ let handler = async (m, { conn, args }) => {
 💻 Sistema: Multi-Device
 👤 Espíritu: @${userId.split('@')[0]}
 ⏰ Tiempo activo: ${uptime}
-👥 Espíritus: ${totalreg} Espiritus
+👥 Espíritus: ${totalreg} Espíritus
 ⌚ Hora: ${hour}
 
 > Hecho con amor por: *_SoyMaycol_* (⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤
 
 ≪──── ⋆𓆩✧𓆪⋆ ────≫
-`.trim()
+`.trim();
 
   for (let [tag, cmds] of Object.entries(categories)) {
-    let tagName = tag.toUpperCase().replace(/_/g, ' ')
-    let deco = emojiRandom()
+    let tagName = tag.toUpperCase().replace(/_/g, ' ');
+    let deco = emojiRandom();
     menuText += `
 
 ╭─━━━ ${deco} ${tagName} ${deco} ━━━╮
 ${cmds.map(cmd => `│ ➯ ${cmd}`).join('\n')}
-╰─━━━━━━━━━━━━━━━━╯`
+╰─━━━━━━━━━━━━━━━━╯`;
   }
 
   await conn.reply(m.chat, '⌜ ⊹ Espera tantito, espíritu curioso... ⊹ ⌟', m, {
@@ -75,17 +72,21 @@ ${cmds.map(cmd => `│ ➯ ${cmd}`).join('\n')}
         renderLargerThumbnail: true,
       }
     }
-  })
+  });
 
   await conn.sendMessage(m.chat, {
     video: { url: 'https://files.catbox.moe/i74z9e.mp4', gifPlayback: true },
     caption: menuText,
     gifPlayback: true,
+    buttons: [
+      { buttonId: '.staff', buttonText: { displayText: '👑 Ver Staff' }, type: 1 },
+      { buttonId: '.canal', buttonText: { displayText: '📰 Entrar al Canal' }, type: 1 }
+    ],
     contextInfo: {
       mentionedJid: [m.sender, userId],
       isForwarded: true,
       forwardedNewsletterMessageInfo: {
-        newsletterJid: '',
+        newsletterJid: '120363372883715167@newsletter',
         newsletterName: 'SoyMaycol <3',
         serverMessageId: -1,
       },
@@ -99,30 +100,21 @@ ${cmds.map(cmd => `│ ➯ ${cmd}`).join('\n')}
         showAdAttribution: true,
         renderLargerThumbnail: true,
       },
-      buttons: [
-        {
-          buttonId: '.staff',
-          buttonText: { displayText: '🌟 Ver Staff' },
-          type: 1
-        },
-        {
-          buttonId: 'https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R',
-          buttonText: { displayText: '📢 Entrar al Canal' },
-          type: 1
-        }
-      ]
     }
-  }, { quoted: m })
-}
+  }, { quoted: m });
+};
 
-handler.help = ['menu']
-handler.tags = ['main']
-handler.command = ['menu', 'menú', 'help', 'ayuda']
-export default handler
+handler.help = ['menu'];
+handler.tags = ['main'];
+handler.command = ['menu', 'menú', 'help', 'ayuda'];
+handler.register = true;
+handler.channel = true;
+
+export default handler;
 
 function clockString(ms) {
-  let h = Math.floor(ms / 3600000)
-  let m = Math.floor(ms / 60000) % 60
-  let s = Math.floor(ms / 1000) % 60
-  return `${h}h ${m}m ${s}s`
+  let h = Math.floor(ms / 3600000);
+  let m = Math.floor(ms / 60000) % 60;
+  let s = Math.floor(ms / 1000) % 60;
+  return `${h}h ${m}m ${s}s`;
 }
