@@ -437,6 +437,10 @@ continue
 fail('admin', m, this)
 continue
 }
+if (plugin.channel && !channel) {
+fail('channel', m, this)
+continue
+}
 if (plugin.private && m.isGroup) {
 fail('private', m, this)
 continue
