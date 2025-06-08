@@ -37,15 +37,20 @@ let handler = async (m, { conn }) => {
     { buttonId: '.canal', buttonText: { displayText: '📣 Canal de WhatsApp' }, type: 1 }
   ];
 
-  await conn.sendMessage(m.chat, {
-    image: { url: 'https://files.catbox.moe/x9hw62.png' },
-    caption: menuText,
-    buttons: buttons,
-    headerType: 4,
-    contextInfo: {
-      mentionedJid: [userId],
-    },
-  }, { quoted: m });
+  try {
+    await conn.sendMessage(m.chat, {
+      image: { url: 'https://files.catbox.moe/x9hw62.png' },
+      caption: menuText,
+      footer: 'El menú más cute que verás hoy (｡･ω･｡)ﾉ♡',
+      buttons: buttons,
+      headerType: 4,
+      contextInfo: { mentionedJid: [userId] },
+    }, { quoted: m });
+  } catch (e) {
+    console.error('Error enviando menú con botones e imagen:', e);
+    // Si falla, envía un fallback simple
+    await conn.reply(m.chat, menuText, m);
+  }
 };
 
 handler.help = ['menu'];
