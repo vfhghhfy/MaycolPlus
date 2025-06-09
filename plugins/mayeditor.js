@@ -11,8 +11,8 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
 
   // Aquí leemos el número que ponen después de mayeditor
   let type = args[0]?.toLowerCase()
-  if (!type || !['1','2','3','4','5', '6', '7'].includes(type)) {
-    return m.reply(`✧ Usa el comando así:\n\n${usedPrefix + command} 1\nO prueba con 2, 3, 4, 5, 6, 7.`)
+  if (!type || !['1','2','3','4','5', '6', '7', '8', '9'].includes(type)) {
+    return m.reply(`✧ Usa el comando así:\n\n${usedPrefix + command} 1\nExiste del 1 al 9`)
   }
 
   // Map de videos según el número que pongan
@@ -23,7 +23,9 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
     '4': './videos/lv_7403812168765852946_20250607173804.mp4',
     '5': './videos/lv_7495448057157340469_20250607164932.mp4',
     '6': './videos/lv_7497686403254373693_20250607170616.mp4',
-    '7': './videos/lv_7507655713968164149_20250607160908.mp4'
+    '7': './videos/lv_7507655713968164149_20250607160908.mp4',
+    '8': './videos/lv_7478259089345187125_20250608202445.mp4',
+    '9': './videos/lv_7504712502689746229_20250608202734.mp4'
   }
 
   // Elegimos la ruta del video según el número
@@ -233,7 +235,7 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
   }
 }
 
-handler.help = ['mayeditor <1|2|3|4|5|6|7>']
+handler.help = ['mayeditor <1|2|3|4|5|6|7|8|9>']
 handler.tags = ['group', 'fun', 'media']
 handler.command = ['mayeditor']
 handler.group = true
