@@ -9,13 +9,11 @@ import path from 'path'
 let handler = async (m, { conn, args, command, usedPrefix }) => {
   if (!m.isGroup) return m.reply('👻 Este comando solo funciona en grupos, espíritu.')
 
-  // Aquí leemos el número que ponen después de mayeditor
   let type = args[0]?.toLowerCase()
   if (!type || !['1','2','3','4','5'].includes(type)) {
     return m.reply(`✧ Usa el comando así:\n\n${usedPrefix + command} 1\nO prueba con 2, 3, 4, 5.`)
   }
 
-  // Map de videos según el número que pongan
   const videosMap = {
     '1': './videos/lv_7507655713968164149_20250607160908.mp4',
     '2': './videos/lv_7463895997605743933_20250607164555.mp4',
@@ -23,72 +21,54 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
     '4': './videos/lv_7403812168765852946_20250607173804.mp4'
   }
 
-  // Elegimos la ruta del video según el número
   const inputVideoPath = videosMap[type]
+  if (!fs.existsSync(inputVideoPath)) {
+    return m.reply('❌ No se encontró el video base. Verifica la ruta del archivo.')
+  }
 
-  // Rate limiting: 3 veces al día por usuario
   const userId = m.sender
   const today = new Date().toDateString()
-  
-  if (!global.db.data.users[userId]) {
-    global.db.data.users[userId] = {}
-  }
-  
-  if (!global.db.data.users[userId].mayeditor) {
-    global.db.data.users[userId].mayeditor = { count: 0, date: today }
-  }
-  
+
+  if (!global.db.data.users[userId]) global.db.data.users[userId] = {}
+  if (!global.db.data.users[userId].mayeditor) global.db.data.users[userId].mayeditor = { count: 0, date: today }
+
   const userLimit = global.db.data.users[userId].mayeditor
-  
   if (userLimit.date !== today) {
     userLimit.count = 0
     userLimit.date = today
   }
-  
   if (userLimit.count >= 10) {
     return m.reply('✧ Ya has usado tu magia 10 veces hoy, espíritu.\n✧ Vuelve mañana para más hechizos visuales... 🌙')
   }
-  
   userLimit.count++
 
   const targetUserId = userId.split('@')[0]
-  
+
   try {
     m.reply(`🎬 Procesando tu video mágico tipo ${type}... (${userLimit.count}/10 usos hoy)\n✧ Esto tomará unos momentos...\n\n> Hecho por SoyMaycol`)
-    
-    const pp = await conn.profilePictureUrl(userId, 'image').catch(_ =>
+
+    const pp = await conn.profilePictureUrl(userId, 'image').catch(() =>
       'https://raw.githubusercontent.com/The-King-Destroy/Adiciones/main/Contenido/1745522645448.jpeg')
-    
+
     const profileResponse = await fetch(pp)
     const profileBuffer = await profileResponse.buffer()
-    
+
     const tempDir = './temp'
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true })
-    }
-    
+    if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true })
+
     const profilePath = path.join(tempDir, `profile_${targetUserId}.jpg`)
     const outputVideoPath = path.join(tempDir, `output_${targetUserId}_${Date.now()}.mp4`)
-    
-    if (!fs.existsSync(inputVideoPath)) {
-      return m.reply('❌ No se encontró el video base. Verifica la ruta del archivo.')
-    }
-    
+
     fs.writeFileSync(profilePath, profileBuffer)
-    
+
     await new Promise((resolve, reject) => {
       ffmpeg(inputVideoPath)
         .input(profilePath)
         .complexFilter([
-  // Separamos el fondo con el color key (ba00ff es fucsia mágico)
-  '[0:v]colorkey=0xba00ff:0.4:0.3[masked]',
-  
-  // Escalamos el PP (profile picture) al mismo tamaño que el video base
-  '[1:v][0:v]scale2ref[pp][base]',
-  
-  // Reemplazamos la zona magenta con la imagen de perfil escalada
-  '[masked][pp]overlay=format=auto[final]'
-])
+          '[0:v]colorkey=0xba00ff:0.3:0.2[fg]',                   // Borra fondo magenta del video base
+          '[1:v][0:v]scale2ref=iw:ih[pp][base]',                   // Escala la imagen al tamaño del video
+          '[pp][fg]overlay=format=auto[final]'                     // Sobrepone la imagen escalada en el video con fondo transparente
+        ])
         .outputOptions([
           '-map', '[final]',
           '-map', '0:a?',
@@ -107,8 +87,9 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
           '-f', 'mp4'
         ])
         .output(outputVideoPath)
-        .on('start', (cmd) => console.log('FFmpeg started:', cmd))
-        .on('progress', (progress) => {
+        .on('start', cmd => console.log('FFmpeg started:', cmd))
+        .on('stderr', line => console.log('FFmpeg stderr:', line))
+        .on('progress', progress => {
           if (progress.percent && Math.round(progress.percent) % 25 === 0) {
             console.log(`Processing... ${Math.round(progress.percent)}%`)
           }
@@ -117,15 +98,15 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
           console.log('✅ Processing finished')
           resolve()
         })
-        .on('error', (err) => {
+        .on('error', err => {
           console.error('❌ FFmpeg error:', err)
           reject(err)
         })
         .run()
     })
-    
+
     const processedVideo = fs.readFileSync(outputVideoPath)
-    
+
     const fkontak = {
       key: {
         participants: '0@s.whatsapp.net',
@@ -140,7 +121,7 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
       },
       participant: '0@s.whatsapp.net'
     }
-    
+
     const magicMessage = `
 ✧･ﾟ: *✧･ﾟ:* 𝑀𝒶𝑔𝒾𝒸 𝒱𝒾𝒹𝑒𝑜 *:･ﾟ✧*:･ﾟ✧
 𓂃𓈒𓏸 Video mágico tipo ${type} creado para @${targetUserId}
@@ -149,14 +130,14 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
 ✧ Usos restantes hoy: ${10 - userLimit.count}/10
 𓆩𓆪 ━━━━━━━━━━━━━━━━
     `.trim()
-    
+
     await conn.sendMessage(m.chat, {
       video: processedVideo,
       caption: magicMessage,
       mentions: [userId],
       mimetype: 'video/mp4'
     }, { quoted: fkontak })
-    
+
     setTimeout(() => {
       try {
         if (fs.existsSync(profilePath)) fs.unlinkSync(profilePath)
@@ -165,12 +146,12 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
         console.error('Error limpiando archivos temporales:', e)
       }
     }, 10000)
-    
+
   } catch (error) {
     console.error('Error procesando video:', error)
     userLimit.count--
     m.reply('❌ Ocurrió un error al procesar tu video mágico. Inténtalo de nuevo más tarde.')
-    
+
     try {
       if (fs.existsSync(path.join('./temp', `profile_${targetUserId}.jpg`))) {
         fs.unlinkSync(path.join('./temp', `profile_${targetUserId}.jpg`))
