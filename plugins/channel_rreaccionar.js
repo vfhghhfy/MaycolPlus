@@ -1,12 +1,17 @@
+const estilos = [
+  txt => txt.normalize("NFD").replace(/[\u0300-\u036f]/g, ''), // Normal
+  txt => [...txt].map(c => `ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙⓚⓛⓜⓝⓞⓟⓠⓡⓢⓣⓤⓥⓦⓧⓨⓩ`[`abcdefghijklmnopqrstuvwxyz`.indexOf(c.toLowerCase())] || c).join(''),
+  txt => [...txt].map(c => `🅐🅑🅒🅓🅔🅕🅖🅗🅘🅙🅚🅛🅜🅝🅞🅟🅠🅡🅢🅣🅤🅥🅦🅧🅨🅩`[`abcdefghijklmnopqrstuvwxyz`.indexOf(c.toLowerCase())] || c).join(''),
+];
+
 const handler = async (m, { conn, args }) => {
-  if (!args[0]) return conn.reply(m.chat, '💬 Usa: `.reaccionar <texto>`\nEj: `.reaccionar hola`', m);
+  if (!args[0]) return conn.reply(m.chat, '🔡 Usa así: `.reaccionar <texto>`\nEj: `.reaccionar hola`', m);
 
   const textoBuscado = args.join(' ').toLowerCase();
+  const variantes = estilos.map(fn => fn(textoBuscado));
 
   try {
-    // Obtener los últimos 30 mensajes (no más para evitar lag)
-    const mensajes = await conn.fetchMessages(m.chat, { limit: 30 });
-
+    const mensajes = await conn.fetchMessages(m.chat, { limit: 50 });
     let mensajeObjetivo = null;
 
     for (const msg of mensajes) {
@@ -17,31 +22,33 @@ const handler = async (m, { conn, args }) => {
         msg.message?.videoMessage?.caption ||
         '';
 
-      if (mensajeTexto.toLowerCase().includes(textoBuscado)) {
+      const mensajeTextoMin = mensajeTexto.toLowerCase();
+
+      if (
+        mensajeTextoMin.includes(textoBuscado) ||
+        variantes.some(estilo => mensajeTextoMin.includes(estilo.toLowerCase()))
+      ) {
         mensajeObjetivo = msg;
         break;
       }
     }
 
     if (!mensajeObjetivo) {
-      return conn.reply(m.chat, `😿 No encontré un mensaje que contenga: "${textoBuscado}"`, m);
+      return conn.reply(m.chat, `😿 No encontré mensaje que diga algo como: "${textoBuscado}"`, m);
     }
-
-    // Emoji de reacción fijo o aleatorio
-    const emoji = '😂'; // o usa: ['❤️', '😂', '🔥', '😎'][Math.floor(Math.random()*4)]
 
     await conn.sendMessage(m.chat, {
       react: {
-        text: emoji,
+        text: '🔥',
         key: mensajeObjetivo.key,
       }
     });
 
-    return conn.reply(m.chat, `✅ Reaccioné al mensaje que decía algo con: *${textoBuscado}* ${emoji}`, m);
+    return conn.reply(m.chat, `✅ Le tiré reacción a un mensaje con: *${textoBuscado}* 🔥`, m);
 
   } catch (err) {
-    console.error('[ERROR AL REACCIONAR]', err);
-    return conn.reply(m.chat, '⚠️ Ocurrió un error técnico al intentar reaccionar. Prueba de nuevo.', m);
+    console.error('[ERROR REACCIONANDO]', err);
+    return conn.reply(m.chat, '⚠️ Error técnico... capaz WhatsApp se enojó 😔', m);
   }
 };
 
