@@ -2,19 +2,18 @@ import PhoneNumber from 'awesome-phonenumber';
 
 let handler = async (m, { conn }) => {
   m.react('👋');
+
+  const numeroPropio = '51921826291';
   let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? conn.user.jid : m.sender;
   let pp = await conn.profilePictureUrl(who).catch(_ => 'https://files.catbox.moe/67ulz8.jpeg');
-  let biografia = await conn.fetchStatus(`${suittag}@s.whatsapp.net`).catch(_ => 'Sin Biografía');
-  let biografiaBot = await conn.fetchStatus(`${conn.user.jid.split('@')[0]}@s.whatsapp.net`).catch(_ => 'Sin Biografía');
+  let biografia = await conn.fetchStatus(`${numeroPropio}@s.whatsapp.net`).catch(_ => 'Sin Biografía');
   let bio = biografia.status?.toString() || 'Sin Biografía';
-  let biobot = biografiaBot.status?.toString() || 'Sin Biografía';
   let name = await conn.getName(who);
 
   await sendContactArray(conn, m.chat, [
-    [`${suittag}`, `Ayudante`, botname, `❀ No Hacer Spam`, correo, `⊹˚• Venezuela •˚⊹`, md, bio],
-    [`${conn.user.jid.split('@')[0]}`, `Creador Original Jeje <3`, packname, dev, correo, `El Enamorado Jeje <3`, channel, biobot]
+    [numeroPropio, `SoyMaycol`, 'MaycolAIUltraMD', '❀ No hacer spam', 'soymaycol.cn@gmail.com', '⊹˚• Perú •˚⊹', 'https://nightapi.is-a.dev/', bio]
   ], m);
-}
+};
 
 handler.help = ["creador", "owner"];
 handler.tags = ["info"];
@@ -49,7 +48,7 @@ END:VCARD`.trim();
   }
   return await conn.sendMessage(jid, {
     contacts: {
-      displayName: (contacts.length > 1 ? `Contactos` : contacts[0].displayName) || null,
+      displayName: contacts[0].displayName || null,
       contacts,
     }
   }, {
