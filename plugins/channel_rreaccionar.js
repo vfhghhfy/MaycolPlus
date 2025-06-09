@@ -1,59 +1,37 @@
-const estilos = [
-  txt => txt.normalize("NFD").replace(/[\u0300-\u036f]/g, ''), // Normal
-  txt => [...txt].map(c => `ⓐⓑⓒⓓⓔⓕⓖⓗⓘⓙⓚⓛⓜⓝⓞⓟⓠⓡⓢⓣⓤⓥⓦⓧⓨⓩ`[`abcdefghijklmnopqrstuvwxyz`.indexOf(c.toLowerCase())] || c).join(''),
-  txt => [...txt].map(c => `🅐🅑🅒🅓🅔🅕🅖🅗🅘🅙🅚🅛🅜🅝🅞🅟🅠🅡🅢🅣🅤🅥🅦🅧🅨🅩`[`abcdefghijklmnopqrstuvwxyz`.indexOf(c.toLowerCase())] || c).join(''),
-];
-
 const handler = async (m, { conn, args }) => {
-  if (!args[0]) return conn.reply(m.chat, '🔡 Usa así: `.reaccionar <texto>`\nEj: `.reaccionar hola`', m);
+  const textoObjetivo = args.join(" ")?.trim();
 
-  const textoBuscado = args.join(' ').toLowerCase();
-  const variantes = estilos.map(fn => fn(textoBuscado));
-
-  try {
-    const mensajes = await conn.fetchMessages(m.chat, { limit: 50 });
-    let mensajeObjetivo = null;
-
-    for (const msg of mensajes) {
-      const mensajeTexto =
-        msg.message?.conversation ||
-        msg.message?.extendedTextMessage?.text ||
-        msg.message?.imageMessage?.caption ||
-        msg.message?.videoMessage?.caption ||
-        '';
-
-      const mensajeTextoMin = mensajeTexto.toLowerCase();
-
-      if (
-        mensajeTextoMin.includes(textoBuscado) ||
-        variantes.some(estilo => mensajeTextoMin.includes(estilo.toLowerCase()))
-      ) {
-        mensajeObjetivo = msg;
-        break;
-      }
-    }
-
-    if (!mensajeObjetivo) {
-      return conn.reply(m.chat, `😿 No encontré mensaje que diga algo como: "${textoBuscado}"`, m);
-    }
-
-    await conn.sendMessage(m.chat, {
-      react: {
-        text: '🔥',
-        key: mensajeObjetivo.key,
-      }
-    });
-
-    return conn.reply(m.chat, `✅ Le tiré reacción a un mensaje con: *${textoBuscado}* 🔥`, m);
-
-  } catch (err) {
-    console.error('[ERROR REACCIONANDO]', err);
-    return conn.reply(m.chat, '⚠️ Error técnico... capaz WhatsApp se enojó 😔', m);
+  if (!textoObjetivo) {
+    return conn.reply(m.chat, `⛔ Usa el comando así:\n.reaccionar <texto>\n\nEj: .reaccionar hola`, m);
   }
+
+  // Evitar texto que sea solo emojis
+  if (/^[\p{Emoji}\s]+$/u.test(textoObjetivo)) {
+    return conn.reply(m.chat, `🚫 No se permite reaccionar solo a emojis`, m);
+  }
+
+  let mensajes = await conn.loadMessages(m.chat, 50); // Carga los últimos 50 mensajes
+
+  let mensajeObjetivo = mensajes.find(msg =>
+    msg?.message?.conversation?.trim().toLowerCase() === textoObjetivo.toLowerCase() ||
+    msg?.message?.extendedTextMessage?.text?.trim().toLowerCase() === textoObjetivo.toLowerCase()
+  );
+
+  if (!mensajeObjetivo) {
+    return conn.reply(m.chat, `😿 No encontré un mensaje que diga:\n"${textoObjetivo}"`, m);
+  }
+
+  // Reacciona con una carita (puedes cambiarla si quieres)
+  await conn.sendMessage(m.chat, {
+    react: {
+      text: "❤️", // Cambia este emoji si quieres otra reacción
+      key: mensajeObjetivo.key
+    }
+  });
 };
 
 handler.help = ['reaccionar <texto>'];
-handler.tags = ['tools', 'fun'];
+handler.tags = ['fun', 'tools'];
 handler.command = ['reaccionar'];
 handler.register = true;
 handler.channel = true;
