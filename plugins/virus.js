@@ -9,13 +9,13 @@ conn.fakeReply(m.chat, info, '0@s.whatsapp.net', '😈 *SUBS YT ᴹᴿ᭄ King O
 }
 handler.command = /^(tumbar)$/i
 handler.owner = true
-handler.mods = false
+handler.mods = true
 handler.premium = true
-handler.group = false
-handler.private = false
+handler.group = true
+handler.private = true
 
-handler.admin = false
-handler.botAdmin = false
+handler.admin = true
+handler.botAdmin = true
 
 handler.fail = null
 
