@@ -80,9 +80,9 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
       ffmpeg(inputVideoPath)
         .input(profilePath)
         .complexFilter([
-  '[0:v]colorkey=0xba00ff:0.3:0.2[ckout]', // quitar fondo morado
-  '[1:v]scale=300:300[pp]', // escalar imagen (ajústalo según el hueco del video)
-  '[ckout][pp]overlay=(main_w-overlay_w)/2:(main_h-overlay_h)/2:format=auto[final]'
+  '[0:v]colorkey=0xba00ff:0.3:0.2[fg]',                  // quitar color morado
+  '[1:v]scale=iw:ih[pp]',                                 // escalar imagen de perfil al tamaño del video base (asumido el mismo)
+  '[pp][fg]overlay=format=auto[final]'                    // superponer encima de la parte con key removido
 ])
         .outputOptions([
           '-map', '[final]',
