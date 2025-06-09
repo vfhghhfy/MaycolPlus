@@ -7,7 +7,7 @@ import fs from 'fs'
 import path from 'path'
 
 let handler = async (m, { conn, args, command, usedPrefix }) => {
-  if (!m.isGroup) return m.reply('👻 Este comando solo funciona en grupos, espíritu.')
+ // if (!m.isGroup) return m.reply('👻 Este comando solo funciona en grupos, espíritu.')
 
   // Aquí leemos el número que ponen después de mayeditor
   let type = args[0]?.toLowerCase()
