@@ -5,6 +5,7 @@ import path, { join } from 'path'
 import { unwatchFile, watchFile } from 'fs'
 import chalk from 'chalk'
 import fetch from 'node-fetch'
+import { WebSocket } from 'ws' // Agregamos la importación de WebSocket
 
 const { proto } = (await import('@whiskeysockets/baileys')).default
 const isNumber = x => typeof x === 'number' && !isNaN(x)
@@ -246,53 +247,56 @@ m.text = ''
 
 let _user = global.db.data && global.db.data.users && global.db.data.users[m.sender]
 
-// Función mejorada para formatear JIDs que maneja tanto @g.us como @lid
+// Función mejorada para formatear JIDs
 function formatJid(number) {
-  if (!number) return number;
+  if (!number || typeof number !== 'string') return number;
   
-  // Si ya es un JID válido, lo devolvemos tal como está
-  if (number.includes('@g.us') || number.includes('@s.whatsapp.net') || number.includes('@lid')) {
-    return number;
-  }
+  // Si ya es un JID válido, lo retornamos tal como está
+  if (number.includes('@')) return number;
   
-  // Extraer solo dígitos
-  const digits = number.toString().replace(/[^0-9]/g, '');
-  
-  // Si no hay dígitos, devolver el original
+  // Sacamos solo los dígitos
+  const digits = number.replace(/[^0-9]/g, '');
   if (!digits) return number;
-  
-  // Para números de teléfono (usuarios individuales)
-  if (digits.length <= 15) {
-    return digits + '@s.whatsapp.net';
+
+  // Para grupos nuevos que usan @lid
+  if (digits.length > 15) {
+    return digits + '@lid';
   }
   
-  // Para identificadores más largos o raros, usar @lid
-  return digits + '@lid';
+  // Para usuarios normales
+  return digits + '@s.whatsapp.net';
 }
 
-// Función auxiliar para decodificar JIDs de manera segura
-function safeDecodeJid(jid) {
-  try {
-    return conn.decodeJid ? conn.decodeJid(jid) : jid;
-  } catch (error) {
-    console.error('Error decoding JID:', jid, error);
-    return jid;
-  }
+// Función para normalizar JIDs de forma segura
+function normalizeJid(jid) {
+  if (!jid) return jid;
+  if (typeof jid !== 'string') return jid;
+  
+  // Si ya tiene formato correcto, retornarlo
+  if (jid.includes('@')) return jid;
+  
+  return formatJid(jid);
 }
 
-// Arrays de permisos con manejo mejorado de JIDs
+// Ahora usamos las funciones mejoradas para construir los arrays:
 const isROwner = [
-  safeDecodeJid(global.conn.user.id), 
-  ...global.owner.map(([num]) => formatJid(num))
-].includes(m.sender);
+  conn.decodeJid(global.conn.user.id), 
+  ...global.owner.map(([num]) => normalizeJid(num))
+].filter(Boolean).includes(m.sender);
 
 const isOwner = isROwner || m.fromMe;
 
-const isMods = isOwner || global.mods.map(v => formatJid(v)).includes(m.sender);
+const isMods = isOwner || global.mods
+  .map(v => normalizeJid(v))
+  .filter(Boolean)
+  .includes(m.sender);
 
 const isPrems = isROwner || 
-  global.prems.map(v => formatJid(v)).includes(m.sender) || 
-  (_user && _user.premium == true);
+  global.prems
+    .map(v => normalizeJid(v))
+    .filter(Boolean)
+    .includes(m.sender) || 
+  (_user && _user.premium === true);
     
 if (opts['queque'] && m.text && !(isMods || isPrems)) {
 let queque = this.msgqueque, time = 1000 * 5
@@ -311,37 +315,17 @@ m.exp += Math.ceil(Math.random() * 10)
 
 let usedPrefix
 
-// Obtener metadata del grupo de manera más segura
+// Manejo mejorado de metadatos de grupo
 const groupMetadata = (m.isGroup ? 
   ((conn.chats[m.chat] || {}).metadata || 
    await this.groupMetadata(m.chat).catch(err => {
-     console.error('Error getting group metadata:', err);
-     return null;
+     console.log('Error getting group metadata:', err.message)
+     return null
    })) : {}) || {}
 
 const participants = (m.isGroup ? groupMetadata.participants : []) || []
-
-// Buscar usuario y bot en participantes de manera más segura
-const user = (m.isGroup ? 
-  participants.find(u => {
-    try {
-      return safeDecodeJid(u.id) === m.sender;
-    } catch (error) {
-      console.error('Error comparing user JID:', error);
-      return false;
-    }
-  }) : {}) || {}
-
-const bot = (m.isGroup ? 
-  participants.find(u => {
-    try {
-      return safeDecodeJid(u.id) === this.user.jid;
-    } catch (error) {
-      console.error('Error comparing bot JID:', error);
-      return false;
-    }
-  }) : {}) || {}
-
+const user = (m.isGroup ? participants.find(u => conn.decodeJid(u.id) === m.sender) : {}) || {}
+const bot = (m.isGroup ? participants.find(u => conn.decodeJid(u.id) == this.user.jid) : {}) || {}
 const channel = m.key.remoteJid?.endsWith('@newsletter') || false
 const isRAdmin = user?.admin == 'superadmin' || false
 const isAdmin = isRAdmin || user?.admin == 'admin' || false
@@ -552,7 +536,7 @@ m.error = e
 console.error(e)
 if (e) {
 let text = format(e)
-// Mejorado: verificamos que global.APIKeys existe y tiene valores
+// Manejo mejorado de claves API
 if (global.APIKeys && typeof global.APIKeys === 'object') {
   for (let key of Object.values(global.APIKeys)) {
     if (key && typeof key === 'string') {
@@ -583,16 +567,11 @@ if (quequeIndex !== -1)
                 this.msgqueque.splice(quequeIndex, 1)
 }
 let user, stats = global.db.data.stats
-if (m) { 
-let utente = global.db.data.users[m.sender]
-if (utente && utente.muto == true) {
-try {
+if (m) { let utente = global.db.data.users[m.sender]
+if (utente.muto == true) {
 let bang = m.key.id
 let cancellazzione = m.key.participant
 await conn.sendMessage(m.chat, { delete: { remoteJid: m.chat, fromMe: false, id: bang, participant: cancellazzione }})
-} catch (deleteError) {
-console.error('Error deleting message:', deleteError);
-}
 }
 if (m.sender && (user = global.db.data.users[m.sender])) {
 user.exp += m.exp
@@ -633,16 +612,9 @@ console.log(m, m.quoted, e)}
 let settingsREAD = global.db.data.settings[this.user.jid] || {}  
 if (opts['autoread']) await this.readMessages([m.key])
 
-// Reacciones automáticas mejoradas
-if (db.data.chats[m.chat] && db.data.chats[m.chat].reaction && m.text && m.text.match(/(ción|dad|aje|oso|izar|mente|pero|tion|age|ous|ate|and|but|ify|ai|yuki|a|s)/gi)) {
-try {
+if (db.data.chats[m.chat].reaction && m.text.match(/(ción|dad|aje|oso|izar|mente|pero|tion|age|ous|ate|and|but|ify|ai|yuki|a|s)/gi)) {
 let emot = pickRandom(["🍟", "😃", "😄", "😁", "😆", "🍓", "😅", "😂", "🤣", "🥲", "☺️", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "🌺", "🌸", "😚", "😋", "😛", "😝", "😜", "🤪", "🤨", "🌟", "🤓", "😎", "🥸", "🤩", "🥳", "😏", "💫", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣", "😖", "😫", "😩", "🥺", "😢", "😭", "😤", "😠", "😡", "🤬", "🤯", "😳", "🥵", "🥶", "😶‍🌫️", "😱", "😨", "😰", "😥", "😓", "🤗", "🤔", "🫣", "🤭", "🤖", "🍭", "🤫", "🫠", "🤥", "😶", "📇", "😐", "💧", "😑", "🫨", "😬", "🙄", "😯", "😦", "😧", "😮", "😲", "🥱", "😴", "🤤", "😪", "😮‍💨", "😵", "😵‍💫", "🤐", "🥴", "🤢", "🤮", "🤧", "😷", "🤒", "🤕", "🤑", "🤠", "😈", "👿", "👺", "🧿", "🌩", "👻", "😺", "😸", "😹", "😻", "😼", "😽", "🙀", "😿", "😾", "🫶", "👍", "✌️", "🙏", "🫵", "🤏", "🤌", "☝️", "🖕", "🙏", "🫵", "🫂", "🐱", "🤹‍♀️", "🤹‍♂️", "🗿", "✨", "⚡", "🔥", "🌈", "🩷", "❤️", "🧡", "💛", "💚", "🩵", "💙", "💜", "🖤", "🩶", "🤍", "🤎", "💔", "❤️‍🔥", "❤️‍🩹", "❣️", "💕", "💞", "💓", "💗", "💖", "💘", "💝", "🚩", "👊", "⚡️", "💋", "🫰", "💅", "👑", "🐣", "🐤", "🐈"])
-if (!m.fromMe) {
-await this.sendMessage(m.chat, { react: { text: emot, key: m.key }})
-}
-} catch (reactionError) {
-console.error('Error sending reaction:', reactionError);
-}
+if (!m.fromMe) return this.sendMessage(m.chat, { react: { text: emot, key: m.key }})
 }
 function pickRandom(list) { return list[Math.floor(Math.random() * list.length)]}
 }}
