@@ -2,9 +2,11 @@
 // DEJAR CREDITOS AL CREADOR UWU
 // github: SoySapo6
 
+
 import ffmpeg from 'fluent-ffmpeg'
 import fs from 'fs'
 import path from 'path'
+import fetch from 'node-fetch'
 
 let handler = async (m, { conn, args, command, usedPrefix }) => {
   if (!m.isGroup) return m.reply('👻 Este comando solo funciona en grupos, espíritu.')
@@ -37,9 +39,7 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
     userLimit.count = 0
     userLimit.date = today
   }
-  if (userLimit.count >= 10) {
-    return m.reply('✧ Ya has usado tu magia 10 veces hoy, espíritu.\n✧ Vuelve mañana para más hechizos visuales... 🌙')
-  }
+  if (userLimit.count >= 10) return m.reply('✧ Ya has usado tu magia 10 veces hoy, espíritu.\n✧ Vuelve mañana para más hechizos visuales... 🌙')
   userLimit.count++
 
   const targetUserId = userId.split('@')[0]
@@ -47,31 +47,51 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
   try {
     m.reply(`🎬 Procesando tu video mágico tipo ${type}... (${userLimit.count}/10 usos hoy)\n✧ Esto tomará unos momentos...\n\n> Hecho por SoyMaycol`)
 
+    // Obtener foto de perfil (default si falla)
     const pp = await conn.profilePictureUrl(userId, 'image').catch(() =>
       'https://raw.githubusercontent.com/The-King-Destroy/Adiciones/main/Contenido/1745522645448.jpeg')
-
     const profileResponse = await fetch(pp)
     const profileBuffer = await profileResponse.buffer()
 
     const tempDir = './temp'
     if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true })
 
-    const profilePath = path.join(tempDir, `profile_${targetUserId}.jpg`)
+    const profilePath = path.join(tempDir, `profile_${targetUserId}.png`) // PNG para transparencia mejor
     const outputVideoPath = path.join(tempDir, `output_${targetUserId}_${Date.now()}.mp4`)
 
     fs.writeFileSync(profilePath, profileBuffer)
 
+    // Paso 1: Sacar resolución original del video base
+    const videoInfo = await new Promise((resolve, reject) => {
+      ffmpeg.ffprobe(inputVideoPath, (err, metadata) => {
+        if (err) return reject(err)
+        const stream = metadata.streams.find(s => s.width && s.height)
+        if (!stream) return reject(new Error('No se pudo obtener la resolución del video'))
+        resolve({ width: stream.width, height: stream.height })
+      })
+    })
+
+    // Paso 2: Filtros:  
+    // - Aplicar colorkey para quitar fondo en video base  
+    // - Escalar imagen perfil a tamaño video base  
+    // - Overlay imagen perfil sobre video con fondo transparente  
+    // Nota: la imagen de perfil se pone detrás, el video base (sin color clave) arriba con transparencia
+
     await new Promise((resolve, reject) => {
-      ffmpeg(inputVideoPath)
+      ffmpeg()
         .input(profilePath)
+        .input(inputVideoPath)
         .complexFilter([
-          '[0:v]colorkey=0xba00ff:0.3:0.2[fg]',                   // Borra fondo magenta del video base
-          '[1:v][0:v]scale2ref=iw:ih[pp][base]',                   // Escala la imagen al tamaño del video
-          '[pp][fg]overlay=format=auto[final]'                     // Sobrepone la imagen escalada en el video con fondo transparente
+          // Colorkey para el video base (input 1)
+          `[1:v]colorkey=0xba00ff:0.3:0.2[ckout]`,
+          // Escalar perfil (input 0) al tamaño del video
+          `[0:v]scale=${videoInfo.width}:${videoInfo.height}[profile_scaled]`,
+          // Overlay video con colorkey sobre imagen perfil escalada
+          `[profile_scaled][ckout]overlay=format=auto:shortest=1[final]`
         ])
         .outputOptions([
           '-map', '[final]',
-          '-map', '0:a?',
+          '-map', '1:a?', // audio original del video base si tiene
           '-c:v', 'libx264',
           '-b:v', '1000k',
           '-c:a', 'aac',
@@ -86,9 +106,7 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
           '-r', '30',
           '-f', 'mp4'
         ])
-        .output(outputVideoPath)
         .on('start', cmd => console.log('FFmpeg started:', cmd))
-        .on('stderr', line => console.log('FFmpeg stderr:', line))
         .on('progress', progress => {
           if (progress.percent && Math.round(progress.percent) % 25 === 0) {
             console.log(`Processing... ${Math.round(progress.percent)}%`)
@@ -102,7 +120,7 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
           console.error('❌ FFmpeg error:', err)
           reject(err)
         })
-        .run()
+        .save(outputVideoPath)
     })
 
     const processedVideo = fs.readFileSync(outputVideoPath)
@@ -138,6 +156,7 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
       mimetype: 'video/mp4'
     }, { quoted: fkontak })
 
+    // Limpieza
     setTimeout(() => {
       try {
         if (fs.existsSync(profilePath)) fs.unlinkSync(profilePath)
@@ -153,9 +172,8 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
     m.reply('❌ Ocurrió un error al procesar tu video mágico. Inténtalo de nuevo más tarde.')
 
     try {
-      if (fs.existsSync(path.join('./temp', `profile_${targetUserId}.jpg`))) {
-        fs.unlinkSync(path.join('./temp', `profile_${targetUserId}.jpg`))
-      }
+      const fileToDelete = path.join('./temp', `profile_${targetUserId}.png`)
+      if (fs.existsSync(fileToDelete)) fs.unlinkSync(fileToDelete)
     } catch (e) {
       console.error('Error en limpieza:', e)
     }
