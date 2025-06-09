@@ -59,7 +59,24 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
   const targetUserId = userId.split('@')[0]
 
   try {
-    m.reply(`🎬 Procesando tu video mágico tipo ${type}... (${userLimit.count}/10 usos hoy)\n✧ Esto tomará unos momentos...\n\n> Hecho por SoyMaycol`)
+    // Mensaje inicial con barra de progreso
+    const initialMessage = await m.reply(`🎬 Procesando tu video mágico tipo ${type}... (${userLimit.count}/10 usos hoy)\n✧ Esto tomará unos momentos...\n\n▱▱▱▱▱▱▱▱▱▱ 0%\n\n> Hecho por SoyMaycol`)
+
+    // Función para actualizar la barra de progreso
+    const updateProgress = async (percent) => {
+      const totalBars = 10
+      const filledBars = Math.floor((percent / 100) * totalBars)
+      const emptyBars = totalBars - filledBars
+      const progressBar = '▰'.repeat(filledBars) + '▱'.repeat(emptyBars)
+      
+      const progressMessage = `🎬 Procesando tu video mágico tipo ${type}... (${userLimit.count}/10 usos hoy)\n✧ Esto tomará unos momentos...\n\n${progressBar} ${Math.round(percent)}%\n\n> Hecho por SoyMaycol`
+      
+      try {
+        await conn.sendMessage(m.chat, { text: progressMessage, edit: initialMessage.key })
+      } catch (e) {
+        console.log('Error actualizando progreso:', e)
+      }
+    }
 
     const pp = await conn.profilePictureUrl(userId, 'image').catch(_ =>    
       'https://raw.githubusercontent.com/The-King-Destroy/Adiciones/main/Contenido/1745522645448.jpeg')    
@@ -81,6 +98,9 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
         
     fs.writeFileSync(profilePath, profileBuffer)    
 
+    // Actualizar progreso: preparación completada
+    await updateProgress(15)
+
     // Primero obtenemos las dimensiones del video
     const videoInfo = await new Promise((resolve, reject) => {
       ffmpeg.ffprobe(inputVideoPath, (err, metadata) => {
@@ -94,6 +114,9 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
     const videoHeight = videoStream.height
     
     console.log(`Video dimensions: ${videoWidth}x${videoHeight}`)
+    
+    // Actualizar progreso: análisis completado
+    await updateProgress(25)
         
     await new Promise((resolve, reject) => {    
       ffmpeg(inputVideoPath)    
@@ -126,13 +149,20 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
         ])    
         .output(outputVideoPath)    
         .on('start', (cmd) => console.log('FFmpeg started:', cmd))    
-        .on('progress', (progress) => {    
-          if (progress.percent && Math.round(progress.percent) % 20 === 0) {    
-            console.log(`Processing... ${Math.round(progress.percent)}%`)    
+        .on('progress', async (progress) => {    
+          if (progress.percent) {    
+            // Actualizar barra de progreso en tiempo real
+            const adjustedPercent = Math.min(25 + (progress.percent * 0.7), 95)
+            await updateProgress(adjustedPercent)
+            
+            if (Math.round(progress.percent) % 20 === 0) {    
+              console.log(`Processing... ${Math.round(progress.percent)}%`)    
+            }    
           }    
         })    
-        .on('end', () => {    
-          console.log('✅ Processing finished')    
+        .on('end', async () => {    
+          console.log('✅ Processing finished')
+          await updateProgress(100)
           resolve()    
         })    
         .on('error', (err) => {    
