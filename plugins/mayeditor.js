@@ -51,8 +51,8 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
     userLimit.date = today
   }
 
-  if (userLimit.count >= 10) {
-    return m.reply('✧ Ya has usado tu magia 10 veces hoy, espíritu.\n✧ Vuelve mañana para más hechizos visuales... 🌙')
+  if (userLimit.count >= 15) {
+    return m.reply('✧ Ya has usado tu magia 15 veces hoy, espíritu.\n✧ Vuelve mañana para más hechizos visuales... 🌙')
   }
 
   userLimit.count++
@@ -206,7 +206,7 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
 ✦ Procesado con tecnología sobrenatural
 ✧ Tu esencia ha sido capturada en este hechizo visual
 ✧ Resolución adaptada: ${videoWidth}x${videoHeight}
-✧ Usos restantes hoy: ${10 - userLimit.count}/10
+✧ Usos restantes hoy: ${15 - userLimit.count}/15
 𓆩𓆪 ━━━━━━━━━━━━━━━━
     `.trim()
 
