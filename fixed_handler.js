@@ -684,4 +684,47 @@ const msg = {
 
   admin: `
 ╭────『 ✦ Líder Espiritual ✦ 』────╮
-│ El comando *
+│ El comando *${comando}* sólo responde a  
+│ los shamanes del grupo (admins).  
+╰─────────────────────────────╯`,
+
+  botAdmin: `
+(╥﹏╥) ¡Ay no!  
+No puedo usar *${comando}* si no soy un  
+espíritu superior (admin del grupo).  
+¡Dame poder MUAJAJAJA o me encierro en el baño para siempre >:(`,
+
+  unreg: `
+╔══『 ✦ PACTO FANTASMAL ✦ 』══╗
+║ (｡•́︿•̀｡) No puedes usar *${comando}*  
+║ hasta que firmes tu contrato espiritual.
+║ Usa el ritual:
+║ » #${verifyaleatorio} ${user2}.${edadaleatoria}
+╚═══════════════════════════╝`,
+
+  channel: `
+╔══『 ✦ SEGUDORES FANTASMAS ✦ 』══╗
+║ (｡•́︿•̀｡) No puedes usar *${comando}*  
+║ Solo se permite en canales.
+║ Usa los comandos de canales para
+║ Tu Canal!
+╚═════════════════════════════╝`,
+
+  restrict: `
+⊱┈・『 ✦ FUNCIÓN SELLADA ✦ 』・┈⊰  
+(⚆_⚆) Este hechizo está encerrado por  
+un sello maldito. ¡Actívalo si te atreves!`
+}[type];
+    
+if (msg) return m.reply(msg).then(_ => m.react('✖️'))}
+
+let file = global.__filename(import.meta.url, true)
+watchFile(file, async () => {
+unwatchFile(file)
+console.log(chalk.magenta("Se actualizo 'handler.js'"))
+
+if (global.conns && global.conns.length > 0 ) {
+const users = [...new Set([...global.conns.filter((conn) => conn.user && conn.ws.socket && conn.ws.socket.readyState !== ws.CLOSED).map((conn) => conn)])];
+for (const userr of users) {
+userr.subreloadHandler(false)
+}}});
