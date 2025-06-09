@@ -5,11 +5,23 @@ const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms))
 
 const fetchSticker = async (text, attempt = 1) => {
     try {
-        const response = await axios.get(`https://api.ownblox.biz.id/api/brat`, {
-            params: { text },
-            responseType: 'arraybuffer',
+        const apiUrl = 'https://nightapi.is-a.dev/api/mayeditor'
+        const fondo = 'https://files.catbox.moe/s73kf3.png' // Fondo estilo Brat
+
+        const { data } = await axios.get(apiUrl, {
+            params: {
+                url: fondo,
+                texto: text,
+                textodireccion: 'Centro',
+                fontsize: 100,
+                color: 'black'
+            }
         })
-        return response.data
+
+        if (!data?.edited_url) throw new Error('No se recibió la imagen generada.')
+
+        const imageBuffer = await axios.get(data.edited_url, { responseType: 'arraybuffer' })
+        return imageBuffer.data
     } catch (error) {
         if (error.response?.status === 429 && attempt <= 3) {
             const retryAfter = error.response.headers['retry-after'] || 5
