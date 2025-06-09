@@ -229,51 +229,6 @@ status: 0
 } catch (e) {
 console.error(e)
 }
-
-// Función mejorada para formatear JIDs que maneja tanto @g.us como @lid
-function formatJid(number) {
-  if (!number) return number;
-  
-  // Si ya tiene un formato válido, lo devolvemos tal como está
-  if (number.includes('@')) {
-    return number;
-  }
-  
-  // Extraemos solo los dígitos
-  const digits = number.replace(/[^0-9]/g, '');
-  
-  // Para grupos nuevos que pueden usar @lid
-  if (digits.length > 15) {
-    return digits + '@lid';
-  }
-  
-  // Para contactos normales
-  return digits + '@s.whatsapp.net';
-}
-
-// Función para normalizar JIDs y manejar tanto formatos antiguos como nuevos
-function normalizeJid(jid) {
-  if (!jid) return jid;
-  
-  // Si es un JID de grupo nuevo con @lid, lo mantenemos
-  if (jid.endsWith('@lid')) {
-    return jid;
-  }
-  
-  // Si es un JID de grupo antiguo con @g.us, lo mantenemos
-  if (jid.endsWith('@g.us')) {
-    return jid;
-  }
-  
-  // Si es un contacto normal
-  if (jid.endsWith('@s.whatsapp.net')) {
-    return jid;
-  }
-  
-  // Si no tiene formato, aplicamos formatJid
-  return formatJid(jid);
-}
-
 const mainBot = global.conn.user.jid
 const chat = global.db.data.chats[m.chat] || {}
 const isSubbs = chat.antiLag === true
@@ -291,17 +246,53 @@ m.text = ''
 
 let _user = global.db.data && global.db.data.users && global.db.data.users[m.sender]
 
-// Corrección para manejar owners y mods con los nuevos JIDs
+// Función mejorada para formatear JIDs que maneja tanto @g.us como @lid
+function formatJid(number) {
+  if (!number) return number;
+  
+  // Si ya es un JID válido, lo devolvemos tal como está
+  if (number.includes('@g.us') || number.includes('@s.whatsapp.net') || number.includes('@lid')) {
+    return number;
+  }
+  
+  // Extraer solo dígitos
+  const digits = number.toString().replace(/[^0-9]/g, '');
+  
+  // Si no hay dígitos, devolver el original
+  if (!digits) return number;
+  
+  // Para números de teléfono (usuarios individuales)
+  if (digits.length <= 15) {
+    return digits + '@s.whatsapp.net';
+  }
+  
+  // Para identificadores más largos o raros, usar @lid
+  return digits + '@lid';
+}
+
+// Función auxiliar para decodificar JIDs de manera segura
+function safeDecodeJid(jid) {
+  try {
+    return conn.decodeJid ? conn.decodeJid(jid) : jid;
+  } catch (error) {
+    console.error('Error decoding JID:', jid, error);
+    return jid;
+  }
+}
+
+// Arrays de permisos con manejo mejorado de JIDs
 const isROwner = [
-  conn.decodeJid(global.conn.user.id), 
-  ...global.owner.map(([num]) => normalizeJid(formatJid(num)))
-].includes(normalizeJid(m.sender));
+  safeDecodeJid(global.conn.user.id), 
+  ...global.owner.map(([num]) => formatJid(num))
+].includes(m.sender);
 
 const isOwner = isROwner || m.fromMe;
 
-const isMods = isOwner || global.mods.map(v => normalizeJid(formatJid(v))).includes(normalizeJid(m.sender));
+const isMods = isOwner || global.mods.map(v => formatJid(v)).includes(m.sender);
 
-const isPrems = isROwner || global.prems.map(v => normalizeJid(formatJid(v))).includes(normalizeJid(m.sender)) || _user.premium == true;
+const isPrems = isROwner || 
+  global.prems.map(v => formatJid(v)).includes(m.sender) || 
+  (_user && _user.premium == true);
     
 if (opts['queque'] && m.text && !(isMods || isPrems)) {
 let queque = this.msgqueque, time = 1000 * 5
@@ -320,21 +311,36 @@ m.exp += Math.ceil(Math.random() * 10)
 
 let usedPrefix
 
-// Mejorar el manejo de metadatos de grupo para JIDs nuevos
-const groupMetadata = (m.isGroup ? ((conn.chats[m.chat] || {}).metadata || await this.groupMetadata(m.chat).catch(_ => null)) : {}) || {}
+// Obtener metadata del grupo de manera más segura
+const groupMetadata = (m.isGroup ? 
+  ((conn.chats[m.chat] || {}).metadata || 
+   await this.groupMetadata(m.chat).catch(err => {
+     console.error('Error getting group metadata:', err);
+     return null;
+   })) : {}) || {}
+
 const participants = (m.isGroup ? groupMetadata.participants : []) || []
 
-// Función para encontrar participantes que maneja tanto JIDs antiguos como nuevos
-const findParticipant = (participants, targetJid) => {
-  const normalizedTarget = normalizeJid(targetJid);
-  return participants.find(u => {
-    const normalizedParticipant = normalizeJid(conn.decodeJid(u.id));
-    return normalizedParticipant === normalizedTarget;
-  }) || {};
-}
+// Buscar usuario y bot en participantes de manera más segura
+const user = (m.isGroup ? 
+  participants.find(u => {
+    try {
+      return safeDecodeJid(u.id) === m.sender;
+    } catch (error) {
+      console.error('Error comparing user JID:', error);
+      return false;
+    }
+  }) : {}) || {}
 
-const user = (m.isGroup ? findParticipant(participants, m.sender) : {}) || {}
-const bot = (m.isGroup ? findParticipant(participants, this.user.jid) : {}) || {}
+const bot = (m.isGroup ? 
+  participants.find(u => {
+    try {
+      return safeDecodeJid(u.id) === this.user.jid;
+    } catch (error) {
+      console.error('Error comparing bot JID:', error);
+      return false;
+    }
+  }) : {}) || {}
 
 const channel = m.key.remoteJid?.endsWith('@newsletter') || false
 const isRAdmin = user?.admin == 'superadmin' || false
@@ -546,10 +552,13 @@ m.error = e
 console.error(e)
 if (e) {
 let text = format(e)
-// Corrección para evitar el error de global.APIKeys undefined
+// Mejorado: verificamos que global.APIKeys existe y tiene valores
 if (global.APIKeys && typeof global.APIKeys === 'object') {
-  for (let key of Object.values(global.APIKeys))
-    text = text.replace(new RegExp(key, 'g'), 'Administrador')
+  for (let key of Object.values(global.APIKeys)) {
+    if (key && typeof key === 'string') {
+      text = text.replace(new RegExp(key, 'g'), 'Administrador')
+    }
+  }
 }
 m.reply(text)
 }
@@ -576,14 +585,13 @@ if (quequeIndex !== -1)
 let user, stats = global.db.data.stats
 if (m) { 
 let utente = global.db.data.users[m.sender]
-// Verificación adicional para evitar errores
 if (utente && utente.muto == true) {
 try {
 let bang = m.key.id
 let cancellazzione = m.key.participant
 await conn.sendMessage(m.chat, { delete: { remoteJid: m.chat, fromMe: false, id: bang, participant: cancellazzione }})
 } catch (deleteError) {
-console.error('Error al eliminar mensaje:', deleteError)
+console.error('Error deleting message:', deleteError);
 }
 }
 if (m.sender && (user = global.db.data.users[m.sender])) {
@@ -625,15 +633,15 @@ console.log(m, m.quoted, e)}
 let settingsREAD = global.db.data.settings[this.user.jid] || {}  
 if (opts['autoread']) await this.readMessages([m.key])
 
-// Verificación adicional para reacciones
+// Reacciones automáticas mejoradas
 if (db.data.chats[m.chat] && db.data.chats[m.chat].reaction && m.text && m.text.match(/(ción|dad|aje|oso|izar|mente|pero|tion|age|ous|ate|and|but|ify|ai|yuki|a|s)/gi)) {
+try {
 let emot = pickRandom(["🍟", "😃", "😄", "😁", "😆", "🍓", "😅", "😂", "🤣", "🥲", "☺️", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "🌺", "🌸", "😚", "😋", "😛", "😝", "😜", "🤪", "🤨", "🌟", "🤓", "😎", "🥸", "🤩", "🥳", "😏", "💫", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣", "😖", "😫", "😩", "🥺", "😢", "😭", "😤", "😠", "😡", "🤬", "🤯", "😳", "🥵", "🥶", "😶‍🌫️", "😱", "😨", "😰", "😥", "😓", "🤗", "🤔", "🫣", "🤭", "🤖", "🍭", "🤫", "🫠", "🤥", "😶", "📇", "😐", "💧", "😑", "🫨", "😬", "🙄", "😯", "😦", "😧", "😮", "😲", "🥱", "😴", "🤤", "😪", "😮‍💨", "😵", "😵‍💫", "🤐", "🥴", "🤢", "🤮", "🤧", "😷", "🤒", "🤕", "🤑", "🤠", "😈", "👿", "👺", "🧿", "🌩", "👻", "😺", "😸", "😹", "😻", "😼", "😽", "🙀", "😿", "😾", "🫶", "👍", "✌️", "🙏", "🫵", "🤏", "🤌", "☝️", "🖕", "🙏", "🫵", "🫂", "🐱", "🤹‍♀️", "🤹‍♂️", "🗿", "✨", "⚡", "🔥", "🌈", "🩷", "❤️", "🧡", "💛", "💚", "🩵", "💙", "💜", "🖤", "🩶", "🤍", "🤎", "💔", "❤️‍🔥", "❤️‍🩹", "❣️", "💕", "💞", "💓", "💗", "💖", "💘", "💝", "🚩", "👊", "⚡️", "💋", "🫰", "💅", "👑", "🐣", "🐤", "🐈"])
 if (!m.fromMe) {
-  try {
-    return this.sendMessage(m.chat, { react: { text: emot, key: m.key }})
-  } catch (reactionError) {
-    console.error('Error al enviar reacción:', reactionError)
-  }
+await this.sendMessage(m.chat, { react: { text: emot, key: m.key }})
+}
+} catch (reactionError) {
+console.error('Error sending reaction:', reactionError);
 }
 }
 function pickRandom(list) { return list[Math.floor(Math.random() * list.length)]}
