@@ -268,7 +268,6 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
 handler.help = ['mayeditor <1|2|3|4|5|6|7|8|9>']
 handler.tags = ['group', 'fun', 'media']
 handler.command = ['mayeditor']
-handler.group = true
 handler.limit = true
 
 export default handler
