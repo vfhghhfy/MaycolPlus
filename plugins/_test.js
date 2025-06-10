@@ -2,20 +2,22 @@ const handler = async (m, { conn }) => {
   try {
     const jid = m.chat;
 
-    // 💬 Mensaje directo sin quoted
+    // 💡 Detectar si es grupo moderno
+    const isModernGroup = jid.endsWith('@lid');
+
+    // ⚠️ Evitar uso de quoted en grupos nuevos
     await conn.sendMessage(jid, {
       text: `
-╭─〔 𝑯𝑶𝑳𝑨 𝑯𝑼𝑴𝑨𝑵𝑶 ✦ 𝑺𝑶𝒀 𝑬𝑳 𝑩𝑶𝑻 〕─╮
-┃✨ ¡Hola! ¿Qué tal estás?
-┃🌈 Estoy funcionando correctamente.
-┃🔁 Si ves este mensaje, todo está bien.
-╰─────────────────────────────╯`.trim()
+╭─〔 🛠️ 𝑴𝑶𝑫𝑶 𝑷𝑹𝑼𝑬𝑩𝑨 〕─╮
+┃👋 ¡Hola! Este grupo es:
+┃🔎 ${isModernGroup ? '@lid (moderno)' : '@g.us (clásico)'}
+┃✅ Todo funciona correctamente.
+╰─────────────────────╯`
     });
   } catch (err) {
-    console.error('[ERROR en comando de prueba]', err);
+    console.error('[ERROR en comando de prueba con lid]', err);
     await conn.reply(m.chat, `
-✘ 「 𝑼𝑷𝑺... 𝑯𝑼𝑩𝑶 𝑼𝑵 𝑬𝑹𝑹𝑶𝑹 」
-➤ Algo salió mal al intentar enviarte el mensaje 😢
+✘ 「 𝑼𝑷𝑺... 𝑬𝑹𝑹𝑶𝑹 」  
 ➤ Error técnico: ${err.message}`, m);
   }
 };
