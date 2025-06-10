@@ -31,14 +31,14 @@ const {proto} = baileys.default || baileys
 import pkg from 'google-libphonenumber'
 const { PhoneNumberUtil } = pkg
 const phoneUtil = PhoneNumberUtil.getInstance()
-const {
+import { 
     DisconnectReason, 
     useMultiFileAuthState, 
     MessageRetryMap, 
     fetchLatestBaileysVersion, 
     makeCacheableSignalKeyStore, 
     jidNormalizedUser
-} = baileys.default || baileys
+} from '@whiskeysockets/baileys'
 import readline, { createInterface } from 'readline'
 import NodeCache from 'node-cache'
 const {CONNECTING} = ws
