@@ -5,7 +5,6 @@ import path, { join } from 'path'
 import { unwatchFile, watchFile } from 'fs'
 import chalk from 'chalk'
 import fetch from 'node-fetch'
-import { WebSocket } from 'ws' // Agregamos la importación de WebSocket
 
 const { proto } = (await import('@whiskeysockets/baileys')).default
 const isNumber = x => typeof x === 'number' && !isNaN(x)
@@ -13,75 +12,6 @@ const delay = ms => isNumber(ms) && new Promise(resolve => setTimeout(function (
 clearTimeout(this)
 resolve()
 }, ms))
-
-// Función para convertir @lid a @g.us
-function convertLidToGroup(jid) {
-  if (!jid || typeof jid !== 'string') return jid;
-  
-  // Si termina en @lid, convertir a @g.us
-  if (jid.endsWith('@lid')) {
-    return jid.replace('@lid', '@g.us');
-  }
-  
-  return jid;
-}
-
-// Función mejorada para formatear JIDs con soporte @lid
-function formatJid(number) {
-  if (!number || typeof number !== 'string') return number;
-  
-  // Si ya es un JID válido, verificar si necesita conversión
-  if (number.includes('@')) {
-    return convertLidToGroup(number);
-  }
-  
-  // Sacamos solo los dígitos
-  const digits = number.replace(/[^0-9]/g, '');
-  if (!digits) return number;
-
-  // Para grupos que pueden usar @lid (convertirlos a @g.us para compatibilidad)
-  if (digits.length > 15) {
-    return digits + '@g.us';
-  }
-  
-  // Para usuarios normales
-  return digits + '@s.whatsapp.net';
-}
-
-// Función para normalizar JIDs de forma segura
-function normalizeJid(jid) {
-  if (!jid) return jid;
-  if (typeof jid !== 'string') return jid;
-  
-  // Si ya tiene formato correcto, verificar conversión
-  if (jid.includes('@')) {
-    return convertLidToGroup(jid);
-  }
-  
-  return formatJid(jid);
-}
-
-// Función para procesar metadatos de grupo de forma segura
-function processGroupMetadata(metadata) {
-  if (!metadata || typeof metadata !== 'object') return {};
-  
-  // Convertir el ID del grupo si es necesario
-  if (metadata.id) {
-    metadata.id = convertLidToGroup(metadata.id);
-  }
-  
-  // Procesar participantes
-  if (metadata.participants && Array.isArray(metadata.participants)) {
-    metadata.participants = metadata.participants.map(participant => {
-      if (participant.id) {
-        participant.id = normalizeJid(participant.id);
-      }
-      return participant;
-    });
-  }
-  
-  return metadata;
-}
 
 export async function handler(chatUpdate) {
 this.msgqueque = this.msgqueque || []
@@ -92,27 +22,6 @@ return
 let m = chatUpdate.messages[chatUpdate.messages.length - 1]
 if (!m)
 return;
-
-// Procesar y normalizar JIDs del mensaje
-if (m.key) {
-  if (m.key.remoteJid) {
-    m.key.remoteJid = convertLidToGroup(m.key.remoteJid);
-  }
-  if (m.key.participant) {
-    m.key.participant = normalizeJid(m.key.participant);
-  }
-}
-
-// Normalizar chat ID
-if (m.chat) {
-  m.chat = convertLidToGroup(m.chat);
-}
-
-// Normalizar sender
-if (m.sender) {
-  m.sender = normalizeJid(m.sender);
-}
-
 if (global.db.data == null)
 await global.loadDatabase()       
 try {
@@ -320,12 +229,12 @@ status: 0
 } catch (e) {
 console.error(e)
 }
-const mainBot = normalizeJid(global.conn.user.jid)
+const mainBot = global.conn.user.jid
 const chat = global.db.data.chats[m.chat] || {}
 const isSubbs = chat.antiLag === true
 const allowedBots = chat.per || []
 if (!allowedBots.includes(mainBot)) allowedBots.push(mainBot)
-const isAllowed = allowedBots.includes(normalizeJid(this.user.jid))
+const isAllowed = allowedBots.includes(this.user.jid)
 if (isSubbs && !isAllowed) 
 return
     
@@ -337,25 +246,25 @@ m.text = ''
 
 let _user = global.db.data && global.db.data.users && global.db.data.users[m.sender]
 
-// Ahora usamos las funciones mejoradas para construir los arrays:
-const isROwner = [
-  conn.decodeJid(global.conn.user.id), 
-  ...global.owner.map(([num]) => normalizeJid(num))
-].filter(Boolean).includes(m.sender);
+function formatJid(number) {
+  // Sacamos solo los dígitos
+  const digits = number.replace(/[^0-9]/g, '');
 
+  // Si tiene más de 15 dígitos o si el original tiene caracteres raros (no dígitos)
+  // ponemos '@lid', si no '@s.whatsapp.net'
+  const hasRarities = /[^0-9]/.test(number); // hay algo raro
+  if (digits.length > 15 || hasRarities) {
+    return digits + '@lid';
+  } else {
+    return digits + '@s.whatsapp.net';
+  }
+}
+
+// Ahora usamos la función para construir tus arrays:
+const isROwner = [conn.decodeJid(global.conn.user.id), ...global.owner.map(([num]) => formatJid(num))].includes(m.sender);
 const isOwner = isROwner || m.fromMe;
-
-const isMods = isOwner || global.mods
-  .map(v => normalizeJid(v))
-  .filter(Boolean)
-  .includes(m.sender);
-
-const isPrems = isROwner || 
-  global.prems
-    .map(v => normalizeJid(v))
-    .filter(Boolean)
-    .includes(m.sender) || 
-  (_user && _user.premium === true);
+const isMods = isOwner || global.mods.map(v => formatJid(v)).includes(m.sender);
+const isPrems = isROwner || global.prems.map(v => formatJid(v)).includes(m.sender) || _user.premium == true;
     
 if (opts['queque'] && m.text && !(isMods || isPrems)) {
 let queque = this.msgqueque, time = 1000 * 5
@@ -374,17 +283,8 @@ m.exp += Math.ceil(Math.random() * 10)
 
 let usedPrefix
 
-// Manejo mejorado de metadatos de grupo con conversión @lid
-const groupMetadata = (m.isGroup ? 
-  ((conn.chats[m.chat] || {}).metadata || 
-   await this.groupMetadata(m.chat).catch(err => {
-     console.log('Error getting group metadata:', err.message)
-     return null
-   })) : {}) || {}
-
-// Procesar metadatos para asegurar compatibilidad
-const processedMetadata = processGroupMetadata(groupMetadata)
-const participants = (m.isGroup ? processedMetadata.participants : []) || []
+const groupMetadata = (m.isGroup ? ((conn.chats[m.chat] || {}).metadata || await this.groupMetadata(m.chat).catch(_ => null)) : {}) || {}
+const participants = (m.isGroup ? groupMetadata.participants : []) || []
 const user = (m.isGroup ? participants.find(u => conn.decodeJid(u.id) === m.sender) : {}) || {}
 const bot = (m.isGroup ? participants.find(u => conn.decodeJid(u.id) == this.user.jid) : {}) || {}
 const channel = m.key.remoteJid?.endsWith('@newsletter') || false
@@ -434,7 +334,7 @@ if (await plugin.before.call(this, m, {
 match,
 conn: this,
 participants,
-groupMetadata: processedMetadata,
+groupMetadata,
 user,
 bot,
 isROwner,
@@ -574,7 +474,7 @@ command,
 text,
 conn: this,
 participants,
-groupMetadata: processedMetadata,
+groupMetadata,
 user,
 channel,
 bot,
@@ -597,14 +497,8 @@ m.error = e
 console.error(e)
 if (e) {
 let text = format(e)
-// Manejo mejorado de claves API
-if (global.APIKeys && typeof global.APIKeys === 'object') {
-  for (let key of Object.values(global.APIKeys)) {
-    if (key && typeof key === 'string') {
-      text = text.replace(new RegExp(key, 'g'), 'Administrador')
-    }
-  }
-}
+for (let key of Object.values(global.APIKeys))
+text = text.replace(new RegExp(key, 'g'), 'Administrador')
 m.reply(text)
 }
 } finally {
