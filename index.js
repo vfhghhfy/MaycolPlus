@@ -26,19 +26,11 @@ import {makeWASocket, protoType, serialize} from './lib/simple.js'
 import {Low, JSONFile} from 'lowdb'
 import {mongoDB, mongoDBV2} from './lib/mongoDB.js'
 import store from './lib/store.js'
-const baileys = await import('@whiskeysockets/baileys')
-const {proto} = baileys.default || baileys
+const {proto} = (await import('@whiskeysockets/baileys')).default
 import pkg from 'google-libphonenumber'
 const { PhoneNumberUtil } = pkg
 const phoneUtil = PhoneNumberUtil.getInstance()
-import { 
-    DisconnectReason, 
-    useMultiFileAuthState, 
-    MessageRetryMap, 
-    fetchLatestBaileysVersion, 
-    makeCacheableSignalKeyStore, 
-    jidNormalizedUser
-} from '@whiskeysockets/baileys'
+const {DisconnectReason, useMultiFileAuthState, MessageRetryMap, fetchLatestBaileysVersion, makeCacheableSignalKeyStore, jidNormalizedUser} = await import('@whiskeysockets/baileys')
 import readline, { createInterface } from 'readline'
 import NodeCache from 'node-cache'
 const {CONNECTING} = ws
@@ -49,7 +41,7 @@ const PORT = process.env.PORT || process.env.SERVER_PORT || 3000
 //let require = createRequire(megu)
 let { say } = cfonts
 
-console.log(chalk.bold.redBright(`\nHanako: Hola ^^, Esperame que ando haciendo algunas cositas jeje\n`))
+console.log(chalk.bold.redBright(`\n✰ Iniciando Yuki-Suou-Bot ✰\n`))
 
 say('MaycolAIUltraMD', {
 font: 'block',
@@ -176,7 +168,7 @@ if (!!phoneNumber) {
 addNumber = phoneNumber.replace(/[^0-9]/g, '')
 } else {
 do {
-phoneNumber = await question(chalk.bgBlack(chalk.bold.greenBright(`🇯🇵 Hanako Kun: Hola! Aca pon tu numero jeje ^^\n${chalk.bold.yellowBright(`Ejemplo: 51921826291`)}\n${chalk.bold.magentaBright('---> ')}`)))
+phoneNumber = await question(chalk.bgBlack(chalk.bold.greenBright(`✦ Por favor, Ingrese el número de WhatsApp.\n${chalk.bold.yellowBright(`✏  Ejemplo: 57321×××××××`)}\n${chalk.bold.magentaBright('---> ')}`)))
 phoneNumber = phoneNumber.replace(/\D/g,'')
 if (!phoneNumber.startsWith('+')) {
 phoneNumber = `+${phoneNumber}`
