@@ -46,7 +46,5 @@ const handler = async (m, { conn }) => {
 handler.help = ['minijuego'];
 handler.tags = ['canal'];
 handler.command = ['minijuego', 'jueguito'];
-handler.register = true;
-handler.channel = true;
 
 export default handler;
