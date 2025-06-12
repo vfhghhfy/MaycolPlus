@@ -79,7 +79,7 @@ let handler = async (m, { conn, args }) => {
 
   // Enviar menú con botones y video estilo gif
   await conn.sendMessage(m.chat, {
-    video: { url: 'https://files.catbox.moe/i74z9e.mp4', gifPlayback: true },
+    video: { url: 'https://files.catbox.moe/ks0qz0.mp4', gifPlayback: true },
     caption: menuText,
     gifPlayback: true,
     buttons: buttons,
