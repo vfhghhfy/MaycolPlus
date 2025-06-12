@@ -20,18 +20,18 @@ global.owner = ['51921826291'];
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
 global.mods = []
-global.suittag = ['5218211111111'] 
+global.suittag = [] 
 global.prems = []
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
-global.libreria = 'Baileys'
+global.libreria = 'MayBaileys'
 global.baileys = 'V 6.7.16' 
 global.vs = '2.2.0'
 global.nameqr = 'SoyMaycol'
 global.namebot = '𝐌𝐚𝐲𝐜𝐨𝐥𝐀𝐈𝐔𝐥𝐭𝐫𝐚-𝐌𝐃'
 global.sessions = './Sessions'
-global.jadi = 'JadiBots' 
+global.jadi = 'MayBots' 
 global.yukiJadibts = true
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
@@ -61,6 +61,7 @@ global.channel2 = 'https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R'
 global.md = 'https://github.com/SoySapo6/MaycolAI'
 global.correo = 'karatekidamericatv@gmail.com'
 global.cn ='https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R';
+global.owner_ngl ='soymaycol1';
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
