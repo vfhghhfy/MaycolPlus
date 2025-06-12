@@ -15,13 +15,19 @@ const handler = async (m, { args, text, conn, command }) => {
     return conn.reply(m.chat, `❌ El tiempo debe ser entre 1s y 12h máximo`, m);
   }
 
-  await conn.reply(m.chat, `✅ Recordatorio programado en *${tiempoStr}*\n⏳ Esperando para enviar tu mensaje...`, m);
+  // Enviar confirmación por privado
+  try {
+    await conn.reply(m.sender, `✅ Recordatorio programado en *${tiempoStr}*\n⏳ Esperando para enviarte el mensaje...`, null);
 
-  setTimeout(() => {
-    conn.sendMessage(m.chat, {
-      text: `🔔 *Recordatorio:*\n${mensaje}`
-    });
-  }, ms);
+    setTimeout(() => {
+      conn.sendMessage(m.sender, {
+        text: `🔔 *Recordatorio:*\n${mensaje}`
+      });
+    }, ms);
+
+  } catch (e) {
+    await conn.reply(m.chat, '❌ No pude mandarte el recordatorio por privado. ¿Tienes el chat abierto conmigo? 😢', m);
+  }
 };
 
 handler.help = ['recordatorio <tiempo> | <mensaje>'];
