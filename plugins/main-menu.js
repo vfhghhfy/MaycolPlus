@@ -197,43 +197,21 @@ ${catDeco.close}`
     }
   }, { quoted: m })
 
-  // Animación del menú
+  // Animación del menú - SOLO EDITA, NO ENVÍA NUEVOS MENSAJES
   let animationInterval = setInterval(async () => {
     currentIteration++
     
     if (currentIteration >= iterations) {
       clearInterval(animationInterval)
-      // Mensaje final
-      await conn.reply(m.chat, '✨ *Animación completada* ✨\n> El menú ha terminado su danza mágica~', m)
       return
     }
 
     try {
-      // Actualizar el menú con nueva animación
+      // EDITAR el mensaje existente en lugar de enviar uno nuevo
       await conn.sendMessage(m.chat, {
-        video: { url: 'https://files.catbox.moe/i74z9e.mp4', gifPlayback: true },
-        caption: createAnimatedMenu(currentIteration),
-        gifPlayback: true,
-        contextInfo: {
-          mentionedJid: [m.sender, userId],
-          isForwarded: true,
-          forwardedNewsletterMessageInfo: {
-            newsletterJid: '120363372883715167@newsletter',
-            newsletterName: 'SoyMaycol <3',
-            serverMessageId: -1,
-          },
-          forwardingScore: 999,
-          externalAdReply: {
-            title: botname,
-            body: "Un amor que nunca se acaba Jeje <3",
-            thumbnailUrl: banner,
-            sourceUrl: redes,
-            mediaType: 1,
-            showAdAttribution: true,
-            renderLargerThumbnail: true,
-          },
-        }
-      }, { quoted: m })
+        text: createAnimatedMenu(currentIteration),
+        edit: sentMessage.key
+      })
     } catch (error) {
       console.log('Error en animación del menú:', error)
       clearInterval(animationInterval)
@@ -252,4 +230,4 @@ function clockString(ms) {
   let m = Math.floor(ms / 60000) % 60
   let s = Math.floor(ms / 1000) % 60
   return `${h}h ${m}m ${s}s`
-        }
+  }
