@@ -21,21 +21,7 @@ let handler = async (m, { conn, args }) => {
                hour < 18 ? "🌄 Buenas tardes, viajero astral~" :
                "🌃 Buenas noches, sombra errante~"
 
-  // Agrupar comandos por categorías
-  let categories = {}
-  for (let plugin of Object.values(global.plugins)) {
-    if (!plugin.help || !plugin.tags) continue
-    for (let tag of plugin.tags) {
-      if (!categories[tag]) categories[tag] = []
-      categories[tag].push(...plugin.help.map(cmd => `#${cmd}`))
-    }
-  }
-
-  // Emojis random por categoría
-  let decoEmojis = ['✨', '🌸', '👻', '⭐', '🔮', '💫', '☁️', '🦋', '🪄']
-  let emojiRandom = () => decoEmojis[Math.floor(Math.random() * decoEmojis.length)]
-
-  // MENÚ HANAKO-KUN STYLE
+  // MENÚ HANAKO-KUN STYLE CON BOTONES
   let menuText = `
 ╭───❖ 𝓗𝓪𝓷𝓪𝓴𝓸 𝓑𝓸𝓽 ❖───╮
 
@@ -55,38 +41,49 @@ let handler = async (m, { conn, args }) => {
 > Hecho con amor por: *_SoyMaycol_* (⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤
 
 ≪──── ⋆𓆩✧𓆪⋆ ────≫
+
+*Selecciona una opción:*
 `.trim()
 
-  for (let [tag, cmds] of Object.entries(categories)) {
-    let tagName = tag.toUpperCase().replace(/_/g, ' ')
-    let deco = emojiRandom()
-    menuText += `
+  // Crear botones interactivos
+  let buttons = [
+    { buttonId: '.code', buttonText: { displayText: '♥ SubBot ♥' }, type: 1 },
+    { buttonId: '.staff', buttonText: { displayText: '♦ Staff ♦' }, type: 1 },
+    { buttonId: '.menucompleto', buttonText: { displayText: '♣ Menu Completo ♣' }, type: 1 }
+  ]
 
-╭─━━━ ${deco} ${tagName} ${deco} ━━━╮
-${cmds.map(cmd => `│ ➯ ${cmd}`).join('\n')}
-╰─━━━━━━━━━━━━━━━━╯`
-  }
-
-  // Mensaje previo cute
-  await conn.reply(m.chat, '⌜ ⊹ Espera tantito, espíritu curioso... ⊹ ⌟', m, {
+  let buttonMessage = {
+    text: menuText,
+    buttons: buttons,
+    headerType: 1,
     contextInfo: {
+      mentionedJid: [m.sender, userId],
+      isForwarded: true,
+      forwardedNewsletterMessageInfo: {
+        newsletterJid: '120363372883715167@newsletter',
+        newsletterName: 'SoyMaycol <3',
+        serverMessageId: -1,
+      },
+      forwardingScore: 999,
       externalAdReply: {
         title: botname,
         body: "Un amor que nunca se acaba Jeje <3",
-        thumbnailUrl: 'https://files.catbox.moe/x9hw62.png',
+        thumbnailUrl: banner,
         sourceUrl: redes,
         mediaType: 1,
         showAdAttribution: true,
         renderLargerThumbnail: true,
-      }
+      },
     }
-  })
+  }
 
-  // Enviar menú con video estilo gif
+  // Enviar menú con botones y video estilo gif
   await conn.sendMessage(m.chat, {
     video: { url: 'https://files.catbox.moe/i74z9e.mp4', gifPlayback: true },
     caption: menuText,
     gifPlayback: true,
+    buttons: buttons,
+    headerType: 4,
     contextInfo: {
       mentionedJid: [m.sender, userId],
       isForwarded: true,
@@ -120,4 +117,4 @@ function clockString(ms) {
   let m = Math.floor(ms / 60000) % 60
   let s = Math.floor(ms / 1000) % 60
   return `${h}h ${m}m ${s}s`
-}
+          }
