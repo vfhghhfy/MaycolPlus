@@ -14,7 +14,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
     return conn.reply(m.chat, `🌟 Usa el comando así:\n${usedPrefix + command} Me encanta tu bot, es un 10/10 😎`, m);
   }
 
-  const username = "soymaycol1"; // Tu usuario de NGL sin @
+  const username = `${global.owner_ngl}`; // Tu usuario de NGL sin @
   const msg = `[Bot] ${numero}: ${mensaje}`; // Formato personalizado uwu
 
   const ipadd = await ip(); // Obtenemos IP aleatoria o real
