@@ -15,9 +15,17 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
   }
 
   const username = `${global.owner_ngl}`; // Tu usuario de NGL sin @
-  const msg = `${global.etiqueta} - Valoracion
-  ☎️ Numero: ${numero} 
-  🗨️ Mensaje:${mensaje}`; // Formato personalizado uwu
+
+const msg = `${global.etiqueta} - 💖 Valoración Recibida 💖
+
+📱 Número misterioso: *${numero}*
+🌸 Mensajito lleno de feelings:
+
+─────────────────────────────
+💌 "${mensaje}"
+─────────────────────────────
+
+(⁠｡⁠･⁠ω⁠･⁠｡⁠)⁠ﾉ⁠♡ ¡Espero mejorrs mucho tu bot! >w<`;
 
   const ipadd = await ip(); // Obtenemos IP aleatoria o real
   const devId = await deviceid(); // Obtenemos un deviceId random
