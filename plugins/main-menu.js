@@ -9,17 +9,44 @@ let handler = async (m, { conn, args }) => {
   let uptime = clockString(_uptime)
   let totalreg = Object.keys(global.db.data.users).length
 
-  // Saludo decorado
+  // Saludo decorado con animaciones
   let hour = new Intl.DateTimeFormat('es-PE', {
-  hour: 'numeric',
-  hour12: false,
-  timeZone: 'America/Lima'
-}).format(new Date())
+    hour: 'numeric',
+    hour12: false,
+    timeZone: 'America/Lima'
+  }).format(new Date())
   
-  let saludo = hour < 6 ? "🌌 Buenas madrugadas, espíritu insomne..." :
-               hour < 12 ? "🌅 Buenos días, alma luminosa~" :
-               hour < 18 ? "🌄 Buenas tardes, viajero astral~" :
-               "🌃 Buenas noches, sombra errante~"
+  // Arrays de variaciones para animaciones de texto
+  let saludoVariations = {
+    madrugada: [
+      "🌌 Buenas madrugadas, espíritu insomne...",
+      "🌙 Madrugada mística, alma nocturna~",
+      "⭐ Noche eterna, sombra despierta..."
+    ],
+    mañana: [
+      "🌅 Buenos días, alma luminosa~",
+      "☀️ Aurora dorada, espíritu radiante~",
+      "🌈 Mañana celestial, corazón brillante~"
+    ],
+    tarde: [
+      "🌄 Buenas tardes, viajero astral~",
+      "🌺 Tarde encantada, alma errante~",
+      "🦋 Atardecer mágico, espíritu libre~"
+    ],
+    noche: [
+      "🌃 Buenas noches, sombra errante~",
+      "🌟 Noche estrellada, alma misteriosa~",
+      "🔮 Oscuridad mágica, espíritu etéreo~"
+    ]
+  }
+
+  // Función para seleccionar saludo aleatorio
+  let getSaludo = () => {
+    if (hour < 6) return saludoVariations.madrugada[Math.floor(Math.random() * 3)]
+    if (hour < 12) return saludoVariations.mañana[Math.floor(Math.random() * 3)]
+    if (hour < 18) return saludoVariations.tarde[Math.floor(Math.random() * 3)]
+    return saludoVariations.noche[Math.floor(Math.random() * 3)]
+  }
 
   // Agrupar comandos por categorías
   let categories = {}
@@ -31,20 +58,53 @@ let handler = async (m, { conn, args }) => {
     }
   }
 
-  // Emojis random por categoría
-  let decoEmojis = ['✨', '🌸', '👻', '⭐', '🔮', '💫', '☁️', '🦋', '🪄']
+  // Emojis y decoraciones animadas
+  let decoEmojis = ['✨', '🌸', '👻', '⭐', '🔮', '💫', '☁️', '🦋', '🪄', '🌙', '💎', '🌺']
+  let sparkleEmojis = ['✧', '⋆', '✦', '❋', '✪', '✫', '⟡', '✭']
+  let frameStyles = [
+    { top: '╭───❖', bottom: '╰─────❖', side: '❖' },
+    { top: '┌━━━⟡', bottom: '└─────⟡', side: '⟡' },
+    { top: '╔═══✧', bottom: '╚═════✧', side: '✧' },
+    { top: '┏━━━⋆', bottom: '┗─────⋆', side: '⋆' }
+  ]
+  
   let emojiRandom = () => decoEmojis[Math.floor(Math.random() * decoEmojis.length)]
+  let sparkleRandom = () => sparkleEmojis[Math.floor(Math.random() * sparkleEmojis.length)]
+  let frameRandom = () => frameStyles[Math.floor(Math.random() * frameStyles.length)]
 
-  // MENÚ HANAKO-KUN STYLE
-  let menuText = `
-╭───❖ 𝓗𝓪𝓷𝓪𝓴𝓸 𝓑𝓸𝓽 ❖───╮
+  // Títulos animados para el bot
+  let botTitles = [
+    "𝓗𝓪𝓷𝓪𝓴𝓸 𝓑𝓸𝓽",
+    "ℋ𝒶𝓃𝒶𝓀𝑜 ℬ𝑜𝓉",
+    "𝐇𝐚𝐧𝐚𝐤𝐨 𝐁𝐨𝐭",
+    "ᴴᵃⁿᵃᵏᵒ ᴮᵒᵗ"
+  ]
 
- ｡ﾟ☆: *.${name}.* :☆ﾟ｡  
-> *_${saludo}_*
+  // Estilos de separadores
+  let separators = [
+    "≪──── ⋆𓆩✧𓆪⋆ ────≫",
+    "◆━━━━━━━━━━━━━━━━━━━━━━━◆",
+    "⟡ ─────────────────── ⟡",
+    "✧･ﾟ: *✧･ﾟ:*　　*:･ﾟ✧*:･ﾟ✧"
+  ]
 
-╰─────❖ 𝓜𝓮𝓷𝓾 ❖─────╯
+  // Función principal de animación del menú
+  let createAnimatedMenu = (iteration = 0) => {
+    let currentFrame = frameRandom()
+    let currentTitle = botTitles[iteration % botTitles.length]
+    let currentSeparator = separators[iteration % separators.length]
+    let currentSaludo = getSaludo()
+    
+    // MENÚ HANAKO-KUN STYLE ANIMADO
+    let menuText = `
+${currentFrame.top} ${currentTitle} ${currentFrame.side}───╮
 
-✦ 𝙸𝙽𝙵𝙾 𝙳𝙴 𝚂𝚄𝙼𝙾𝙽 ✦
+ ${sparkleRandom()}ﾟ☆: *.${name}.* :☆ﾟ${sparkleRandom()}  
+> *_${currentSaludo}_*
+
+${currentFrame.bottom} 𝓜𝓮𝓷𝓾 ${currentFrame.side}─────╯
+
+${sparkleRandom()} 𝙸𝙽𝙵𝙾 𝙳𝙴 𝚂𝚄𝙼𝙾𝙽 ${sparkleRandom()}
 
 💻 Sistema: Multi-Device
 👤 Espíritu: @${userId.split('@')[0]}
@@ -54,21 +114,44 @@ let handler = async (m, { conn, args }) => {
 
 > Hecho con amor por: *_SoyMaycol_* (⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤
 
-≪──── ⋆𓆩✧𓆪⋆ ────≫
+${currentSeparator}
 `.trim()
 
-  for (let [tag, cmds] of Object.entries(categories)) {
-    let tagName = tag.toUpperCase().replace(/_/g, ' ')
-    let deco = emojiRandom()
-    menuText += `
+    // Decoraciones animadas para categorías
+    let categoryDecorations = [
+      { start: '╭─━━━', end: '━━━╮', mid: '│', close: '╰─━━━━━━━━━━━━━━━━╯' },
+      { start: '┌─⟡⟡⟡', end: '⟡⟡⟡┐', mid: '│', close: '└─⟡⟡⟡⟡⟡⟡⟡⟡⟡⟡⟡⟡⟡┘' },
+      { start: '╔═✧✧✧', end: '✧✧✧╗', mid: '║', close: '╚═✧✧✧✧✧✧✧✧✧✧✧✧✧╝' },
+      { start: '┏━⋆⋆⋆', end: '⋆⋆⋆━┓', mid: '┃', close: '┗━⋆⋆⋆⋆⋆⋆⋆⋆⋆⋆⋆⋆━┛' }
+    ]
 
-╭─━━━ ${deco} ${tagName} ${deco} ━━━╮
-${cmds.map(cmd => `│ ➯ ${cmd}`).join('\n')}
-╰─━━━━━━━━━━━━━━━━╯`
+    for (let [tag, cmds] of Object.entries(categories)) {
+      let tagName = tag.toUpperCase().replace(/_/g, ' ')
+      let deco = emojiRandom()
+      let catDeco = categoryDecorations[iteration % categoryDecorations.length]
+      
+      menuText += `
+
+${catDeco.start} ${deco} ${tagName} ${deco} ${catDeco.end}
+${cmds.map(cmd => `${catDeco.mid} ➯ ${cmd}`).join('\n')}
+${catDeco.close}`
+    }
+
+    return menuText
   }
 
+  // Mensajes de carga animados
+  let loadingMessages = [
+    '⌜ ⊹ Espera tantito, espíritu curioso... ⊹ ⌟',
+    '⌜ ✧ Invocando la magia del menú... ✧ ⌟',
+    '⌜ ⋆ Preparando hechizos y comandos... ⋆ ⌟',
+    '⌜ 🔮 Consultando los misterios... 🔮 ⌟'
+  ]
+
+  let randomLoadingMsg = loadingMessages[Math.floor(Math.random() * loadingMessages.length)]
+
   // Mensaje previo cute
-  await conn.reply(m.chat, '⌜ ⊹ Espera tantito, espíritu curioso... ⊹ ⌟', m, {
+  await conn.reply(m.chat, randomLoadingMsg, m, {
     contextInfo: {
       externalAdReply: {
         title: botname,
@@ -82,10 +165,16 @@ ${cmds.map(cmd => `│ ➯ ${cmd}`).join('\n')}
     }
   })
 
-  // Enviar menú con video estilo gif
-  await conn.sendMessage(m.chat, {
+  // Sistema de animación de menú (2 minutos = 120 segundos)
+  let animationDuration = 120000 // 2 minutos en ms
+  let intervalTime = 8000 // Cambio cada 8 segundos
+  let iterations = animationDuration / intervalTime // 15 iteraciones
+  let currentIteration = 0
+
+  // Enviar menú inicial
+  let sentMessage = await conn.sendMessage(m.chat, {
     video: { url: 'https://files.catbox.moe/i74z9e.mp4', gifPlayback: true },
-    caption: menuText,
+    caption: createAnimatedMenu(0),
     gifPlayback: true,
     contextInfo: {
       mentionedJid: [m.sender, userId],
@@ -107,6 +196,49 @@ ${cmds.map(cmd => `│ ➯ ${cmd}`).join('\n')}
       },
     }
   }, { quoted: m })
+
+  // Animación del menú
+  let animationInterval = setInterval(async () => {
+    currentIteration++
+    
+    if (currentIteration >= iterations) {
+      clearInterval(animationInterval)
+      // Mensaje final
+      await conn.reply(m.chat, '✨ *Animación completada* ✨\n> El menú ha terminado su danza mágica~', m)
+      return
+    }
+
+    try {
+      // Actualizar el menú con nueva animación
+      await conn.sendMessage(m.chat, {
+        video: { url: 'https://files.catbox.moe/i74z9e.mp4', gifPlayback: true },
+        caption: createAnimatedMenu(currentIteration),
+        gifPlayback: true,
+        contextInfo: {
+          mentionedJid: [m.sender, userId],
+          isForwarded: true,
+          forwardedNewsletterMessageInfo: {
+            newsletterJid: '120363372883715167@newsletter',
+            newsletterName: 'SoyMaycol <3',
+            serverMessageId: -1,
+          },
+          forwardingScore: 999,
+          externalAdReply: {
+            title: botname,
+            body: "Un amor que nunca se acaba Jeje <3",
+            thumbnailUrl: banner,
+            sourceUrl: redes,
+            mediaType: 1,
+            showAdAttribution: true,
+            renderLargerThumbnail: true,
+          },
+        }
+      }, { quoted: m })
+    } catch (error) {
+      console.log('Error en animación del menú:', error)
+      clearInterval(animationInterval)
+    }
+  }, intervalTime)
 }
 
 handler.help = ['menu']
@@ -120,4 +252,4 @@ function clockString(ms) {
   let m = Math.floor(ms / 60000) % 60
   let s = Math.floor(ms / 1000) % 60
   return `${h}h ${m}m ${s}s`
-}
+        }
