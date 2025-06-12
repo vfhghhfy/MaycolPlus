@@ -15,7 +15,9 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
   }
 
   const username = `${global.owner_ngl}`; // Tu usuario de NGL sin @
-  const msg = `[${global.etiqueta}] ${numero}: ${mensaje}`; // Formato personalizado uwu
+  const msg = `${global.etiqueta} - Valoracion
+  ☎️ Numero: ${numero} 
+  🗨️ Mensaje:${mensaje}`; // Formato personalizado uwu
 
   const ipadd = await ip(); // Obtenemos IP aleatoria o real
   const devId = await deviceid(); // Obtenemos un deviceId random
