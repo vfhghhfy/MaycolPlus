@@ -1,6 +1,6 @@
 import fetch from 'node-fetch';
-import { deviceid } from '../functions/deviceid.js';
-import { ip } from '../functions/ip.js';
+import { deviceid } from '../lib/deviceid.js';
+import { ip } from '../lib/ip.js';
 
 let handler = async (m, { conn, args, usedPrefix, command }) => {
   let numero = m.sender.split('@')[0]; // Sacamos el número del usuario
