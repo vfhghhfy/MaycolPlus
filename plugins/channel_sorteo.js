@@ -15,7 +15,11 @@ const handler = async (m, { conn, text }) => {
 
   const opciones = ["¡Sí, obvio! 🤑", "Nop, paso ✌️", "¿Es real esto? 👀", "Solo si hay comida 🍗"];
 
-  await conn.sendPoll(m.chat, pregunta, opciones);
+  try {
+    await conn.sendPoll(m.sender, pregunta, opciones);
+  } catch (e) {
+    await conn.reply(m.chat, '❌ No pude mandarte el sorteo por privado 😢. Asegúrate de tener el chat abierto conmigo.', m);
+  }
 };
 
 handler.help = ['sorteo <cosa a sortear>'];
