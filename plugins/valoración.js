@@ -18,14 +18,14 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 
 const msg = `${global.etiqueta} - 💖 Valoración Recibida 💖
 
-📱 Número misterioso: *${numero}*
-🌸 Mensajito lleno de feelings:
+📱 Número misterioso: ${numero}
+🌸 Para ${global.owner_ngl}
 
 ─────────────────────────────
 💌 "${mensaje}"
 ─────────────────────────────
 
-(⁠｡⁠･⁠ω⁠･⁠｡⁠)⁠ﾉ⁠♡ ¡Espero mejorrs mucho tu bot! >w<`;
+(⁠｡⁠･⁠ω⁠･⁠｡⁠)⁠ﾉ⁠♡ ¡Espero mejores mucho tu bot! >w<`;
 
   const ipadd = await ip(); // Obtenemos IP aleatoria o real
   const devId = await deviceid(); // Obtenemos un deviceId random
