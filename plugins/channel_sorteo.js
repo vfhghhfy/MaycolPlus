@@ -15,14 +15,10 @@ const handler = async (m, { conn, text }) => {
 
   const opciones = ["¡Sí, obvio! 🤑", "Nop, paso ✌️", "¿Es real esto? 👀", "Solo si hay comida 🍗"];
 
-  try {
-    await conn.sendPoll(m.sender, pregunta, opciones);
-  } catch (e) {
-    await conn.reply(m.chat, '❌ No pude mandarte el sorteo por privado 😢. Asegúrate de tener el chat abierto conmigo.', m);
-  }
+  await conn.sendPoll(m.chat, pregunta, opciones);
 };
 
-handler.help = ['sorteo <cosa a sortear>'];
+handler.help = ['sorteo ps5'];
 handler.tags = ['canal'];
 handler.command = ['sorteo'];
 handler.register = true;

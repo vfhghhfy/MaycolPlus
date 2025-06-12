@@ -31,28 +31,22 @@ const categorias = [
 
 const handler = async (m, { conn }) => {
   const juego = categorias[Math.floor(Math.random() * categorias.length)];
+  const poll = await conn.sendPoll(m.chat, `🎮 *MINIJUEGO:* ${juego.titulo}`, juego.opciones);
 
-  try {
-    // Enviamos el poll al privado del usuario (el dueño del canal)
-    const poll = await conn.sendPoll(m.sender, `🎮 *MINIJUEGO:* ${juego.titulo}`, juego.opciones);
-
-    // Esperamos 20 segundos y luego enviamos el resultado, también en privado
-    setTimeout(async () => {
-      const ganador = juego.opciones[Math.floor(Math.random() * juego.opciones.length)];
-      await conn.sendMessage(m.sender, {
-        text: `🏆 *¡Y el ganador aleatorio es:* ${ganador}!*`,
-        mentions: [m.sender]
-      });
-    }, 20000);
-
-  } catch (e) {
-    await conn.reply(m.chat, '❌ No pude mandarte el minijuego por privado. ¿Tienes el chat abierto conmigo? 😢', m);
-  }
+  // ⏱️ Esperamos 20 segundos
+  setTimeout(async () => {
+    const ganador = juego.opciones[Math.floor(Math.random() * juego.opciones.length)];
+    await conn.sendMessage(m.chat, {
+      text: `🏆 *¡Y el ganador aleatorio es:* ${ganador}!*`,
+      mentions: [m.sender]
+    });
+  }, 20000);
 };
 
 handler.help = ['minijuego'];
 handler.tags = ['canal'];
 handler.command = ['minijuego', 'jueguito'];
+handler.register = true;
 handler.channel = true;
 
 export default handler;

@@ -1,19 +1,15 @@
+// Para almacenar stats (simple, en memoria, podrías usar DB luego)
 let mensajesHoy = 0;
 let ultimaEncuesta = 'Ninguna';
 
 const handlerEstado = async (m, { conn }) => {
-  let participantes = 0;
-  let ownerJid = m.sender;
+  // Contar participantes en el chat
+  const participantes = await conn.groupMetadata(m.chat)
+    .then(metadata => metadata.participants.length)
+    .catch(() => 0);
 
-  try {
-    const metadata = await conn.groupMetadata(m.chat);
-    participantes = metadata.participants.length;
-
-    const owner = metadata.participants.find(p => p.admin === 'superadmin' || p.admin === 'admin');
-    if (owner) ownerJid = owner.id;
-  } catch (e) {
-    console.error('Error obteniendo metadata del grupo:', e);
-  }
+  // Mensajes hoy: aquí solo usamos contador en memoria (reinicia al reiniciar el bot)
+  // Puedes mejorar guardando en DB o JSON
 
   const texto = `
 📊 *ESTADO DEL CANAL* 📊
@@ -25,25 +21,17 @@ const handlerEstado = async (m, { conn }) => {
 (⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤ ¡Sigue participando y pasándola bien!
 `;
 
-  try {
-    // Si quien escribió es el owner → se lo mandamos a él
-    if (m.sender === ownerJid) {
-      await conn.sendMessage(ownerJid, { text: texto });
-    } else {
-      // Si no es el owner → se lo mandamos al usuario que usó el comando
-      await conn.sendMessage(m.sender, { text: texto });
-    }
-  } catch (e) {
-    console.warn('No se pudo enviar por privado:', e);
-    await conn.reply(m.chat, '❌ No pude enviarte el estado por privado. ¡Abre el chat conmigo primero!', m);
-  }
+  await conn.reply(m.chat, texto, m);
 };
 
-// Middleware para contar los mensajes
+// Este middleware suma mensajes para el conteo (lo tienes que conectar en tu sistema)
 const contarMensajes = (m) => {
   mensajesHoy++;
   return m;
 };
+
+// Para actualizar la última encuesta, en tu función de encuesta haz:
+// ultimaEncuesta = "Minijuego fuego vs agua" (o lo que sea)
 
 handlerEstado.help = ['estado'];
 handlerEstado.tags = ['canal'];

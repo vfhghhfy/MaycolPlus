@@ -23,23 +23,17 @@ const mensajes = [
 const handler = async (m, { conn }) => {
   const tipo = Math.random() < 0.5 ? "mensaje" : "encuesta";
 
-  try {
-    if (tipo === "mensaje") {
-      const mensaje = mensajes[Math.floor(Math.random() * mensajes.length)];
-      await conn.sendMessage(m.sender, {
-        text: `🔥 *RETO DEL DÍA PARA SEGUIDORES* 🗣️🔥:\n\n${mensaje}`
-      });
-    } else {
-      const encuesta = encuestas[Math.floor(Math.random() * encuestas.length)];
-      await conn.sendPoll(m.sender, encuesta.pregunta, encuesta.opciones);
-    }
-  } catch (e) {
-    await conn.reply(m.chat, '❌ No pude mandarte el reto por privado. ¿Tienes el chat abierto conmigo? 😢', m);
+  if (tipo === "mensaje") {
+    const mensaje = mensajes[Math.floor(Math.random() * mensajes.length)];
+    await conn.reply(m.chat, `🔥 *RETO DEL DÍA PARA SEGUIDORES* 🗣️🔥:\n\n${mensaje}`, m);
+  } else {
+    const encuesta = encuestas[Math.floor(Math.random() * encuestas.length)];
+    await conn.sendPoll(m.chat, encuesta.pregunta, encuesta.opciones);
   }
 };
 
 handler.help = ['evento'];
-handler.tags = ['canal'];
+handler.tags = ['fun'];
 handler.command = ['evento', 'eventoaleatorio'];
 handler.register = true;
 handler.channel = true;
