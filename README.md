@@ -207,7 +207,10 @@ Integrado con NightAPI
 
 ---
 
-### **`🌈 Desarrollador`**
+> PROHIBIDO QUITAR CREDITOS.
+> PROHIBIDO QUITAR ESTE FRAGMENTO
+
+### **`🌈 Desarrollador Original`**
 <a
 href="https://github.com/SoySapo6"><img src="https://github.com/SoySapo6.png" width="130" height="130" alt="SoySapo6"/></a>
 
