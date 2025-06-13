@@ -7,7 +7,6 @@ const handler = async (m, { conn, text, command }) => {
   if (!text) return m.reply("> Ingresa el nombre de un video o una URL de YouTube.");
 
   await m.react("🕛");
-  await m.reply("⌛ Procesando tu video, espera un momento por favor... (⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤");
 
   console.log("🔍 Buscando en YouTube...");
   
@@ -35,36 +34,32 @@ const handler = async (m, { conn, text, command }) => {
       durationTimestamp = video.duration.timestamp || "Desconocida";
     }
 
-    // Validación segura de autor
-    const authorName = video.author?.name || "Desconocido";
-    
     // Validación segura de otras propiedades
+    const authorName = video.author?.name || "Desconocido";
     const title = video.title || "Sin título";
     const views = video.views || "Desconocidas";
     const url = video.url || "";
     const thumbnail = video.thumbnail || "";
 
-    // Mostrar información del video ANTES de descargar
-    const videoInfo = `*🎵 INFORMACIÓN DEL VIDEO 🎵*
+    // Mensaje único con información y estado de descarga
+    const processingMessage = `*「❀」${title}*
+> *✧ Canal:* ${authorName}
+> *✧ Duración:* ${durationTimestamp}
+> *✧ Vistas:* ${views}
 
-*「❀」${title}*
-> *✧ Canal : »* ${authorName}
-> *✧ Duración : »* ${durationTimestamp}
-> *✧ Vistas : »* ${views}
-> *✧ URL : »* ${url}
+⏳ *Descargando...* Espera un momento.`;
 
-⏳ *Iniciando descarga...*`;
-
-    // Enviar información del video con miniatura
+    // Enviar información del video con miniatura (si existe)
+    let sentMessage;
     if (thumbnail) {
       try {
-        await conn.sendFile(m.chat, thumbnail, "thumb.jpg", videoInfo, m);
+        sentMessage = await conn.sendFile(m.chat, thumbnail, "thumb.jpg", processingMessage, m);
       } catch (thumbError) {
         console.log("⚠️ No se pudo enviar la miniatura:", thumbError.message);
-        await m.reply(videoInfo);
+        sentMessage = await m.reply(processingMessage);
       }
     } else {
-      await m.reply(videoInfo);
+      sentMessage = await m.reply(processingMessage);
     }
 
     // Proceder con la descarga según el comando
@@ -85,7 +80,6 @@ const handler = async (m, { conn, text, command }) => {
 const downloadAudio = async (conn, m, video, title) => {
   try {
     console.log("🎧 Solicitando audio...");
-    await m.reply("🎧 *Descargando audio...* Esto puede tomar unos momentos.");
     
     const api = await yta(video.url);
     
@@ -93,16 +87,6 @@ const downloadAudio = async (conn, m, video, title) => {
     if (!api || !api.status || !api.result || !api.result.download) {
       throw new Error("No se pudo obtener el enlace de descarga del audio");
     }
-
-    const downloadInfo = `*🎵 DESCARGA COMPLETADA 🎵*
-
-*Título:* ${api.result.title || title}
-*Formato:* ${api.result.format || 'mp3'}
-*Tamaño:* ${api.result.size || 'Desconocido'}
-
-📤 *Enviando archivo...*`;
-
-    await m.reply(downloadInfo);
     
     console.log("🎶 Enviando audio...");
     await conn.sendFile(
@@ -127,7 +111,6 @@ const downloadAudio = async (conn, m, video, title) => {
 const downloadVideo = async (conn, m, video, title) => {
   try {
     console.log("📹 Solicitando video...");
-    await m.reply("📹 *Descargando video...* Esto puede tomar unos momentos.");
     
     const api = await ytv(video.url);
     
@@ -148,15 +131,6 @@ const downloadVideo = async (conn, m, video, title) => {
     } catch (sizeError) {
       console.log("⚠️ No se pudo obtener el tamaño del archivo:", sizeError.message);
     }
-
-    const downloadInfo = `*📹 DESCARGA COMPLETADA 📹*
-
-*Título:* ${api.title || title}
-*Tamaño:* ${sizemb > 0 ? `${sizemb.toFixed(2)} MB` : 'Desconocido'}
-
-📤 *Enviando archivo...*`;
-
-    await m.reply(downloadInfo);
 
     if (sizemb > limit && sizemb > 0) {
       return m.reply(`🚫 El archivo es muy pesado (${sizemb.toFixed(2)} MB). El límite es ${limit} MB. Intenta con un video más corto 🥲`);
