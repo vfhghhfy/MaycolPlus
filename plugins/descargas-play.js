@@ -1,5 +1,5 @@
 import yts from "yt-search";
-import { ytv, yta } from "./_ytdl.js";
+import { ytv, yta } from "@soymaycol/maytube";
 const limit = 100; // MB
 
 const handler = async (m, { conn, text, command }) => {
