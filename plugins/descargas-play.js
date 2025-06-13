@@ -67,6 +67,5 @@ ${wm}`;
 
 handler.command = handler.help = ['play', 'playaudio', 'ytmp3', 'play2', 'ytv', 'ytmp4'];
 handler.tags = ['descargas'];
-handler.group = true;
 
 export default handler;
