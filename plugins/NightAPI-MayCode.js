@@ -40,7 +40,7 @@ function detectCodeType(code) {
       /console\.log\s*\(/i,
       /document\./i,
       /window\./i,
-      /=>\s*{/i,
+      /=>\s*\{/i,
       /require\s*\(/i,
       /import\s+.*from/i,
       /export\s+(default\s+)?/i
@@ -52,7 +52,7 @@ function detectCodeType(code) {
       /import\s+\w+/i,
       /from\s+\w+\s+import/i,
       /print\s*\(/i,
-      /if\s+__name__\s*==\s*['"']__main__['"']/i,
+      /if\s+__name__\s*==\s*['"]__main__['"]/i,
       /class\s+\w+[\s(:]/i
     ],
     'java': [
@@ -97,7 +97,7 @@ function detectCodeType(code) {
     // Configuration Files
     'json': [
       /^\s*\{[\s\S]*\}\s*$/,
-      /"\w+"\s*:\s*["\[\{]/
+      /"\w+"\s*:\s*["[\{]/
     ],
     'xml': [
       /<\?xml\s+version/i,
@@ -117,7 +117,7 @@ function detectCodeType(code) {
     
     // Shell Scripts
     'sh': [
-      /^#!/bin\/(bash|sh)/,
+      /^#!\/bin\/(bash|sh)/,
       /echo\s+/i,
       /if\s+\[.*\]\s*;\s*then/i,
       /for\s+\w+\s+in\s+/i
@@ -146,7 +146,7 @@ function detectCodeType(code) {
       /def\s+\w+/i,
       /puts\s+/i,
       /class\s+\w+/i,
-      /require\s+['"']/i
+      /require\s+["']/i
     ],
     'kt': [
       /fun\s+main\s*\(/i,
@@ -180,7 +180,7 @@ function isCode(text) {
     // Palabras clave de programación
     /\b(function|const|let|var|if|else|for|while|class|def|import|export|return)\b/i,
     // Símbolos típicos de código
-    /[{}();=<>+\-*/%&|!]/,
+    /[{}();=<>+\-*\/%&|!]/,
     // Estructuras de código
     /^\s*[\w.-]+\s*[=:]\s*.+$/m,
     // Comentarios
