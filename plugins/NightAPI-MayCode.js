@@ -325,7 +325,7 @@ const handler = async (m, { conn, text }) => {
       const fileExtension = detectCodeType(codeBlock);
       const fileName = `maycode_${Date.now()}.${fileExtension}`;
       
-      respuesta += `\n\n📁 *Código detectado y enviado como archivo:*\n📄 \`${fileName}\``;
+      respuesta += `> Hecho por SoyMaycol y Impulsado por NightAPI`;
       
       // Enviar respuesta de texto primero
       await conn.sendMessage(m.chat, { text: respuesta }, { quoted: m });
