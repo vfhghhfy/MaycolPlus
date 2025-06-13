@@ -185,7 +185,7 @@ Integrado con NightAPI
 <details>
  <summary><b>🔮 Enlaces Oficiales </b></summary>
 
- * Pagina Web  [`¡Click aquí!`](https://nightapioficial.onrender.com/)
+ * Pagina Web  [`¡Click aquí!`](https://nightapi.is-a.dev/)
    
 </details>
 
