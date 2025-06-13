@@ -5,13 +5,13 @@
   "main": "index.js",
   "type": "module",
   "directories": {
-    "lib": "lib", 
+    "lib": "lib",
     "src": "src",
     "plugins": "plugins"
   },
   "scripts": {
     "start": "node index.js",
-    "qr": "node index.js qr", 
+    "qr": "node index.js qr",
     "code": "node index.js code",
     "test": "node test.js",
     "test2": "nodemon index.js",
@@ -106,8 +106,6 @@
     "moment-timezone": "^0.5.45"
   },
   "devDependencies": {
-    "ts-jest": "^29.2.5",
-    "typescript": "^5.8.3",
     "eslint": "^9.15.0",
     "nodemon": "^3.1.7"
   },
@@ -118,8 +116,5 @@
   "config": {
     "sharp_binary_host": "https://github.com/lovell/sharp-libvips/releases/download/",
     "sharp_libvips_binary_host": "https://github.com/lovell/sharp-libvips/releases/download/"
-  },
-  "overrides": {
-    "typescript": "^5.8.3"
   }
 }
