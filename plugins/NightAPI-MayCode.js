@@ -172,7 +172,6 @@ Intenta de nuevo más tardecito, mi cielito ☁️✨
 handler.help = ['maycode'];
 handler.tags = ['tools'];
 handler.command = ['maycode', 'codigo'];
-handler.group = false;
 handler.register = true;
 
 export default handler;
