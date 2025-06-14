@@ -22,7 +22,7 @@
   "license": "GPL-3.0-or-later",
   "homepage": "https://github.com/SoySapo6/MaycolAIUltraMD",
   "dependencies": {
-    "@izumi-xyz/meta": "^2.0.8",
+    "@whiskeysockets/baileys": "github:SoySapo6/MayBailyes",
     "@adiwajshing/keyed-db": "^0.2.4",
     "@bochilteam/scraper": "^4.2.4",
     "@bochilteam/scraper-sosmed": "^1.0.5",
