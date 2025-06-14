@@ -4,36 +4,25 @@
   "description": "Super WhatsApp Bot Multi Device",
   "main": "index.js",
   "type": "module",
-  "directories": {
-    "lib": "lib",
-    "src": "src",
-    "plugins": "plugins"
-  },
   "scripts": {
     "start": "node index.js",
     "qr": "node index.js qr",
     "code": "node index.js code",
     "test": "node test.js",
     "test2": "nodemon index.js",
-    "eslint": "eslint .",
-    "eslintfix": "eslint --fix .",
     "install-sharp": "npm install sharp@0.32.6 --platform=linux --arch=arm64 --build-from-source || npm install sharp@0.32.6",
     "postinstall": "npm run install-sharp || echo 'Sharp installation failed, continuing...'"
-  },
-  "homepage": "https://github.com/SoySapo6/MaycolAIUltraMD",
-  "author": {
-    "name": "SoyMaycol"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SoySapo6/MaycolAIUltraMD.git"
   },
-  "bugs": {
-    "url": "https://github.com/SoySapo6/MaycolAIUltraMD/issues"
-  },
+  "keywords": [],
+  "author": "SoyMaycol",
   "license": "GPL-3.0-or-later",
+  "homepage": "https://github.com/SoySapo6/MaycolAIUltraMD",
   "dependencies": {
-    "@whiskeysockets/baileys": "github:SoySapo6/MayBailyes",
+    "@izumi-xyz/meta": "^2.0.8",
     "@adiwajshing/keyed-db": "^0.2.4",
     "@bochilteam/scraper": "^4.2.4",
     "@bochilteam/scraper-sosmed": "^1.0.5",
@@ -110,7 +99,7 @@
     "nodemon": "^3.1.7"
   },
   "engines": {
-    "node": ">=18.0.0",
+    "node": ">=20.0.0",
     "npm": ">=8.0.0"
   },
   "config": {
