@@ -3,6 +3,12 @@
  <img src= "https://files.catbox.moe/8iqvp8.gif">
     </p>
 
+---
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/I2I11GKDL4)
+
+---
+
 ### **`⚡ Información importante`**
 
 <details>
