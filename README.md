@@ -36,7 +36,6 @@
 </details>
 ---
 
-
 # Instalacion por Render ₊˚⊹
 > Repositorio que debes poner:
 https://github.com/SoySapo6/MaycolAIUltraMD.git
@@ -212,7 +211,7 @@ Integrado con NightAPI
 
 ### **`🌈 Desarrollador Original`**
 <a
-href="https://github.com/SoySapo6"><img src="https://github.com/SoySapo6.png" width="130" height="130" alt="SoySapo6"/></a>
+href="https://ko-fi.com/soymaycol"><img src="https://github.com/SoySapo6.png" width="130" height="130" alt="SoySapo6"/></a>
 
 <p align="center">
   <img src="[https://files.catbox.moe/csibjp.gif](https://files.catbox.moe/csibjp.gif)" width="500">
