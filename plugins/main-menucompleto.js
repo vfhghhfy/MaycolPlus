@@ -161,7 +161,7 @@ ${estiloSeleccionado.footer}
       externalAdReply: {
         title: botname,
         body: "Un amor que nunca se acaba Jeje <3",
-        thumbnailUrl: 'https://files.catbox.moe/x9hw62.png',
+        thumbnailUrl: `https://nightapi.is-a.dev/api/mayeditor?url=https://files.catbox.moe/xl6xgg.png&texto=¡Hola%20${encodeURIComponent(name)}!%20👻✨&textodireccion=Centro&fontsize=45&color=white&fontfamily=Comic%20Sans%20MS&shadow=true&outline=black`,
         sourceUrl: redes,
         mediaType: 1,
         showAdAttribution: true,
