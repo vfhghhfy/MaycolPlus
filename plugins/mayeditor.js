@@ -5,6 +5,8 @@
 import ffmpeg from 'fluent-ffmpeg'
 import fs from 'fs'
 import path from 'path'
+import https from 'https'
+import http from 'http'
 
 let handler = async (m, { conn, args, command, usedPrefix }) => {
  // if (!m.isGroup) return m.reply('👻 Este comando solo funciona en grupos, espíritu.')
@@ -15,22 +17,51 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
     return m.reply(`✧ Usa el comando así:\n\n${usedPrefix + command} 1\nExiste del 1 al 10`)
   }
 
-  // Map de videos según el número que pongan
+  // Map de videos según el número que pongan (ahora con URLs)
   const videosMap = {
-    '1': './videos/lv_7507655713968164149_20250607160908.mp4',
-    '2': './videos/lv_7463895997605743933_20250607164555.mp4',
-    '3': './videos/lv_7404392617884028176_20250607165541.mp4',
-    '4': './videos/lv_7403812168765852946_20250607173804.mp4',
-    '5': './videos/lv_7495448057157340469_20250607164932.mp4',
-    '6': './videos/lv_7497686403254373693_20250607170616.mp4',
-    '7': './videos/lv_7507655713968164149_20250607160908.mp4',
-    '8': './videos/lv_7478259089345187125_20250608202445.mp4',
-    '9': './videos/lv_7504712502689746229_20250608202734.mp4',
-    '10': './videos/lv_7307348459189800197_20250609084922.mp4'
+    '1': 'https://files.catbox.moe/3c2dvn.mp4',
+    '2': 'https://files.catbox.moe/ma45xv.mp4',
+    '3': 'https://files.catbox.moe/jaitl8.mp4',
+    '4': 'https://files.catbox.moe/egjief.mp4',
+    '5': 'https://files.catbox.moe/ol9nt6.mp4',
+    '6': 'https://files.catbox.moe/mpoioh.mp4',
+    '7': 'https://files.catbox.moe/swrnxi.mp4',
+    '8': 'https://files.catbox.moe/tv6atn.mp4',
+    '9': 'https://files.catbox.moe/hmpoim.mp4',
+    '10': 'https://files.catbox.moe/mpoioh.mp4'
   }
 
-  // Elegimos la ruta del video según el número
-  const inputVideoPath = videosMap[type]
+  // Función para descargar video
+  const downloadVideo = (url, outputPath) => {
+    return new Promise((resolve, reject) => {
+      const protocol = url.startsWith('https') ? https : http
+      const file = fs.createWriteStream(outputPath)
+      
+      protocol.get(url, (response) => {
+        if (response.statusCode !== 200) {
+          reject(new Error(`Error descargando video: ${response.statusCode}`))
+          return
+        }
+        
+        response.pipe(file)
+        
+        file.on('finish', () => {
+          file.close()
+          resolve()
+        })
+        
+        file.on('error', (err) => {
+          fs.unlinkSync(outputPath)
+          reject(err)
+        })
+      }).on('error', (err) => {
+        reject(err)
+      })
+    })
+  }
+
+  // Elegimos la URL del video según el número
+  const inputVideoUrl = videosMap[type]
 
   // Rate limiting: 10 veces al día por usuario
   const userId = m.sender
@@ -91,15 +122,20 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
     }    
         
     const profilePath = path.join(tempDir, `profile_${targetUserId}.jpg`)    
+    const inputVideoPath = path.join(tempDir, `input_${targetUserId}_${Date.now()}.mp4`) // Video descargado
     const outputVideoPath = path.join(tempDir, `output_${targetUserId}_${Date.now()}.mp4`)    
-        
-    if (!fs.existsSync(inputVideoPath)) {    
-      return m.reply('❌ No se encontró el video base. Verifica la ruta del archivo.')    
-    }    
         
     fs.writeFileSync(profilePath, profileBuffer)    
 
     // Actualizar progreso: preparación completada
+    await updateProgress(5)
+
+    // Descargar el video desde la URL
+    console.log(`Descargando video desde: ${inputVideoUrl}`)
+    await downloadVideo(inputVideoUrl, inputVideoPath)
+    console.log('✅ Video descargado exitosamente')
+
+    // Actualizar progreso: descarga completada
     await updateProgress(15)
 
     // Primero obtenemos las dimensiones del video
@@ -217,12 +253,13 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
       mimetype: 'video/mp4'    
     }, { quoted: fkontak })    
         
-    // Limpieza de archivos temporales después de enviar
+    // Limpieza de archivos temporales después de enviar (incluyendo el video descargado)
     setTimeout(() => {    
       try {    
         if (fs.existsSync(profilePath)) fs.unlinkSync(profilePath)    
+        if (fs.existsSync(inputVideoPath)) fs.unlinkSync(inputVideoPath) // Eliminar video descargado
         if (fs.existsSync(outputVideoPath)) fs.unlinkSync(outputVideoPath)    
-        console.log('✅ Archivos temporales limpiados')
+        console.log('✅ Archivos temporales limpiados (incluyendo video descargado)')
       } catch (e) {    
         console.error('Error limpiando archivos temporales:', e)    
       }    
@@ -243,19 +280,25 @@ let handler = async (m, { conn, args, command, usedPrefix }) => {
       errorMessage += '\n🔧 Error de procesamiento de video. Verifica que el archivo base exista.'
     } else if (error.message.includes('fetch')) {
       errorMessage += '\n📸 Error al obtener tu foto de perfil. Inténtalo de nuevo.'
+    } else if (error.message.includes('descargando')) {
+      errorMessage += '\n🌐 Error al descargar el video. Verifica la conexión o el enlace.'
     } else {
       errorMessage += '\n⚠️ Error interno. Inténtalo de nuevo más tarde.'
     }
     
     m.reply(errorMessage)
 
-    // Limpieza de emergencia
+    // Limpieza de emergencia (incluyendo video descargado)
     try {    
       const profilePath = path.join('./temp', `profile_${targetUserId}.jpg`)
+      const inputVideoPath = path.join('./temp', `input_${targetUserId}_${Date.now()}.mp4`)
       const outputVideoPath = path.join('./temp', `output_${targetUserId}_${Date.now()}.mp4`)
       
       if (fs.existsSync(profilePath)) {    
         fs.unlinkSync(profilePath)    
+      }
+      if (fs.existsSync(inputVideoPath)) {    
+        fs.unlinkSync(inputVideoPath)    
       }
       if (fs.existsSync(outputVideoPath)) {
         fs.unlinkSync(outputVideoPath)
