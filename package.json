@@ -10,7 +10,7 @@
 "plugins": "plugins"
 },
 "scripts": {
-"start": "node index.js",
+"start": "mkdir tmp && node index.js",
 "qr": "node index.js qr",
 "code": "node index.js code",
 "test": "node test.js",
@@ -100,5 +100,6 @@
 },
 "optionalDependencies": {
 "wa-sticker-formatter": "^4.3.2",
-"moment-timezone": "^0.5.37"
+"moment-timezone": "^0.5.37",
+"sharp": "^0.33.3"
 }}
