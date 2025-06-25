@@ -40,7 +40,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 
     socket.on('output', data => {
       if (data?.trim()) {
-        m.reply(`📤 *Salida:*\n${data}`);
+        m.reply(`${data}`);
       }
     });
 
@@ -69,7 +69,6 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
       return m.reply('👋 Sesión cerrada.');
     }
 
-    m.reply('⏳ Ejecutando comando remoto...');
     socket.emit('command', cmd);
   }
 };
