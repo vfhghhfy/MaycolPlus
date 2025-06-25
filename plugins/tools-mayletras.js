@@ -1,13 +1,13 @@
 import fetch from 'node-fetch'
 
-let handler = async (m, { conn, args }) => {
+let handler = async (m, { conn, args, usedPrefix, command }) => {
 
     if (!args[0] || !args.join(' ').includes('|')) {
-        return m.reply('⚠️ Usa el formato correcto:\n*mayletras Artista | Canción*\n\nEjemplo:\nmayletras Coldplay | Yellow')
+        return m.reply(`⚠️ Usa el comando así:\n*${usedPrefix + command} Artista | Canción*\n\nEjemplo:\n${usedPrefix + command} Coldplay | Yellow`)
     }
 
     let [artista, cancion] = args.join(' ').split('|').map(v => v.trim())
-  
+
     if (!artista || !cancion) {
         return m.reply('⚠️ Faltan datos, recuerda:\n*mayletras Artista | Canción*')
     }
@@ -24,14 +24,33 @@ let handler = async (m, { conn, args }) => {
   
     if (!letras.length) return m.reply('🚫 No hay líneas de letra para mostrar UwU')
   
-    m.reply(`🎤 *${artista} - ${cancion}*\nLetras llegando en 3... 2... 1... (⁠｡⁠･⁠ω⁠･⁠｡⁠)⁠ﾉ⁠♡`)
+    let textoFinal = ''
+  
+    // Primer mensaje
+    const msg = await m.reply(`🎤 *${artista} - ${cancion}*\nMostrando letra...\n(⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤`)
 
     for (let linea of letras) {
-        await new Promise(r => setTimeout(r, 1000)) // Espera de 1 segundo
-        await conn.sendMessage(m.chat, { text: linea }, { quoted: m })
+        textoFinal += linea + '\n'
+
+        try {
+            await conn.sendMessage(m.chat, {
+                text: `🎤 *${artista} - ${cancion}*\n\n${textoFinal}`
+            }, { edit: msg.key })
+        } catch (e) {
+            console.log('Error actualizando letras:', e)
+        }
+
+        await new Promise(r => setTimeout(r, 3000)) // Espera 3 segundos entre líneas
     }
 
-    await conn.sendMessage(m.chat, { text: `✅ *Letra completa de:* ${artista} - ${cancion}\n(⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤` }, { quoted: m })
+    // Mensaje final al terminar toda la letra
+    try {
+        await conn.sendMessage(m.chat, {
+            text: `✅ *Letra completa de:* ${artista} - ${cancion}\n\n${textoFinal}`
+        }, { edit: msg.key })
+    } catch (e) {
+        console.log('Error finalizando letras:', e)
+    }
 }
 
 handler.help = ['mayletras artista | canción']
