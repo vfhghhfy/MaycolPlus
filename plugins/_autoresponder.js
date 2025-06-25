@@ -1,4 +1,6 @@
 import axios from 'axios'
+import fetch from 'node-fetch'
+import { downloadContentFromMessage } from '@whiskeysockets/baileys'
 
 let handler = m => m
 handler.all = async function (m, { conn }) {
@@ -31,14 +33,45 @@ Responde como Hanako-kun, ¡hazlo especial!
 `.trim()
 
     try {
-      const res = await axios.get(`https://api.ryzendesu.vip/api/ai/gemini-pro?text=${encodeURIComponent(m.text)}&prompt=${encodeURIComponent(prompt)}`)
-      const reply = res.data?.answer || "✘ 𝑳𝒐 𝒔𝒆𝒏𝒕𝒊𝒎𝒐𝒔... ¡𝑯𝒂𝒏𝒂𝒌𝒐 𝒔𝒆 𝒅𝒊𝒔𝒐𝒍𝒗𝒊𝒐́ 𝒆𝒏 𝒗𝒂𝒑𝒐𝒓 𝒎𝒊𝒔𝒕𝒊𝒄𝒐!"
+      const res = await axios.get(`https://mode-ia.onrender.com/mode-ia?prompt=${encodeURIComponent(prompt)}`)
+      const reply = res.data?.respuesta?.trim()
+
+      if (!reply) throw 'Sin respuesta'
 
       await conn.reply(m.chat, `「 *Hanako responde desde el más allá* 」\n\n${reply}`, m)
+
     } catch (e) {
-      console.error(e)
-      await conn.reply(m.chat, '✘ Hanako se quedó atrapado en otro plano... inténtalo luego.', m)
+      console.error('[ERROR HANAKO API]', e)
+      await this.sendPresenceUpdate('composing', m.chat)
+      await conn.reply(m.chat, '✘ Hanako se quedó atrapado en otro plano... usando IA alternativa.', m)
+
+      try {
+        const body = {
+          prompts: [m.text],
+          imageBase64List: [],
+          mimeTypes: [],
+          temperature: 0.7
+        }
+
+        const res = await fetch('https://g-mini-ia.vercel.app/api/gemini', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        })
+
+        const data = await res.json()
+        const respuesta = data?.candidates?.[0]?.content?.parts?.[0]?.text
+
+        if (!respuesta) throw 'Sin respuesta válida de la IA.'
+
+        await conn.reply(m.chat, `「 *Hanako (IA Alternativa)* 」\n\n${respuesta.trim()}`, m)
+
+      } catch (err) {
+        console.error('[ERROR GEMINI BACKUP]', err)
+        await conn.reply(m.chat, '⚠️ Las entidades espirituales se negaron a responder... intenta luego.', m)
+      }
     }
   }
 }
+
 export default handler
