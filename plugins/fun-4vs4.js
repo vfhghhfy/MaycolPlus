@@ -1,22 +1,11 @@
 const handler = async (msg, { conn, args }) => {
   const chatId = msg.key.remoteJid;
-  const sender = msg.key.participant || msg.key.remoteJid;
-  const senderNum = sender.replace(/[^0-9]/g, "");
-  const isOwner = global.owner.some(([id]) => id === senderNum);
-  const isFromMe = msg.key.fromMe;
-
+  
   if (!chatId.endsWith("@g.us")) {
     return conn.sendMessage(chatId, { text: "📛 Este comando solo funciona en *grupos*." }, { quoted: msg });
   }
 
   const meta = await conn.groupMetadata(chatId);
-  const isAdmin = meta.participants.find(p => p.id === sender)?.admin;
-
-  if (!isAdmin && !isOwner && !isFromMe) {
-    return conn.sendMessage(chatId, {
-      text: "🔐 Este comando solo puede ser usado por *administradores* o el *propietario del bot*."
-    }, { quoted: msg });
-  }
 
   const horaTexto = args.join(" ").trim();
   if (!horaTexto) {
