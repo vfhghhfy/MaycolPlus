@@ -24,28 +24,18 @@ let handler = async (m, { conn, args }) => {
   
     if (!letras.length) return m.reply('🚫 No hay líneas de letra para mostrar UwU')
   
-    let textoFinal = ''
-  
-    // Primer mensaje
-    let msg = await conn.sendMessage(m.chat, { text: '🎶 Mostrando letras en tiempo real...\nEspera un momento UwU (⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤' }, { quoted: m })
+    m.reply(`🎤 *${artista} - ${cancion}*\nLetras llegando en 3... 2... 1... (⁠｡⁠･⁠ω⁠･⁠｡⁠)⁠ﾉ⁠♡`)
 
     for (let linea of letras) {
-        textoFinal += linea + '\n'
-
-        await conn.relayMessage(m.chat, {
-            conversation: `🎤 *${artista} - ${cancion}*\n\n${textoFinal}`
-        }, { messageId: msg.key.id })
-
         await new Promise(r => setTimeout(r, 1000)) // Espera de 1 segundo
+        await conn.sendMessage(m.chat, { text: linea }, { quoted: m })
     }
 
-    await conn.relayMessage(m.chat, {
-        conversation: `✅ *Letra completa de:* ${artista} - ${cancion}\n\n${textoFinal}`
-    }, { messageId: msg.key.id })
+    await conn.sendMessage(m.chat, { text: `✅ *Letra completa de:* ${artista} - ${cancion}\n(⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤` }, { quoted: m })
 }
 
 handler.help = ['mayletras artista | canción']
 handler.tags = ['musica']
-handler.command = /^mayletras$/i
+handler.command = ['mayletras']
 
 export default handler
