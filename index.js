@@ -272,13 +272,19 @@ conn.credsUpdate = saveCreds.bind(global.conn, true)
 
 const currentDateTime = new Date()
 const messageDateTime = new Date(conn.ev)
+const isGroupId = jid => jid.endsWith('@g.us') || jid.endsWith('@lid');
+
+let chats
 if (currentDateTime >= messageDateTime) {
-const chats = Object.entries(conn.chats).filter(([jid, chat]) => !jid.endsWith('@g.us') && chat.isChats).map((v) => v[0])
-
+  chats = Object.entries(conn.chats)
+    .filter(([jid, chat]) => !isGroupId(jid) && chat.isChats)
+    .map(([jid]) => jid);
 } else {
-const chats = Object.entries(conn.chats).filter(([jid, chat]) => !jid.endsWith('@g.us') && chat.isChats).map((v) => v[0])
-}
-
+  chats = Object.entries(conn.chats)
+    .filter(([jid, chat]) => !isGroupId(jid) && chat.isChats)
+    .map(([jid]) => jid);
+  }
+  
 conn.ev.on('messages.upsert', conn.handler)
 conn.ev.on('connection.update', conn.connectionUpdate)
 conn.ev.on('creds.update', conn.credsUpdate)
