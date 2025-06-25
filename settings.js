@@ -61,7 +61,7 @@ global.channel2 = 'https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R'
 global.md = 'https://github.com/SoySapo6/MaycolAI'
 global.correo = 'karatekidamericatv@gmail.com'
 global.cn ='https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R';
-global.owner_ngl ='soymaycol1';
+global.owner_ngl ='soymaycoldev';
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
