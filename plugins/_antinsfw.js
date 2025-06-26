@@ -1,87 +1,79 @@
-const fetch = require('node-fetch');
+import fs from 'fs'
+import { detectarNSFW } from '../lib/checknsfw.js'
+import fetch from 'node-fetch'
 
-const antiNsfwChats = {}; // Guarda chats que tienen antinsfw activo
+let dbRuta = './src/database/nsfw.json'
+let db = JSON.parse(fs.readFileSync(dbRuta))
 
-const palabrasProhibidas = [
-  'porno', 'pornhub', 'nudes', 'nude', 'putas', 'sexo', 'pene', 'vagina', 'desnudo', 'desnuda',
-  'nalgas', 'tetas', 'culo', 'masturbar', 'xxx', 'orgasmo'
-];
+export async function before(m, { conn }) {
+    if (!m.isGroup) return
+    if (!db.grupos.includes(m.chat)) return
 
-// Comando ON/OFF
-async function antinsfwCommand(m, text, conn) {
-  const chat = m.chat;
-  if (!m.isGroup) return m.reply('Solo funciona en grupos (｡•́︿•̀｡)');
+    // 💢 Texto con palabras prohibidas
+    let palabrasHot = ['porno', 'nude', 'pack', 'desnudo', 'sex', 'paja', 'nopor', 'xxx', 'porno', 'pene', 'vagina', 'cachar']
+    if (palabrasHot.some(p => m.text?.toLowerCase().includes(p))) {
+        eliminar(m, conn)
+        return
+    }
 
-  if (text === 'on') {
-    antiNsfwChats[chat] = true;
-    m.reply('🔒 Anti-NSFW ACTIVADO en este grupo ⊂(･ω･*⊂)');
-  } else if (text === 'off') {
-    delete antiNsfwChats[chat];
-    m.reply('🔓 Anti-NSFW DESACTIVADO en este grupo ⊂(･ω･*⊂)');
-  } else {
-    m.reply('Usa `.antinsfw on` o `.antinsfw off`');
-  }
-}
-
-// Detección de NSFW en Imágenes
-async function detectarImagenNSFW(m, conn) {
-  if (!m.isGroup || !antiNsfwChats[m.chat]) return;
-  if (!m.mimetype?.startsWith('image')) return;
-
-  const isBotAdmin = m.isBotAdmin; // ⚠️ Manual: poner true/false mientras arreglas handler roto
-  const isSenderAdmin = m.isSenderAdmin; // ⚠️ Manual: igual, depende de tu sistema
-
-  const buffer = await m.download();
-  const base64 = buffer.toString('base64');
-  const url = `https://delirius-apiofc.vercel.app/tools/checknsfw?image=data:image/jpeg;base64,${base64}`;
-
-  try {
-    const res = await fetch(url);
-    const json = await res.json();
-
-    if (json?.status && json.data?.NSFW && parseFloat(json.data.percentage) > 50) {
-      if (isBotAdmin) {
-        if (!isSenderAdmin) {
-          await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove');
-          m.reply(`⚠️ ${m.sender} fue expulsado por enviar contenido NSFW (${json.data.percentage}%)`);
-        } else {
-          m.reply(`🚫 Detecté contenido NSFW (${json.data.percentage}%), pero es admin... Ten cuidado UwU`);
+    // 💢 Imágenes
+    if (m.mtype === 'imageMessage' && m.msg?.url) {
+        try {
+            let { nsfw, porcentaje } = await detectarNSFW(m.msg.url)
+            if (nsfw && porcentaje >= 50) {
+                eliminar(m, conn)
+            }
+        } catch (e) {
+            console.error('Error escaneando imagen:', e)
         }
-      } else {
-        await m.delete();
-        m.reply('⚠️ Se detectó contenido NSFW y no soy admin, así que eliminé el mensaje ✨');
-      }
     }
-  } catch (e) {
-    console.log('Error analizando imagen NSFW:', e);
-  }
 }
 
-// Detección de Texto +18
-async function detectarTextoNSFW(m, conn) {
-  if (!m.isGroup || !antiNsfwChats[m.chat]) return;
+// 🧹 Función para eliminar mensaje o al usuario
+async function eliminar(m, conn) {
+    try {
+        let infoGrupo = await conn.groupMetadata(m.chat)
+        let botEsAdmin = infoGrupo.participants.find(p => p.id === conn.user.jid && p.admin)
+        let usuarioEsAdmin = infoGrupo.participants.find(p => p.id === m.sender && p.admin)
 
-  const texto = (m.text || '').toLowerCase();
-  if (palabrasProhibidas.some(palabra => texto.includes(palabra))) {
-    const isBotAdmin = m.isBotAdmin; // ⚠️ Manual según tu sistema
-    const isSenderAdmin = m.isSenderAdmin; // ⚠️ Manual igual
-
-    if (isBotAdmin) {
-      if (!isSenderAdmin) {
-        await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove');
-        m.reply(`🚫 ${m.sender} fue expulsado por escribir texto prohibido UwU`);
-      } else {
-        m.reply(`⚠️ Texto prohibido detectado, pero es admin... No puedo hacer mucho (｡•́︿•̀｡)`);
-      }
-    } else {
-      await m.delete();
-      m.reply('🚫 Texto prohibido detectado y eliminado UwU');
+        if (botEsAdmin && !usuarioEsAdmin) {
+            await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove')
+        } else {
+            await conn.sendMessage(m.chat, { delete: m.key })
+        }
+    } catch (e) {
+        console.error('Error al intentar eliminar:', e)
     }
-  }
 }
 
-module.exports = {
-  antinsfwCommand,
-  detectarImagenNSFW,
-  detectarTextoNSFW
-};
+let handler = async (m, { conn, args, usedPrefix, command }) => {
+    if (!m.isGroup) return m.reply('Este comando solo funciona en grupos.')
+    if (!m.isAdmin) return m.reply('Solo los administradores pueden usar este comando.')
+
+    let activar = args[0]?.toLowerCase() === 'on'
+    let desactivar = args[0]?.toLowerCase() === 'off'
+
+    if (!activar && !desactivar) {
+        return m.reply(`Uso:\n${usedPrefix + command} on\n${usedPrefix + command} off`)
+    }
+
+    if (activar) {
+        if (db.grupos.includes(m.chat)) return m.reply('El anti-NSFW ya está activado.')
+        db.grupos.push(m.chat)
+        fs.writeFileSync(dbRuta, JSON.stringify(db, null, 2))
+        m.reply('✅ Anti-NSFW activado.')
+    }
+
+    if (desactivar) {
+        if (!db.grupos.includes(m.chat)) return m.reply('El anti-NSFW no está activado.')
+        db.grupos = db.grupos.filter(g => g !== m.chat)
+        fs.writeFileSync(dbRuta, JSON.stringify(db, null, 2))
+        m.reply('✅ Anti-NSFW desactivado.')
+    }
+}
+
+handler.help = ['antinsfw on', 'antinsfw off']
+handler.tags = ['group', 'admin']
+handler.command = ['antinsfw']
+
+export default handler
