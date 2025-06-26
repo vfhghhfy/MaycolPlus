@@ -10,7 +10,7 @@ export async function before(m, { conn }) {
     if (!db.grupos.includes(m.chat)) return
 
     // 💢 Texto con palabras prohibidas
-    let palabrasHot = ['porno', 'nude', 'pack', 'desnudo', 'sex', 'paja', 'nopor', 'xxx', 'porno', 'pene', 'vagina', 'cachar']
+    let palabrasHot = ['porno', 'nude', 'pack', 'desnudo', 'sex', 'paja', 'nopor', 'xxx', 'porno', 'pene', 'vagina', 'cachar', 'pajadrop']
     if (palabrasHot.some(p => m.text?.toLowerCase().includes(p))) {
         eliminar(m, conn)
         return
