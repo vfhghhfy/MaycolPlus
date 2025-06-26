@@ -38,7 +38,7 @@ let handler = async (m, { conn, text }) => {
     await conn.reply(m.chat, 'Ocurrió un error al obtener la información de la IP.', m);
   }
 }
-handler.help = ["IPdoxx"]
+handler.help = ["ip <url>"]
 handler.tags = ["fun"]
 handler.command ='ip', /^(ip|ipcheck|ipcek)$/i;
 handler.owner = true;
