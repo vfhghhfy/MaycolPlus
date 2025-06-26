@@ -19,6 +19,15 @@ export async function before(m) {
   let chat = global.db.data.chats[m.chat]
   let user = global.db.data.users[m.sender]
 
+  // ⚡ Detecta comandos en mantenimiento
+  global.comandosEnMantenimiento = global.comandosEnMantenimiento || []
+
+  if (global.comandosEnMantenimiento.includes(command)) {
+    const mensaje = `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ El hechizo *${usedPrefix}${command}* está en *mantenimiento*.\n│\n├─ Vuelve a intentarlo más tarde~\n╰─✦`
+    await m.reply(mensaje)
+    return
+  }
+
   if (!exists) {
     const { bestMatch } = stringSimilarity.findBestMatch(command, allCommands)
     const suggestion = bestMatch.rating > 0.3 ? `¿Quisiste decir *${usedPrefix}${bestMatch.target}*?` : ''
