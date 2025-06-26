@@ -40,6 +40,7 @@
 "@soymaycol/maytube": "^1.0.7",
 "@soymaycol/mayhtml": "^1.0.0",
 "awesome-phonenumber": "^3.4.0",
+"groq-sdk": "*",
 "ruhend-scraper": "^7.0.4",
 "gradient-string": "^2.0.2",
 "google-libphonenumber": "3.2.38",
