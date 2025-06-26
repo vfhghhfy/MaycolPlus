@@ -64,7 +64,7 @@ let handler = async (m, { conn, args, command, isPrems }) => {
   const usedPrefix = ("#rpg ")
   const helpText = `
 ╔══════════════════════
-║ 🌟 𝐑𝐏𝐆-𝐔𝐥𝐭𝐫𝐚 𝐕𝟑 🌟
+║ *_RPG_* de MaycolAI ♪
 ╠══════════════════════
 ║ ⚔️ *COMANDOS DE ACCIÓN* ⚔️
 ║
