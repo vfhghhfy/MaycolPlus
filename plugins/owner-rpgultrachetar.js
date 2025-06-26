@@ -27,7 +27,7 @@ let handler = async (m, { conn }) => {
 
   conn.reply(m.chat, '🔥 ¡Estás totalmente chetado! Dale con todo al RPG. ⚔️', m)
 }
-handler.command = ['rpg chetar']
+handler.command = ['rpgchetar']
 handler.owner = true // Solo el owner puede usarlo, puedes quitar si quieres
 
 export default handler
