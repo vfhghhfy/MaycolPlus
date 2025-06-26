@@ -61,7 +61,8 @@ let handler = async (m, { conn, args, command, isPrems }) => {
   }
   
   //━━━━━━━━━[ MENSAJES DE AYUDA ]━━━━━━━━━//
-  const usedPrefix = ("#rpg ")
+  const usedPrefix = ("#rpg ");
+  const usedPrefixx = ("#");
   const helpText = `
 ╔══════════════════════
 ║ *_RPG_* de MaycolAI ♪
@@ -141,7 +142,7 @@ let handler = async (m, { conn, args, command, isPrems }) => {
     try {
       // Creación de la lista interactiva de comandos RPG
       const interactiveMessage = {
-        header: { title: '🌟 𝐑𝐏𝐆-𝐔𝐥𝐭𝐫𝐚 𝐕𝟑 - 𝐒𝐢𝐬𝐭𝐞𝐦𝐚 𝐝𝐞 𝐉𝐮𝐞𝐠𝐨 🌟' },
+        header: { title: '🌟 𝐑𝐏𝐆-𝐔𝐥𝐭𝐫𝐚 𝐕𝟑 🌟 - Hecho por SoyMaycol' },
         hasMediaAttachment: false,
         body: { text: `¡Bienvenido al sistema RPG avanzado! Selecciona la categoría de comandos que deseas explorar.
 
@@ -163,37 +164,37 @@ let handler = async (m, { conn, args, command, isPrems }) => {
                       {
                         title: "│📊│PERFIL RPG", 
                         description: "Ver tu perfil con estadísticas, recursos y propiedades",
-                        id: `${usedPrefix}rpg profile`
+                        id: `${usedPrefixx}rpg profile`
                       },
                       {
                         title: "│🏕️│AVENTURA", 
                         description: "Embárcate en una aventura para conseguir EXP y recursos",
-                        id: `${usedPrefix}rpg adventure`
+                        id: `${usedPrefixx}rpg adventure`
                       },
                       {
                         title: "│⛏️│MINAR", 
                         description: "Mina en busca de piedras preciosas y minerales",
-                        id: `${usedPrefix}rpg mine`
+                        id: `${usedPrefixx}rpg mine`
                       },
                       {
                         title: "│🏹│CAZAR", 
                         description: "Caza animales para obtener comida y cuero",
-                        id: `${usedPrefix}rpg hunt`
+                        id: `${usedPrefixx}rpg hunt`
                       },
                       {
                         title: "│🌾│CULTIVAR", 
                         description: "Trabaja en tu granja para obtener cultivos y hierbas",
-                        id: `${usedPrefix}rpg farm`
+                        id: `${usedPrefixx}rpg farm`
                       },
                       {
                         title: "│🎣│PESCAR", 
                         description: "Pesca una variedad de peces para alimento",
-                        id: `${usedPrefix}rpg fish`
+                        id: `${usedPrefixx}rpg fish`
                       },
                       {
                         title: "│⚒️│FABRICAR", 
                         description: "Convierte recursos básicos en objetos valiosos",
-                        id: `${usedPrefix}rpg craft`
+                        id: `${usedPrefixx}rpg craft`
                       }
                     ]
                   },
@@ -204,27 +205,27 @@ let handler = async (m, { conn, args, command, isPrems }) => {
                       {
                         title: "│⚔️│DUELO", 
                         description: "Desafía a otro jugador a un duelo de habilidades",
-                        id: `${usedPrefix}rpg duel`
+                        id: `${usedPrefixx}rpg duel`
                       },
                       {
                         title: "│💰│ROBAR", 
                         description: "Intenta robar recursos de otro jugador",
-                        id: `${usedPrefix}rpg rob`
+                        id: `${usedPrefixx}rpg rob`
                       },
                       {
                         title: "│💍│MATRIMONIO", 
                         description: "Propón matrimonio a otro jugador",
-                        id: `${usedPrefix}rpg marry`
+                        id: `${usedPrefixx}rpg marry`
                       },
                       {
                         title: "│👨‍👩‍👧‍👦│FAMILIA", 
                         description: "Gestiona tu familia o adopta a otros jugadores",
-                        id: `${usedPrefix}rpg family`
+                        id: `${usedPrefixx}rpg family`
                       },
                       {
                         title: "│🛡️│CLAN", 
                         description: "Administra o únete a un clan de guerreros",
-                        id: `${usedPrefix}rpg clan`
+                        id: `${usedPrefixx}rpg clan`
                       }
                     ]
                   },
@@ -235,27 +236,27 @@ let handler = async (m, { conn, args, command, isPrems }) => {
                       {
                         title: "│🏡│COMPRAR CASA", 
                         description: "Adquiere o mejora tu vivienda",
-                        id: `${usedPrefix}rpg buyhouse`
+                        id: `${usedPrefixx}rpg buyhouse`
                       },
                       {
                         title: "│🌱│COMPRAR GRANJA", 
                         description: "Adquiere o mejora tu granja para producir más cultivos",
-                        id: `${usedPrefix}rpg buyfarm`
+                        id: `${usedPrefixx}rpg buyfarm`
                       },
                       {
                         title: "│🔨│TALLER", 
                         description: "Construye un taller para mejorar el crafteo",
-                        id: `${usedPrefix}rpg workshop`
+                        id: `${usedPrefixx}rpg workshop`
                       },
                       {
                         title: "│🐶│MASCOTAS", 
                         description: "Gestiona tus mascotas que te ayudan en aventuras",
-                        id: `${usedPrefix}rpg pet`
+                        id: `${usedPrefixx}rpg pet`
                       },
                       {
                         title: "│🦊│ADOPTAR MASCOTA", 
                         description: "Adopta una nueva mascota para tu aventura",
-                        id: `${usedPrefix}rpg petadopt`
+                        id: `${usedPrefixx}rpg petadopt`
                       }
                     ]
                   },
@@ -266,27 +267,27 @@ let handler = async (m, { conn, args, command, isPrems }) => {
                       {
                         title: "│📋│MISIONES", 
                         description: "Acepta misiones para ganar recompensas especiales",
-                        id: `${usedPrefix}rpg quest`
+                        id: `${usedPrefixx}rpg quest`
                       },
                       {
                         title: "│🌞│DIARIO", 
                         description: "Reclama tu recompensa diaria de recursos",
-                        id: `${usedPrefix}rpg daily`
+                        id: `${usedPrefixx}rpg daily`
                       },
                       {
                         title: "│📖│HISTORIA", 
                         description: "Descubre la historia del mundo RPG",
-                        id: `${usedPrefix}rpg story`
+                        id: `${usedPrefixx}rpg story`
                       },
                       {
                         title: "│🏪│TIENDA", 
                         description: "Compra equipamiento, semillas y otros recursos",
-                        id: `${usedPrefix}rpg shop`
+                        id: `${usedPrefixx}rpg shop`
                       },
                       {
                         title: "│💱│VENDER", 
                         description: "Vende tus recursos para obtener oro",
-                        id: `${usedPrefix}rpg sell`
+                        id: `${usedPrefixx}rpg sell`
                       }
                     ]
                   }
