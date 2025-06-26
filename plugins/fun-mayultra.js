@@ -32,9 +32,7 @@ let handler = async (m, { conn }) => {
 ¡Tengo una sorpresa para Ti! (⁠•⁠ ⁠▽⁠ ⁠•⁠;⁠)  
   
 ${eventoAleatorio}  
-> Hecho por SoyMaycol <3
-
-`, m)
+> Hecho por SoyMaycol <3`, m)
   }, tiempoEspera)
 
 }
