@@ -1,0 +1,87 @@
+const fetch = require('node-fetch');
+
+const antiNsfwChats = {}; // Guarda chats que tienen antinsfw activo
+
+const palabrasProhibidas = [
+  'porno', 'pornhub', 'nudes', 'nude', 'putas', 'sexo', 'pene', 'vagina', 'desnudo', 'desnuda',
+  'nalgas', 'tet*s', 'cul*', 'masturbar', 'xxx', 'orgasmo'
+];
+
+// Comando ON/OFF
+async function antinsfwCommand(m, text, conn) {
+  const chat = m.chat;
+  if (!m.isGroup) return m.reply('Solo funciona en grupos (｡•́︿•̀｡)');
+
+  if (text === 'on') {
+    antiNsfwChats[chat] = true;
+    m.reply('🔒 Anti-NSFW ACTIVADO en este grupo ⊂(･ω･*⊂)');
+  } else if (text === 'off') {
+    delete antiNsfwChats[chat];
+    m.reply('🔓 Anti-NSFW DESACTIVADO en este grupo ⊂(･ω･*⊂)');
+  } else {
+    m.reply('Usa `.antinsfw on` o `.antinsfw off`');
+  }
+}
+
+// Detección de NSFW en Imágenes
+async function detectarImagenNSFW(m, conn) {
+  if (!m.isGroup || !antiNsfwChats[m.chat]) return;
+  if (!m.mimetype?.startsWith('image')) return;
+
+  const isBotAdmin = m.isBotAdmin; // ⚠️ Manual: poner true/false mientras arreglas handler roto
+  const isSenderAdmin = m.isSenderAdmin; // ⚠️ Manual: igual, depende de tu sistema
+
+  const buffer = await m.download();
+  const base64 = buffer.toString('base64');
+  const url = `https://delirius-apiofc.vercel.app/tools/checknsfw?image=data:image/jpeg;base64,${base64}`;
+
+  try {
+    const res = await fetch(url);
+    const json = await res.json();
+
+    if (json?.status && json.data?.NSFW && parseFloat(json.data.percentage) > 50) {
+      if (isBotAdmin) {
+        if (!isSenderAdmin) {
+          await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove');
+          m.reply(`⚠️ ${m.sender} fue expulsado por enviar contenido NSFW (${json.data.percentage}%)`);
+        } else {
+          m.reply(`🚫 Detecté contenido NSFW (${json.data.percentage}%), pero es admin... Ten cuidado UwU`);
+        }
+      } else {
+        await m.delete();
+        m.reply('⚠️ Se detectó contenido NSFW y no soy admin, así que eliminé el mensaje ✨');
+      }
+    }
+  } catch (e) {
+    console.log('Error analizando imagen NSFW:', e);
+  }
+}
+
+// Detección de Texto +18
+async function detectarTextoNSFW(m, conn) {
+  if (!m.isGroup || !antiNsfwChats[m.chat]) return;
+
+  const texto = (m.text || '').toLowerCase();
+  if (palabrasProhibidas.some(palabra => texto.includes(palabra))) {
+    const isBotAdmin = m.isBotAdmin; // ⚠️ Manual según tu sistema
+    const isSenderAdmin = m.isSenderAdmin; // ⚠️ Manual igual
+
+    if (isBotAdmin) {
+      if (!isSenderAdmin) {
+        await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove');
+        m.reply(`🚫 ${m.sender} fue expulsado por escribir texto prohibido UwU`);
+      } else {
+        m.reply(`⚠️ Texto prohibido detectado, pero es admin... No puedo hacer mucho (｡•́︿•̀｡)`);
+      }
+    } else {
+      await m.delete();
+      m.reply('🚫 Texto prohibido detectado y eliminado UwU');
+    }
+  }
+}
+
+module.exports = {
+  antinsfwCommand,
+  detectarImagenNSFW,
+  detectarTextoNSFW
+};
