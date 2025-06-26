@@ -4,7 +4,7 @@ const antiNsfwChats = {}; // Guarda chats que tienen antinsfw activo
 
 const palabrasProhibidas = [
   'porno', 'pornhub', 'nudes', 'nude', 'putas', 'sexo', 'pene', 'vagina', 'desnudo', 'desnuda',
-  'nalgas', 'tet*s', 'cul*', 'masturbar', 'xxx', 'orgasmo'
+  'nalgas', 'tetas', 'culo', 'masturbar', 'xxx', 'orgasmo'
 ];
 
 // Comando ON/OFF
