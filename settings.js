@@ -80,6 +80,7 @@ global.fs = fs
 global.fetch = fetch
 global.axios = axios
 global.moment = moment   
+global.comandosEnMantenimiento = global.comandosEnMantenimiento || []
 
 //*─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─⭒─ׄ─ׅ─ׄ─*
 
