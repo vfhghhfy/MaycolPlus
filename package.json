@@ -41,6 +41,7 @@
 "@soymaycol/mayhtml": "^1.0.0",
 "awesome-phonenumber": "^3.4.0",
 "groq-sdk": "*",
+"sharp": "^0.34.1",
 "ruhend-scraper": "^7.0.4",
 "gradient-string": "^2.0.2",
 "google-libphonenumber": "3.2.38",
