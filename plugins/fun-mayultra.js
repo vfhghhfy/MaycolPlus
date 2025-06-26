@@ -3,15 +3,13 @@ import fetch from 'node-fetch'
 let handler = async (m, { conn }) => {
 
   // Respuesta inicial al mensaje de la persona
-  conn.reply(m.chat, `
-╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」    
+  conn.reply(m.chat, `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」    
 │    
 ├─ El hechizo *#mayultra* no existe en los registros del más allá.    
 │    
 ├─ ¿Quisiste decir *#mayletras*?    
 │   ⇝ *#help*    
-╰─✦    
-`, m)
+╰─✦`, m)
 
   // Tiempo aleatorio entre 3 a 10 segundos
   let tiempoEspera = Math.floor(Math.random() * 7000) + 3000
