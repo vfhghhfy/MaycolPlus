@@ -5,7 +5,7 @@ import { join } from 'path'
 import pkg from '@whiskeysockets/baileys';
 const { generateWAMessageFromContent, proto } = pkg;
 
-let handler = async (m, { conn, args, usedPrefix, command, isPrems }) => {
+let handler = async (m, { conn, args, command, isPrems }) => {
   
   // RPG-Ultra V3 - Sistema de Juego de Rol Avanzado
   
@@ -61,7 +61,7 @@ let handler = async (m, { conn, args, usedPrefix, command, isPrems }) => {
   }
   
   //━━━━━━━━━[ MENSAJES DE AYUDA ]━━━━━━━━━//
-  
+  const usedPrefix = ("#rpg ")
   const helpText = `
 ╔══════════════════════
 ║ 🌟 𝐑𝐏𝐆-𝐔𝐥𝐭𝐫𝐚 𝐕𝟑 🌟
@@ -127,7 +127,8 @@ let handler = async (m, { conn, args, usedPrefix, command, isPrems }) => {
 ║ ➤ ${usedPrefix}story
 ║ ➤ ${usedPrefix}dungeon
 ║
-╚══════════════════════`
+╚══════════════════════
+> Hecho por SoyMaycol <3`
   
   //━━━━━━━━━[ PROCESAMIENTO DE COMANDOS ]━━━━━━━━━//
   
