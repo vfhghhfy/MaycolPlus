@@ -1,4 +1,5 @@
 import { ejecutarCodigo, mapearLenguaje } from '../lib/glot.js'
+import { downloadMediaMessage } from '@whiskeysockets/baileys'
 
 const handler = async (m, { conn }) => {
     if (!m.quoted || !m.quoted.fileSha256) {
@@ -14,7 +15,7 @@ const handler = async (m, { conn }) => {
             return conn.reply(m.chat, `*Lenguaje no soportado.* Solo se aceptan: js, py, c, cpp, java.`, m)
         }
 
-        const fileBuffer = await conn.downloadMediaMessage(m.quoted)
+        const fileBuffer = await downloadMediaMessage(m.quoted, 'buffer', {}, { reuploadRequest: conn })
         if (!fileBuffer) return conn.reply(m.chat, '❌ No se pudo descargar el archivo.', m)
 
         const codigo = fileBuffer.toString()
