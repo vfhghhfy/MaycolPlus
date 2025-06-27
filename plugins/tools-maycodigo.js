@@ -1,8 +1,7 @@
 import { ejecutarCodigo, mapearLenguaje } from '../lib/glot.js'
-import { downloadContentFromMessage } from '@whiskeysockets/baileys'
 
 const handler = async (m, { conn }) => {
-    if (!m.quoted || !m.quoted.fileName) {
+    if (!m.quoted || !m.quoted.fileName || !m.quoted.download) {
         return conn.reply(m.chat, '*Responde a un archivo de código para ejecutarlo.*', m)
     }
 
@@ -15,18 +14,10 @@ const handler = async (m, { conn }) => {
             return conn.reply(m.chat, '*Lenguaje no soportado.* Solo: js, py, c, cpp, java.', m)
         }
 
-        const messageKeys = Object.keys(m.quoted.message || {})
-        if (!messageKeys.length) return conn.reply(m.chat, '❌ No se pudo detectar el tipo de mensaje.', m)
+        const fileBuffer = await m.quoted.download()
+        if (!fileBuffer) return conn.reply(m.chat, '❌ No se pudo descargar el archivo.', m)
 
-        const messageType = messageKeys[0]
-        const stream = await downloadContentFromMessage(m.quoted.message[messageType], messageType.replace('Message', ''))
-
-        let buffer = Buffer.from([])
-        for await (const chunk of stream) {
-            buffer = Buffer.concat([buffer, chunk])
-        }
-
-        const codigo = buffer.toString()
+        const codigo = fileBuffer.toString()
         if (!codigo.trim()) return conn.reply(m.chat, '*El archivo está vacío o ilegible.*', m)
 
         conn.reply(m.chat, '⏳ Ejecutando el código, dame un segundo...', m)
