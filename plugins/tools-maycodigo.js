@@ -20,10 +20,8 @@ const handler = async (m, { conn }) => {
         const codigo = fileBuffer.toString()
         if (!codigo.trim()) return conn.reply(m.chat, '*El archivo está vacío o ilegible.*', m)
 
-        conn.reply(m.chat, '⏳ Ejecutando el código, dame un segundo...', m)
-
         const resultado = await ejecutarCodigo(lenguaje, codigo)
-        await conn.reply(m.chat, `✅ *Resultado:* \n\n${resultado}`, m)
+        await conn.reply(m.chat, `${resultado}`, m)
 
     } catch (e) {
         console.log(e)
@@ -32,4 +30,6 @@ const handler = async (m, { conn }) => {
 }
 
 handler.command = ['maycodigo']
+handler.tags = ['tools'];
+
 export default handler
