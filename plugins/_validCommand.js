@@ -61,20 +61,38 @@ async function detectarNSFW(m, conn) {
         let isBotAdmin = false
         
         // Verificar si el usuario es admin (manualmente para evitar @lid)
-        if (m.chat.endsWith('@g.us') || m.chat.includes('@lid')) {
+        if (m.chat.includes('@g.us') || m.chat.includes('@lid')) {
             try {
                 let groupMetadata = await conn.groupMetadata(m.chat)
-                let participants = groupMetadata.participants
-                
-                // Verificar si el usuario es admin
-                isAdmin = participants.some(p => p.id === m.sender && (p.admin === 'admin' || p.admin === 'superadmin'))
-                
-                // Verificar si el bot es admin
-                let botJid = conn.user.jid
-                isBotAdmin = participants.some(p => p.id === botJid && (p.admin === 'admin' || p.admin === 'superadmin'))
+                if (groupMetadata && groupMetadata.participants) {
+                    let participants = groupMetadata.participants
+                    
+                    // Verificar si el usuario es admin
+                    let userParticipant = participants.find(p => p.id === m.sender)
+                    if (userParticipant) {
+                        isAdmin = userParticipant.admin === 'admin' || userParticipant.admin === 'superadmin'
+                    }
+                    
+                    // Verificar si el bot es admin
+                    let botJid = conn.user?.jid || conn.user?.id
+                    if (botJid) {
+                        let botParticipant = participants.find(p => p.id === botJid)
+                        if (botParticipant) {
+                            isBotAdmin = botParticipant.admin === 'admin' || botParticipant.admin === 'superadmin'
+                        }
+                    }
+                }
             } catch (e) {
-                console.log('Error verificando admins:', e)
+                console.log('Error verificando admins:', e.message)
             }
+        }
+        
+        // También verificar si es owner
+        if (!isAdmin && global.owner) {
+            isAdmin = global.owner.some(owner => {
+                let ownerNumber = Array.isArray(owner) ? owner[0] : owner
+                return ownerNumber === m.sender.split('@')[0]
+            })
         }
         
         // Lista de palabras NSFW
@@ -179,4 +197,4 @@ async function eliminarMensaje(m, conn, isBotAdmin, razon) {
         console.error('Error eliminando mensaje:', error)
         await conn.reply(m.chat, `❌ Error al procesar: ${razon}`, m)
     }
-}
+                }
