@@ -1,4 +1,4 @@
-import { getTenorGifs } from '../lib/tenor.js'
+const { getTenorGifs } = require('../lib/tenor.js')
 
 const handler = async (m, { conn, text }) => {
     if (!text) return conn.reply(m.chat, '🔎 *Escribe algo para buscar gifs de Tenor, cielito~* (⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤', m)
