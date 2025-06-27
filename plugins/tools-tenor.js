@@ -25,7 +25,17 @@ const handler = async (m, { conn, text }) => {
             decorado += `┗━━━━━━━━━━━━━━━┛\n\n`
         })
 
-        await conn.sendFile(m.chat, gifPrincipal, 'hanako.gif', decorado, m)
+        console.log("[DEBUG Enviando lista decorada]")
+        await conn.reply(m.chat, decorado, m)
+
+        console.log("[DEBUG Intentando enviar el gif principal]", gifPrincipal)
+        try {
+            await conn.sendFile(m.chat, gifPrincipal, 'hanako.gif', '*Aquí tienes tu gif principal UwU*', m)
+            console.log("[DEBUG Gif enviado correctamente]")
+        } catch (err) {
+            console.error("❌ Error al enviar gif principal:", err)
+            conn.reply(m.chat, `❌ *No se pudo enviar el gif directo, pero aquí está el link:* ${gifPrincipal}`, m)
+        }
 
     } catch (e) {
         console.error("❌ Error general en comando Tenor:", e)
