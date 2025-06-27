@@ -5,13 +5,14 @@ const handler = async (m, { conn, text }) => {
 
     try {
         const gifUrl = await getTenorGif(text)
+        console.log("[DEBUG URL]", gifUrl) // Debug de URL final
 
         if (!gifUrl) return conn.reply(m.chat, '❌ *No encontré ningún GIF para esa búsqueda.*', m)
 
         await conn.sendFile(m.chat, gifUrl, 'gif.gif', '', m)
 
     } catch (e) {
-        console.log(e)
+        console.log("❌ Error general:", e)
         conn.reply(m.chat, '❌ *Error al buscar el GIF.*', m)
     }
 }
