@@ -1,4 +1,4 @@
-const { getTenorGifs } = require('../lib/tenor.js')
+import { getTenorGifs } from '../lib/tenor.js'
 
 const handler = async (m, { conn, text }) => {
     if (!text) return conn.reply(m.chat, '🔎 *Escribe algo para buscar gifs de Tenor, cielito~* (⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤', m)
@@ -34,7 +34,7 @@ const handler = async (m, { conn, text }) => {
 }
 
 handler.command = ['gif', 'tenor']
-handler.tags = ['tools'];
-handler.register = true;
+handler.tags = ['tools']
+handler.register = true
 
 export default handler
