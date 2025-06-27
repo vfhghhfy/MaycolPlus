@@ -30,7 +30,7 @@ global.baileys = 'V 6.7.16'
 global.vs = '2.2.0'
 global.nameqr = 'SoyMaycol'
 global.namebot = '𝐌𝐚𝐲𝐜𝐨𝐥𝐀𝐈𝐔𝐥𝐭𝐫𝐚-𝐌𝐃'
-global.sessions = './Sessions'
+global.sessions = './MayBots/MaycolAIUltraMD'
 global.jadi = 'MayBots' 
 global.yukiJadibts = true
 
