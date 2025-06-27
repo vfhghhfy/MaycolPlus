@@ -73,12 +73,33 @@ async function detectarNSFW(m, conn) {
                         isAdmin = userParticipant.admin === 'admin' || userParticipant.admin === 'superadmin'
                     }
                     
-                    // Verificar si el bot es admin
-                    let botJid = conn.user?.jid || conn.user?.id
+                    // Verificar si el bot es admin (múltiples métodos para JID)
+                    let botJid = conn.user?.jid || conn.user?.id || conn.decodeJid?.(conn.user?.id)
+                    
+                    // Debug del bot JID
+                    console.log('=== DEBUG BOT ADMIN ===')
+                    console.log('Bot JID methods:', {
+                        'conn.user?.jid': conn.user?.jid,
+                        'conn.user?.id': conn.user?.id,
+                        'conn.decodeJid': conn.decodeJid?.(conn.user?.id)
+                    })
+                    
                     if (botJid) {
-                        let botParticipant = participants.find(p => p.id === botJid)
+                        // Buscar bot en participantes (puede tener variaciones en el JID)
+                        let botParticipant = participants.find(p => {
+                            return p.id === botJid || 
+                                   p.id.split('@')[0] === botJid.split('@')[0] ||
+                                   p.id.includes(botJid.split('@')[0])
+                        })
+                        
+                        console.log('Bot participant found:', botParticipant)
+                        console.log('All participants JIDs:', participants.map(p => p.id))
+                        
                         if (botParticipant) {
                             isBotAdmin = botParticipant.admin === 'admin' || botParticipant.admin === 'superadmin'
+                            console.log('Bot is admin:', isBotAdmin, 'Admin level:', botParticipant.admin)
+                        } else {
+                            console.log('Bot participant not found in group')
                         }
                     }
                 }
@@ -177,24 +198,38 @@ async function detectarImagenNSFW(m, conn, isAdmin, isBotAdmin, tipo = 'imagen')
 
 async function eliminarMensaje(m, conn, isBotAdmin, razon) {
     try {
+        console.log('=== ELIMINANDO MENSAJE ===')
+        console.log('isBotAdmin:', isBotAdmin)
+        console.log('Message key:', m.key)
+        
         // Intentar eliminar el mensaje si el bot es admin
         if (isBotAdmin) {
-            await conn.sendMessage(m.chat, { delete: m.key })
+            try {
+                await conn.sendMessage(m.chat, { delete: m.key })
+                console.log('✅ Mensaje eliminado exitosamente')
+            } catch (deleteError) {
+                console.error('❌ Error eliminando mensaje:', deleteError)
+                // Intentar método alternativo
+                try {
+                    await conn.deleteMessage(m.chat, m.key)
+                    console.log('✅ Mensaje eliminado con método alternativo')
+                } catch (altError) {
+                    console.error('❌ Error con método alternativo:', altError)
+                    isBotAdmin = false // Marcar como no admin si no puede eliminar
+                }
+            }
         }
         
         // Mensaje de advertencia
         const advertencia = `🚫 *Mensaje eliminado*\n\n` +
                           `👤 *Usuario:* @${m.sender.split('@')[0]}\n` +
                           `⚠️ *Razón:* ${razon}\n` +
-                          `📝 *Nota:* ${isBotAdmin ? 'Mensaje eliminado' : 'No pude eliminar el mensaje (bot no es admin)'}`
+                          `📝 *Nota:* ${isBotAdmin ? 'Mensaje eliminado exitosamente' : 'No pude eliminar el mensaje (verificar permisos de bot)'}`
         
         await conn.reply(m.chat, advertencia, m, { mentions: [m.sender] })
-        
-        // Si el bot es admin, intentar eliminar al usuario (opcional)
-        // await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove')
         
     } catch (error) {
         console.error('Error eliminando mensaje:', error)
         await conn.reply(m.chat, `❌ Error al procesar: ${razon}`, m)
     }
-                }
+}
