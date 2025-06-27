@@ -1,9 +1,9 @@
 import { ejecutarCodigo, mapearLenguaje } from '../lib/glot.js'
-import { downloadMediaMessage } from '@whiskeysockets/baileys'
+import { downloadContentFromMessage } from '@whiskeysockets/baileys'
 
 const handler = async (m, { conn }) => {
-    if (!m.quoted || !m.quoted.fileSha256 || m.quoted.mtype !== 'documentMessage') {
-        return conn.reply(m.chat, '*Responde a un archivo (documento) para ejecutarlo.*', m)
+    if (!m.quoted || !m.quoted.fileSha256) {
+        return conn.reply(m.chat, '*Responde a un archivo de código para ejecutarlo.*', m)
     }
 
     try {
@@ -12,13 +12,18 @@ const handler = async (m, { conn }) => {
         const lenguaje = mapearLenguaje(extension)
 
         if (!lenguaje) {
-            return conn.reply(m.chat, `*Lenguaje no soportado.* Solo: js, py, c, cpp, java.`, m)
+            return conn.reply(m.chat, '*Lenguaje no soportado.* Solo: js, py, c, cpp, java.', m)
         }
 
-        const fileBuffer = await downloadMediaMessage(m.quoted, 'buffer', {}, { reuploadRequest: conn })
-        if (!fileBuffer) return conn.reply(m.chat, '❌ No se pudo descargar el archivo.', m)
+        const messageType = Object.keys(m.quoted.message)[0] // Detectamos tipo exacto del mensaje
+        const stream = await downloadContentFromMessage(m.quoted.message[messageType], messageType.replace('Message', ''))
 
-        const codigo = fileBuffer.toString()
+        let buffer = Buffer.from([])
+        for await (const chunk of stream) {
+            buffer = Buffer.concat([buffer, chunk])
+        }
+
+        const codigo = buffer.toString()
         if (!codigo.trim()) return conn.reply(m.chat, '*El archivo está vacío o ilegible.*', m)
 
         conn.reply(m.chat, '⏳ Ejecutando el código, dame un segundo...', m)
