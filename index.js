@@ -118,6 +118,15 @@ const colores = chalk.bgMagenta.white
 const opcionQR = chalk.bold.green
 const opcionTexto = chalk.bold.cyan
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
+const carpeta = path.join('./tmp')
+
+if (!fs.existsSync(carpeta)) {
+    fs.mkdirSync(carpeta, { recursive: true })
+    console.log('✔ Carpeta tmp creada con éxito UwU')
+} else {
+    console.log('✔ La carpeta tmp ya existe, todo bien (⁠｡⁠･⁠ω⁠･⁠｡⁠)⁠ﾉ⁠♡')
+}
+
 const question = (texto) => new Promise((resolver) => rl.question(texto, resolver))
 
 let opcion
