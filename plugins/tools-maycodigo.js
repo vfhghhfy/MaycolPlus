@@ -1,5 +1,4 @@
 import { ejecutarCodigo, mapearLenguaje } from '../lib/glot.js'
-import fs from 'fs'
 
 const handler = async (m, { conn }) => {
     if (!m.quoted || !m.quoted.fileSha256) {
@@ -12,10 +11,12 @@ const handler = async (m, { conn }) => {
         const lenguaje = mapearLenguaje(extension)
 
         if (!lenguaje) {
-            return conn.reply(m.chat, `*Lenguaje no soportado. Solo se aceptan:* js, py, c, cpp, java.`, m)
+            return conn.reply(m.chat, `*Lenguaje no soportado.* Solo se aceptan: js, py, c, cpp, java.`, m)
         }
 
-        const fileBuffer = await conn.download(m.quoted)
+        const fileBuffer = await conn.downloadMediaMessage(m.quoted)
+        if (!fileBuffer) return conn.reply(m.chat, '❌ No se pudo descargar el archivo.', m)
+
         const codigo = fileBuffer.toString()
 
         if (!codigo.trim()) return conn.reply(m.chat, '*El archivo está vacío o no se pudo leer correctamente.*', m)
