@@ -1,18 +1,51 @@
 import fs from 'fs'
 
 let handler = async (m, { conn, args, usedPrefix, command }) => {
-    // Verificar si es admin del grupo manualmente (sin usar handler.admin)
-    let groupMetadata = await conn.groupMetadata(m.chat).catch(() => null)
-    if (!groupMetadata) {
-        return conn.reply(m.chat, '❌ Este comando solo funciona en grupos.', m)
+    // Verificar si es owner primero
+    let isOwner = global.owner && global.owner.some(owner => {
+        let ownerNumber = Array.isArray(owner) ? owner[0] : owner
+        return ownerNumber === m.sender.split('@')[0]
+    })
+    
+    let isAdmin = false
+    
+    // Si es owner, no necesita ser admin
+    if (!isOwner) {
+        // Verificar si es grupo (funciona con @g.us y @lid)
+        if (!m.chat.includes('@g.us') && !m.chat.includes('@lid')) {
+            return conn.reply(m.chat, '❌ Este comando solo funciona en grupos.', m)
+        }
+        
+        try {
+            let groupMetadata = await conn.groupMetadata(m.chat)
+            if (!groupMetadata || !groupMetadata.participants) {
+                return conn.reply(m.chat, '❌ No pude obtener información del grupo. Intenta de nuevo.', m)
+            }
+            
+            // Debug: mostrar información
+            console.log('=== DEBUG ADMIN ===')
+            console.log('Chat ID:', m.chat)
+            console.log('Sender:', m.sender)
+            console.log('Participants count:', groupMetadata.participants.length)
+            
+            let participants = groupMetadata.participants
+            let userParticipant = participants.find(p => p.id === m.sender)
+            
+            console.log('User participant found:', userParticipant)
+            
+            if (userParticipant) {
+                isAdmin = userParticipant.admin === 'admin' || userParticipant.admin === 'superadmin'
+                console.log('Is admin:', isAdmin, 'Admin level:', userParticipant.admin)
+            }
+            
+        } catch (error) {
+            console.error('Error obteniendo metadata del grupo:', error)
+            return conn.reply(m.chat, '❌ Error al verificar permisos. Intenta de nuevo.', m)
+        }
     }
     
-    let participants = groupMetadata.participants
-    let isAdmin = participants.some(p => p.id === m.sender && (p.admin === 'admin' || p.admin === 'superadmin'))
-    let isOwner = global.owner.some(owner => owner[0] === m.sender.split('@')[0])
-    
     if (!isAdmin && !isOwner) {
-        return conn.reply(m.chat, '❌ Solo los administradores del grupo pueden usar este comando.', m)
+        return conn.reply(m.chat, '❌ Solo los administradores del grupo o el owner pueden usar este comando.', m)
     }
     
     let chat = global.db.data.chats[m.chat]
