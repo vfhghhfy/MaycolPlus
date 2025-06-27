@@ -8,14 +8,13 @@ import path from 'path'
 import { exec } from 'child_process'
 import { promisify } from 'util'
 
-const execAsync = promisify(exec)
+const execAsync = promisify(e
 
-let handler = async (m, { conn, args, command, usedPrefix }) => {
- // if (!m.isGroup) return m.reply('👻 Este comando solo funciona en grupos, espíritu.')
-
+let handler = async (m, { co args, command, usedPrefix }) => {
+ // if (!m.isGroup) return m.reply('👻 Este comando solo funciona en grupos, espíritu
   // Aquí leemos el número que ponen después de mayeditor
   let type = args[0]?.toLowerCase()
-  if (!type || !['1','2','3','4','5', '6', '7', '8', '9', '10'].includes(type)) {
+  if (!e || !['1','2','3','4','5', '6', '7', '8', '9', '10'].includes(type)) {
     return m.reply(`✧ Usa el comando así:\n\n${usedPrefix + command} 1\nExiste del 1 al 10`)
   }
 
