@@ -1,6 +1,5 @@
 import { ejecutarCodigo, mapearLenguaje } from '../lib/glot.js'
 import fs from 'fs'
-import path from 'path'
 
 const handler = async (m, { conn }) => {
     if (!m.quoted || !m.quoted.fileSha256) {
@@ -8,19 +7,21 @@ const handler = async (m, { conn }) => {
     }
 
     try {
-        const mime = m.quoted.mimetype || ''
-        if (!mime.includes('text')) return conn.reply(m.chat, '*Solo se permiten archivos de texto/código.*', m)
-
-        const fileBuffer = await conn.download(m.quoted)
-        const extension = (m.quoted.fileName || '').split('.').pop().toLowerCase()
+        const fileName = m.quoted.fileName || ''
+        const extension = fileName.split('.').pop().toLowerCase()
         const lenguaje = mapearLenguaje(extension)
 
-        if (!lenguaje) return conn.reply(m.chat, `*Lenguaje no soportado. Solo: js, py, c, cpp, java.*`, m)
+        if (!lenguaje) {
+            return conn.reply(m.chat, `*Lenguaje no soportado. Solo se aceptan:* js, py, c, cpp, java.`, m)
+        }
 
+        const fileBuffer = await conn.download(m.quoted)
         const codigo = fileBuffer.toString()
 
+        if (!codigo.trim()) return conn.reply(m.chat, '*El archivo está vacío o no se pudo leer correctamente.*', m)
+
         conn.reply(m.chat, '⏳ Ejecutando el código, dame un segundo...', m)
-        
+
         const resultado = await ejecutarCodigo(lenguaje, codigo)
 
         await conn.reply(m.chat, `✅ *Resultado de ejecución:* \n\n${resultado}`, m)
