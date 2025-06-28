@@ -60,7 +60,7 @@ async function detectarNSFW(m, conn) {
         let isAdmin = false
         let isBotAdmin = false
         
-        // Verificar si el usuario es admin (manualmente para evitar @lid)
+        // Verificar si el usuario es admin
         if (m.chat.includes('@g.us') || m.chat.includes('@lid')) {
             try {
                 let groupMetadata = await conn.groupMetadata(m.chat)
@@ -73,45 +73,23 @@ async function detectarNSFW(m, conn) {
                         isAdmin = userParticipant.admin === 'admin' || userParticipant.admin === 'superadmin'
                     }
                     
-                    // Verificar si el bot es admin (múltiples métodos para JID)
+                    // Verificar si el bot es admin
                     let botJid = conn.user?.jid || conn.user?.id || conn.decodeJid?.(conn.user?.id)
                     
-                    // Debug del bot JID
-                    console.log('=== DEBUG BOT ADMIN ===')
-                    console.log('Bot user object:', conn.user)
-                    console.log('Bot JID methods:', {
-                        'conn.user?.jid': conn.user?.jid,
-                        'conn.user?.id': conn.user?.id,
-                        'conn.decodeJid': conn.decodeJid?.(conn.user?.id)
-                    })
-                    
                     if (botJid) {
-                        console.log('Searching for bot JID:', botJid)
-                        console.log('All participants:', participants.map(p => ({ id: p.id, admin: p.admin })))
-                        
-                        // Buscar bot en participantes (puede tener variaciones en el JID)
+                        // Buscar bot en participantes con múltiples métodos
                         let botParticipant = participants.find(p => {
-                            let match1 = p.id === botJid
-                            let match2 = p.id.split('@')[0] === botJid.split('@')[0]
-                            let match3 = p.id.includes(botJid.split('@')[0])
-                            let match4 = botJid.includes(p.id.split('@')[0])
-                            
-                            console.log(`Comparing ${p.id} with ${botJid}:`, { match1, match2, match3, match4 })
-                            
-                            return match1 || match2 || match3 || match4
+                            return p.id === botJid || 
+                                   p.id.split('@')[0] === botJid.split('@')[0] ||
+                                   p.id.includes(botJid.split('@')[0]) ||
+                                   botJid.includes(p.id.split('@')[0])
                         })
-                        
-                        console.log('Bot participant found:', botParticipant)
                         
                         if (botParticipant) {
                             isBotAdmin = botParticipant.admin === 'admin' || botParticipant.admin === 'superadmin'
-                            console.log('Bot is admin:', isBotAdmin, 'Admin level:', botParticipant.admin)
                         } else {
-                            console.log('❌ Bot participant not found in group')
-                            // Intentar buscar por número de teléfono si el JID tiene formato diferente
+                            // Búsqueda por número si no se encuentra
                             let botNumber = botJid.split('@')[0].replace(/\D/g, '')
-                            console.log('Searching by bot number:', botNumber)
-                            
                             botParticipant = participants.find(p => {
                                 let participantNumber = p.id.split('@')[0].replace(/\D/g, '')
                                 return participantNumber === botNumber
@@ -119,19 +97,16 @@ async function detectarNSFW(m, conn) {
                             
                             if (botParticipant) {
                                 isBotAdmin = botParticipant.admin === 'admin' || botParticipant.admin === 'superadmin'
-                                console.log('✅ Bot found by number! Is admin:', isBotAdmin)
                             }
                         }
-                    } else {
-                        console.log('❌ No bot JID found')
                     }
                 }
             } catch (e) {
-                console.log('Error verificando admins:', e.message)
+                // Silenciar errores de verificación
             }
         }
         
-        // También verificar si es owner
+        // Verificar si es owner
         if (!isAdmin && global.owner) {
             isAdmin = global.owner.some(owner => {
                 let ownerNumber = Array.isArray(owner) ? owner[0] : owner
@@ -139,36 +114,31 @@ async function detectarNSFW(m, conn) {
             })
         }
         
-        // Lista de palabras NSFW
+        // Lista de palabras NSFW - PALABRAS COMPLETAS SOLAMENTE
         const palabrasNSFW = [
-    'porno', 'porn', 'xxx', 'sexo', 'sex', 'pene', 'vagina', 'masturbacion',
-    'masturbar', 'coger', 'follar', 'fuck', 'shit', 'bitch', 'puta', 'puto',
-    'verga', 'chupar', 'mamar', 'correrse', 'venirse', 'orgasmo',
-    'pussy', 'dick', 'cock', 'ass', 'culo', 'tetas', 'boobs',
-    'desnudo', 'desnuda', 'caliente', 'horny', 'cachondo', 'excitado',
-    'placer', 'gemir', 'penetrar', 'chuparla', 'mamada', 'oral', 'anal',
-    'prostituta', 'escort', 'webcam', 'onlyfans', 'pack',
-    'sexy', 'sensual', 'pornhub', 'xnxx', 'verga', 'penon', 'xvideos', 'youporn',
-
-    // Palabras adicionales peligrosas >w<
-    'erotico', 'erótica', 'erotica', 'pornohub', 'desnudito', 'desnudita',
-    'desvestirse', 'desvestido', 'desvestida', 'desnudos', 'sexting',
-    'sado', 'bdsm', 'bondage', 'sadomasoquismo', 'hardcore', 'deepthroat',
-    'clitoris', 'clítoris', 'labios mayores', 'labios menores', 'semen',
-    'eyaculacion', 'eyacular', 'penetracion', 'pechos', 'pezones', 'pezon',
-    'gangbang', 'gang bang', 'violacion', 'violada', 'violador', 'zoofilia',
-    'bestialidad', 'incesto', 'relacion incestuosa', 'pedofilia', 'pedofilo',
-    'pedo', 'lolicon', 'shotacon', 'hentai', 'ecchi', 'rule34', 'furry porno',
-    'camshow',
-    'swingers', 'trío', 'sexo grupal', 'sextape', 'video hot', 'pack privado',
-    'contenido +18', 'contenido sexual', 'contenido explicito', 'contenido explícito',
-    'orgía', 'porno casero', 'porno amateur', 'pornografia', 'pornografía'
-];
+            // Palabras básicas
+            'porno', 'porn', 'xxx', 'sexo', 'sex', 'pene', 'vagina', 'masturbacion',
+            'masturbar', 'coger', 'follar', 'puta', 'puto', 'verga', 'chupar', 
+            'mamar', 'correrse', 'venirse', 'orgasmo', 'pussy', 'dick', 'cock', 
+            'culo', 'tetas', 'boobs', 'desnudo', 'desnuda', 'horny', 'cachondo', 
+            'excitado', 'placer', 'gemir', 'penetrar', 'chuparla', 'mamada', 
+            'oral', 'anal', 'prostituta', 'escort', 'webcam', 'onlyfans', 'pack',
+            'sexy', 'sensual', 'pornhub', 'xnxx', 'penon', 'xvideos', 'youporn',
+            
+            // Palabras adicionales específicas
+            'erotico', 'erótica', 'erotica', 'pornohub', 'desnudito', 'desnudita',
+            'desvestirse', 'desvestido', 'desvestida', 'desnudos', 'sexting',
+            'sado', 'bdsm', 'bondage', 'sadomasoquismo', 'hardcore', 'deepthroat',
+            'clitoris', 'clítoris', 'semen', 'eyaculacion', 'eyacular', 'penetracion',
+            'pechos', 'pezones', 'pezon', 'gangbang', 'violacion', 'violada', 
+            'violador', 'zoofilia', 'bestialidad', 'incesto', 'pedofilia', 'pedofilo',
+            'lolicon', 'shotacon', 'hentai', 'ecchi', 'rule34', 'camshow',
+            'swingers', 'sextape', 'pornografia', 'pornografía'
+        ]
         
-        // 1. Detectar texto NSFW
+        // 1. Detectar texto NSFW con palabras completas
         if (m.text) {
-            const textoLower = m.text.toLowerCase()
-            const tieneNSFW = palabrasNSFW.some(palabra => textoLower.includes(palabra))
+            const tieneNSFW = detectarPalabraCompleta(m.text.toLowerCase(), palabrasNSFW)
             
             if (tieneNSFW && !isAdmin) {
                 await eliminarMensaje(m, conn, isBotAdmin, '🔞 Contenido inapropiado detectado en texto')
@@ -183,13 +153,22 @@ async function detectarNSFW(m, conn) {
         
         // 3. Detectar stickers NSFW
         if (m.mtype === 'stickerMessage' && m.message?.stickerMessage) {
-            // Los stickers también pueden ser imágenes
             await detectarImagenNSFW(m, conn, isAdmin, isBotAdmin, 'sticker')
         }
         
     } catch (error) {
         console.error('Error en sistema anti-NSFW:', error)
     }
+}
+
+// Función para detectar palabras completas (evita falsos positivos)
+function detectarPalabraCompleta(texto, palabrasProhibidas) {
+    // Crear regex para cada palabra que busque palabras completas
+    return palabrasProhibidas.some(palabra => {
+        // Regex que busca la palabra como palabra completa (con límites de palabra)
+        const regex = new RegExp(`\\b${palabra.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i')
+        return regex.test(texto)
+    })
 }
 
 async function detectarImagenNSFW(m, conn, isAdmin, isBotAdmin, tipo = 'imagen') {
@@ -241,42 +220,31 @@ async function detectarImagenNSFW(m, conn, isAdmin, isBotAdmin, tipo = 'imagen')
 
 async function eliminarMensaje(m, conn, isBotAdmin, razon) {
     try {
-        console.log('=== ELIMINANDO MENSAJE ===')
-        console.log('isBotAdmin:', isBotAdmin)
-        console.log('Message key:', m.key)
-        
         let mensajeEliminado = false
         
-        // Intentar eliminar el mensaje (varios métodos)
+        // Intentar eliminar el mensaje
         if (isBotAdmin) {
-            // Método 1: sendMessage con delete
             try {
                 await conn.sendMessage(m.chat, { delete: m.key })
-                console.log('✅ Mensaje eliminado con sendMessage')
                 mensajeEliminado = true
             } catch (deleteError) {
-                console.error('❌ Error con sendMessage:', deleteError.message)
-                
-                // Método 2: deleteMessage directo
                 try {
                     await conn.deleteMessage(m.chat, m.key)
-                    console.log('✅ Mensaje eliminado con deleteMessage')
                     mensajeEliminado = true
                 } catch (altError) {
-                    console.error('❌ Error con deleteMessage:', altError.message)
+                    // Silenciar errores
                 }
             }
         }
         
-        // Si no es admin o falló, intentar de todas formas (a veces funciona)
+        // Si no es admin, intentar de todas formas
         if (!mensajeEliminado) {
             try {
                 await conn.sendMessage(m.chat, { delete: m.key })
-                console.log('✅ Mensaje eliminado sin verificación de admin')
                 mensajeEliminado = true
-                isBotAdmin = true // Actualizar estado si funcionó
+                isBotAdmin = true
             } catch (forceError) {
-                console.error('❌ Fallo forzado:', forceError.message)
+                // Silenciar errores
             }
         }
         
@@ -296,4 +264,4 @@ async function eliminarMensaje(m, conn, isBotAdmin, razon) {
         console.error('Error general eliminando mensaje:', error)
         await conn.reply(m.chat, `❌ Error al procesar: ${razon}`, m)
     }
-                    }
+            }
