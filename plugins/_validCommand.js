@@ -148,7 +148,7 @@ async function detectarNSFW(m, conn) {
     'desnudo', 'desnuda', 'caliente', 'horny', 'cachondo', 'excitado',
     'placer', 'gemir', 'penetrar', 'chuparla', 'mamada', 'oral', 'anal',
     'prostituta', 'escort', 'webcam', 'onlyfans', 'pack',
-    'sexy', 'sensual', 'pornhub', 'xnxx', 'verga', 'penon',
+    'sexy', 'sensual', 'pornhub', 'xnxx', 'verga', 'penon', 'xvideos', 'youporn',
 
     // Palabras adicionales peligrosas >w<
     'erotico', 'erótica', 'erotica', 'pornohub', 'desnudito', 'desnudita',
