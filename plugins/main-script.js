@@ -7,7 +7,7 @@ let res = await fetch('https://api.github.com/repos/SoySapo6/MaycolAIUltraMD')
 if (!res.ok) throw new Error('Error al obtener datos del repositorio')
 let json = await res.json()
 
-let txt = `╭─❍「 ✦ 𝙼𝚊𝚢𝚌𝚘𝚕𝙰𝙸𝚄𝚕𝚝𝚛𝚊𝙼𝙳 ✦ 」\n`
+let txt = `╭─❍「 ✦ 𝙼𝚊𝚢𝚌𝚘𝚕𝙰𝙸 ✦ 」\n`
 txt += `│\n`
 txt += `├─ *Nombre:* ${json.name}\n`
 txt += `├─ *Visitas:* ${json.watchers_count}\n`
@@ -17,7 +17,7 @@ txt += `├─ *Repositorio:* ${json.html_url}\n`
 txt += `├─ *Forks:* ${json.forks_count}\n`
 txt += `├─ *Stars:* ${json.stargazers_count}\n`
 txt += `│\n`
-txt += `╰─✦ Hecho por *SoyMaycol* <3`
+txt += `╰─✦ Hecho por *SoyMaycol*`
 
 await conn.sendMessage(m.chat, {
 text: txt,
