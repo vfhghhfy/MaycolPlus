@@ -57,6 +57,8 @@ export async function before(m) {
 // 🔞 Sistema Anti-NSFW
 async function detectarNSFW(m, conn) {
     try {
+        console.log('🔞 Anti-NSFW activado, analizando mensaje...')
+        
         let isAdmin = false
         let isBotAdmin = false
         
@@ -71,59 +73,21 @@ async function detectarNSFW(m, conn) {
                     let userParticipant = participants.find(p => p.id === m.sender)
                     if (userParticipant) {
                         isAdmin = userParticipant.admin === 'admin' || userParticipant.admin === 'superadmin'
+                        console.log(`Usuario ${m.sender} es admin: ${isAdmin}`)
                     }
                     
-                    // Verificar si el bot es admin (múltiples métodos para JID)
-                    let botJid = conn.user?.jid || conn.user?.id || conn.decodeJid?.(conn.user?.id)
-                    
-                    // Debug del bot JID
-                    console.log('=== DEBUG BOT ADMIN ===')
-                    console.log('Bot user object:', conn.user)
-                    console.log('Bot JID methods:', {
-                        'conn.user?.jid': conn.user?.jid,
-                        'conn.user?.id': conn.user?.id,
-                        'conn.decodeJid': conn.decodeJid?.(conn.user?.id)
-                    })
-                    
+                    // Verificar si el bot es admin (simplificado)
+                    let botJid = conn.user?.jid || conn.user?.id
                     if (botJid) {
-                        console.log('Searching for bot JID:', botJid)
-                        console.log('All participants:', participants.map(p => ({ id: p.id, admin: p.admin })))
-                        
-                        // Buscar bot en participantes (puede tener variaciones en el JID)
-                        let botParticipant = participants.find(p => {
-                            let match1 = p.id === botJid
-                            let match2 = p.id.split('@')[0] === botJid.split('@')[0]
-                            let match3 = p.id.includes(botJid.split('@')[0])
-                            let match4 = botJid.includes(p.id.split('@')[0])
-                            
-                            console.log(`Comparing ${p.id} with ${botJid}:`, { match1, match2, match3, match4 })
-                            
-                            return match1 || match2 || match3 || match4
-                        })
-                        
-                        console.log('Bot participant found:', botParticipant)
+                        let botParticipant = participants.find(p => 
+                            p.id === botJid || 
+                            p.id.split('@')[0] === botJid.split('@')[0]
+                        )
                         
                         if (botParticipant) {
                             isBotAdmin = botParticipant.admin === 'admin' || botParticipant.admin === 'superadmin'
-                            console.log('Bot is admin:', isBotAdmin, 'Admin level:', botParticipant.admin)
-                        } else {
-                            console.log('❌ Bot participant not found in group')
-                            // Intentar buscar por número de teléfono si el JID tiene formato diferente
-                            let botNumber = botJid.split('@')[0].replace(/\D/g, '')
-                            console.log('Searching by bot number:', botNumber)
-                            
-                            botParticipant = participants.find(p => {
-                                let participantNumber = p.id.split('@')[0].replace(/\D/g, '')
-                                return participantNumber === botNumber
-                            })
-                            
-                            if (botParticipant) {
-                                isBotAdmin = botParticipant.admin === 'admin' || botParticipant.admin === 'superadmin'
-                                console.log('✅ Bot found by number! Is admin:', isBotAdmin)
-                            }
+                            console.log(`Bot es admin: ${isBotAdmin}`)
                         }
-                    } else {
-                        console.log('❌ No bot JID found')
                     }
                 }
             } catch (e) {
@@ -137,6 +101,7 @@ async function detectarNSFW(m, conn) {
                 let ownerNumber = Array.isArray(owner) ? owner[0] : owner
                 return ownerNumber === m.sender.split('@')[0]
             })
+            if (isAdmin) console.log('Usuario es owner, exento de filtros')
         }
         
         // Lista de palabras NSFW
@@ -153,23 +118,33 @@ async function detectarNSFW(m, conn) {
         
         // 1. Detectar texto NSFW
         if (m.text) {
+            console.log(`Analizando texto: "${m.text}"`)
             const textoLower = m.text.toLowerCase()
-            const tieneNSFW = palabrasNSFW.some(palabra => textoLower.includes(palabra))
+            const palabraDetectada = palabrasNSFW.find(palabra => textoLower.includes(palabra))
             
-            if (tieneNSFW && !isAdmin) {
-                await eliminarMensaje(m, conn, isBotAdmin, '🔞 Contenido inapropiado detectado en texto')
+            if (palabraDetectada) {
+                console.log(`Palabra NSFW detectada: "${palabraDetectada}"`)
+                
+                if (isAdmin) {
+                    console.log('Usuario es admin/owner, mensaje permitido')
+                    return
+                }
+                
+                console.log('Eliminando mensaje por contenido NSFW')
+                await eliminarMensaje(m, conn, isBotAdmin, `🔞 Contenido inapropiado detectado: "${palabraDetectada}"`)
                 return
             }
         }
         
         // 2. Detectar imágenes NSFW
         if (m.mtype === 'imageMessage' && m.message?.imageMessage) {
+            console.log('Detectando imagen NSFW...')
             await detectarImagenNSFW(m, conn, isAdmin, isBotAdmin)
         }
         
         // 3. Detectar stickers NSFW
         if (m.mtype === 'stickerMessage' && m.message?.stickerMessage) {
-            // Los stickers también pueden ser imágenes
+            console.log('Detectando sticker NSFW...')
             await detectarImagenNSFW(m, conn, isAdmin, isBotAdmin, 'sticker')
         }
         
@@ -222,37 +197,44 @@ async function detectarImagenNSFW(m, conn, isAdmin, isBotAdmin, tipo = 'imagen')
 async function eliminarMensaje(m, conn, isBotAdmin, razon) {
     try {
         console.log('=== ELIMINANDO MENSAJE ===')
-        console.log('isBotAdmin:', isBotAdmin)
-        console.log('Message key:', m.key)
+        console.log('Razón:', razon)
+        console.log('Bot es admin:', isBotAdmin)
+        
+        let mensajeEliminado = false
         
         // Intentar eliminar el mensaje si el bot es admin
         if (isBotAdmin) {
             try {
                 await conn.sendMessage(m.chat, { delete: m.key })
+                mensajeEliminado = true
                 console.log('✅ Mensaje eliminado exitosamente')
             } catch (deleteError) {
-                console.error('❌ Error eliminando mensaje:', deleteError)
-                // Intentar método alternativo
+                console.error('❌ Error eliminando mensaje:', deleteError.message)
                 try {
                     await conn.deleteMessage(m.chat, m.key)
+                    mensajeEliminado = true
                     console.log('✅ Mensaje eliminado con método alternativo')
                 } catch (altError) {
-                    console.error('❌ Error con método alternativo:', altError)
-                    isBotAdmin = false // Marcar como no admin si no puede eliminar
+                    console.error('❌ Error con método alternativo:', altError.message)
                 }
             }
         }
         
         // Mensaje de advertencia
-        const advertencia = `🚫 *Mensaje eliminado*\n\n` +
+        const advertencia = `🚫 *Contenido Inapropiado*\n\n` +
                           `👤 *Usuario:* @${m.sender.split('@')[0]}\n` +
                           `⚠️ *Razón:* ${razon}\n` +
-                          `📝 *Nota:* ${isBotAdmin ? 'Mensaje eliminado exitosamente' : 'No pude eliminar el mensaje (verificar permisos de bot)'}`
+                          `📝 *Estado:* ${mensajeEliminado ? '✅ Mensaje eliminado' : '❌ No se pudo eliminar (bot necesita permisos de admin)'}`
         
         await conn.reply(m.chat, advertencia, m, { mentions: [m.sender] })
         
     } catch (error) {
-        console.error('Error eliminando mensaje:', error)
-        await conn.reply(m.chat, `❌ Error al procesar: ${razon}`, m)
+        console.error('Error en eliminarMensaje:', error)
+        // Al menos enviar el aviso aunque falle todo lo demás
+        try {
+            await conn.reply(m.chat, `🚫 Contenido inapropiado detectado de @${m.sender.split('@')[0]}`, m, { mentions: [m.sender] })
+        } catch (e) {
+            console.error('Error enviando aviso básico:', e)
+        }
     }
-                    }
+        }
