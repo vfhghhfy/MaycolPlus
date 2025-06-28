@@ -1,123 +1,128 @@
 let handler = async (m, { conn, args, text, usedPrefix, command }) => {
-    // Verificar si es grupo (funciona con @g.us y @lid)
-    if (!m.chat.includes('@g.us') && !m.chat.includes('@lid')) {
-        return conn.reply(m.chat, '❌ Este comando solo funciona en grupos.', m)
-    }
-    
     const emoji = '📧'
     const emoji2 = '⚠️'
     
-    if (!text) return conn.reply(m.chat, `${emoji} Por favor, ingrese el número al que quiere enviar una invitación al grupo.`, m)
-    if (text.includes('+')) return conn.reply(m.chat, `${emoji2} Ingrese el número todo junto sin el *+*`, m)
-    if (isNaN(text)) return conn.reply(m.chat, `${emoji2} Ingrese sólo números sin su código de país y sin espacios.`, m)
+    // Verificar si es grupo (compatible con @g.us y @lid)
+    if (!m.chat.includes('@g.us') && !m.chat.includes('@lid')) {
+        return conn.reply(m.chat, `${emoji2} Este comando solo funciona en grupos.`, m)
+    }
     
     // Verificar permisos manualmente
-    let isOwner = global.owner && global.owner.some(owner => {
-        let ownerNumber = Array.isArray(owner) ? owner[0] : owner
-        return ownerNumber === m.sender.split('@')[0]
-    })
-    
-    let isAdmin = false
+    let isUserAdmin = false
     let isBotAdmin = false
+    let isOwner = false
+    
+    // Verificar si es owner
+    if (global.owner) {
+        isOwner = global.owner.some(owner => {
+            let ownerNumber = Array.isArray(owner) ? owner[0] : owner
+            return ownerNumber === m.sender.split('@')[0]
+        })
+    }
     
     try {
         let groupMetadata = await conn.groupMetadata(m.chat)
         if (!groupMetadata || !groupMetadata.participants) {
-            return conn.reply(m.chat, '❌ No pude obtener información del grupo. Intenta de nuevo.', m)
+            return conn.reply(m.chat, `${emoji2} No pude obtener información del grupo. Intenta de nuevo.`, m)
         }
         
         let participants = groupMetadata.participants
         
-        // Verificar si el usuario es admin
+        // Verificar si el usuario es admin (o si es owner)
         if (!isOwner) {
             let userParticipant = participants.find(p => p.id === m.sender)
             if (userParticipant) {
-                isAdmin = userParticipant.admin === 'admin' || userParticipant.admin === 'superadmin'
+                isUserAdmin = userParticipant.admin === 'admin' || userParticipant.admin === 'superadmin'
             }
-        }
-        
-        // Verificar si el bot es admin (múltiples formas de obtener el JID)
-        let botJid = conn.user?.jid || conn.user?.id || conn.decodeJid?.(conn.user?.id) || conn.user?.number + '@s.whatsapp.net'
-        
-        // Debug para ver qué JID estamos usando
-        console.log('=== DEBUG BOT ADMIN ===')
-        console.log('Bot JID detectado:', botJid)
-        console.log('Conn.user:', conn.user)
-        
-        // Buscar el bot en participantes de diferentes formas
-        let botParticipant = participants.find(p => {
-            console.log('Comparando:', p.id, 'con:', botJid)
-            return p.id === botJid || 
-                   p.id.includes(botJid.split('@')[0]) ||
-                   botJid.includes(p.id.split('@')[0])
-        })
-        
-        console.log('Bot participant encontrado:', botParticipant)
-        
-        if (botParticipant) {
-            isBotAdmin = botParticipant.admin === 'admin' || botParticipant.admin === 'superadmin'
-            console.log('Bot es admin:', isBotAdmin, 'Nivel:', botParticipant.admin)
         } else {
-            // Si no encontramos al bot, intentemos de otra forma
-            console.log('No encontré bot participant, buscando por número...')
-            if (conn.user?.number) {
-                botParticipant = participants.find(p => p.id.includes(conn.user.number))
-                if (botParticipant) {
-                    isBotAdmin = botParticipant.admin === 'admin' || botParticipant.admin === 'superadmin'
-                    console.log('Bot encontrado por número - es admin:', isBotAdmin)
-                }
+            isUserAdmin = true // Owner siempre puede usar el comando
+        }
+        
+        // Verificar si el bot es admin
+        let botJid = conn.user?.jid || conn.user?.id
+        if (botJid) {
+            let botParticipant = participants.find(p => p.id === botJid)
+            if (botParticipant) {
+                isBotAdmin = botParticipant.admin === 'admin' || botParticipant.admin === 'superadmin'
             }
         }
+        
+        // Debug info
+        console.log('=== DEBUG INVITE ===')
+        console.log('Chat:', m.chat)
+        console.log('User admin:', isUserAdmin)
+        console.log('Bot admin:', isBotAdmin)
+        console.log('Is owner:', isOwner)
         
     } catch (error) {
-        console.error('Error verificando permisos del grupo:', error)
-        return conn.reply(m.chat, '❌ Error al verificar permisos. Intenta de nuevo.', m)
+        console.error('Error verificando permisos:', error)
+        return conn.reply(m.chat, `${emoji2} Error al verificar permisos del grupo.`, m)
     }
     
     // Verificar si el usuario puede usar el comando
-    if (!isAdmin && !isOwner) {
+    if (!isUserAdmin && !isOwner) {
         return conn.reply(m.chat, `${emoji2} Solo los administradores del grupo pueden usar este comando.`, m)
     }
     
-    // Verificar si el bot es admin (con fallback si la detección falla)
+    // Verificar si el bot es admin
     if (!isBotAdmin) {
-        // Intentar generar el código como prueba
-        try {
-            await conn.groupInviteCode(group)
-            // Si llegamos aquí, el bot SÍ es admin
-            isBotAdmin = true
-            console.log('Bot confirmado como admin mediante prueba de inviteCode')
-        } catch (testError) {
-            console.log('Bot confirmado NO admin - error:', testError.message)
-            return conn.reply(m.chat, `${emoji2} El bot necesita ser administrador para generar enlaces de invitación.`, m)
-        }
+        return conn.reply(m.chat, `${emoji2} El bot necesita ser administrador para generar enlaces de invitación.`, m)
+    }
+    
+    // Validar número
+    if (!text) {
+        return conn.reply(m.chat, `${emoji} Por favor, ingrese el número al que quiere enviar una invitación al grupo.\n\n*Ejemplo:* ${usedPrefix}${command} 521234567890`, m)
+    }
+    
+    if (text.includes('+')) {
+        return conn.reply(m.chat, `${emoji2} Ingrese el número todo junto sin el *+*`, m)
+    }
+    
+    if (isNaN(text)) {
+        return conn.reply(m.chat, `${emoji2} Ingrese sólo números sin su código de país y sin espacios.`, m)
     }
     
     try {
+        // Generar link de invitación
         let group = m.chat
-        let link = 'https://chat.whatsapp.com/' + await conn.groupInviteCode(group)
+        let inviteCode = await conn.groupInviteCode(group)
+        let link = 'https://chat.whatsapp.com/' + inviteCode
         
-        // Formatear el número correctamente
-        let targetNumber = text.trim()
-        if (!targetNumber.includes('@')) {
-            targetNumber = targetNumber + '@s.whatsapp.net'
-        }
+        // Obtener info del grupo
+        let groupMetadata = await conn.groupMetadata(group)
+        let groupName = groupMetadata.subject || 'este grupo'
+        
+        // Mensaje de invitación personalizado
+        let inviteMessage = `${emoji} *INVITACIÓN A GRUPO*\n\n` +
+                           `👋 ¡Hola! Un usuario te invitó a unirte al grupo *${groupName}*\n\n` +
+                           `🔗 *Enlace de invitación:*\n${link}\n\n` +
+                           `💬 ¡Esperamos verte pronto en el grupo!`
         
         // Enviar invitación
-        await conn.reply(targetNumber, `${emoji} *INVITACIÓN A GRUPO*\n\nUn usuario te invitó a unirte a este grupo\n\n${link}`, m, {mentions: [m.sender]})
+        await conn.reply(text + '@s.whatsapp.net', inviteMessage, m, {
+            mentions: [m.sender]
+        })
         
         // Confirmar envío
-        await conn.reply(m.chat, `${emoji} Se envió un enlace de invitación al número *${text}*.`, m)
+        await conn.reply(m.chat, `${emoji} ✅ Se envió un enlace de invitación al número *${text}*\n\n📱 El usuario recibirá la invitación en su chat privado.`, m)
         
     } catch (error) {
         console.error('Error enviando invitación:', error)
-        await conn.reply(m.chat, `${emoji2} No pude enviar la invitación. Verifica que el número sea válido.`, m)
+        
+        if (error.message?.includes('not-admin')) {
+            return conn.reply(m.chat, `${emoji2} Error: El bot no tiene permisos de administrador para generar enlaces.`, m)
+        } else if (error.message?.includes('forbidden')) {
+            return conn.reply(m.chat, `${emoji2} Error: No se pudo enviar la invitación al número ${text}. Verifica que el número sea correcto.`, m)
+        } else {
+            return conn.reply(m.chat, `${emoji2} Error al enviar la invitación: ${error.message}`, m)
+        }
     }
 }
 
-handler.help = ['invite *<521>*']
+handler.help = ['invite *<número>*', 'add *<número>*']
 handler.tags = ['group']
 handler.command = ['add', 'agregar', 'añadir', 'invite', 'invitar']
-// Removemos handler.admin, handler.group, handler.botAdmin ya que lo manejamos manualmente
+// Removemos handler.group, handler.admin y handler.botAdmin
+// Ya que manejamos todo manualmente
 
 export default handler
