@@ -16,9 +16,9 @@ const done = '✅'
 const error = '❌'
 
 if (!global.db.data.users) global.db.data.users = {}
-if (!global.db.data.users[m.sender]) global.db.data.users[m.sender] = { coins: 0, xp: 0, nivel: 1 }
+if (!global.db.data.users[m.sender]) global.db.data.users[m.sender] = {}
 
-const basePrompt = `Tu nombre es ${botname} y fuiste creado por ${creador}. Eres una IA amigable, divertida, y muy tierna como Hanako-kun (⊂(・▽・)⊃). Tu versión es ${vs}, amas aprender y siempre llamas a las personas por su nombre, como ${username}. Puedes activar funciones del sistema escribiendo variables como [AntiNSFW (on)] o [Coins (+50)]. Responde de forma kawaii, carismática y con un toque de humor.`
+const basePrompt = `Tu nombre es ${botname}, fuiste creado por ${creador}. Eres una IA kawaii, divertida y temática de Hanako-kun (⊂(・▽・)⊃). Tu versión es ${vs}. Amas aprender y siempre llamas a las personas por su nombre (${username}). Puedes usar variables especiales como: [AntiNSFW (on)], [AntiNSFW (off)], [Coins (+50)], [XP (+30)], [Nivel (+1)], [RPGGold (50)], [RPGDiamond (10)], [RPGRuby (5)], [RPGEmerald (7)], [RPGVitality (3)], [RPGStrength (4)], [RPGIntelligence (2)], [RPGCharisma (2)], [RPGAgility (3)], [RPGPickaxe (1)], [RPGWeapon (1)], [RPGArmor (1)], [RPGHouse (1)], [RPGFarm (1)], [RPGStamina (5)], [RPGHealth (5)], [RPGPotion (5)], [RPGFood (5)], [RPGSeeds (5)]. No inventes otras variables.`
 
 if (isQuotedImage) {
 const q = m.quoted
@@ -28,10 +28,9 @@ if (!img) return conn.reply(m.chat, `${msm} Error: No pude descargar la imagen (
 const content = `${emoji} ¿Qué se observa en la imagen?`
 try {
 const imageAnalysis = await fetchImageBuffer(content, img)
-const query = `${emoji} Descríbeme la imagen con muchos detalles, y dime si debo activar alguna función.`
-const prompt = `${basePrompt} La imagen que analizas es: ${imageAnalysis.result}`
+const query = `${emoji} Describe la imagen y usa variables si lo crees necesario.`
+const prompt = `${basePrompt} La imagen es: ${imageAnalysis.result}`
 let description = await hanakoAI(query, username, prompt)
-
 await ejecutarVariables(description, conn, m)
 description = limpiarVariables(description)
 await conn.reply(m.chat, description, m)
@@ -45,9 +44,8 @@ await m.react(rwait)
 try {
 const { key } = await conn.sendMessage(m.chat, { text: `${emoji2} HanakoAI está pensando... espera un poquito UwU~` }, { quoted: m })
 const query = text
-const prompt = `${basePrompt} Responde lo siguiente como Hanako-kun, con emojis, ternura y mucha personalidad: ${query}`
+const prompt = `${basePrompt} Responde lo siguiente de forma tierna, como Hanako-kun: ${query}`
 let response = await hanakoAI(query, username, prompt)
-
 await ejecutarVariables(response, conn, m)
 response = limpiarVariables(response)
 await conn.sendMessage(m.chat, { text: response, edit: key })
@@ -78,12 +76,7 @@ throw error
 
 async function hanakoAI(q, username, logic) {
 try {
-const response = await axios.post('https://Luminai.my.id', {
-content: q,
-user: username,
-prompt: logic,
-webSearchMode: false
-})
+const response = await axios.post('https://Luminai.my.id', { content: q, user: username, prompt: logic, webSearchMode: false })
 return response.data.result
 } catch (error) {
 console.error('Error al interactuar con la IA:', error)
@@ -91,47 +84,54 @@ throw error
 }}
 
 async function ejecutarVariables(respuesta, conn, m) {
-const activarNSFW = respuesta.includes('[AntiNSFW (on)]')
-const desactivarNSFW = respuesta.includes('[AntiNSFW (off)]')
-const coinsRegex = /\[Coins \(\+(\d+)\)\]/i
-const xpRegex = /\[XP \(\+(\d+)\)\]/i
-const nivelRegex = /\[Nivel \(\+(\d+)\)\]/i
+const vars = {
+AntiNSFWon: /\[AntiNSFW \(on\)\]/i,
+AntiNSFWoff: /\[AntiNSFW \(off\)\]/i,
+Coins: /\[Coins \(\+(\d+)\)\]/i,
+XP: /\[XP \(\+(\d+)\)\]/i,
+Nivel: /\[Nivel \(\+(\d+)\)\]/i,
+Gold: /\[RPGGold \((\d+)\)\]/i,
+Diamond: /\[RPGDiamond \((\d+)\)\]/i,
+Ruby: /\[RPGRuby \((\d+)\)\]/i,
+Emerald: /\[RPGEmerald \((\d+)\)\]/i,
+Vitality: /\[RPGVitality \((\d+)\)\]/i,
+Strength: /\[RPGStrength \((\d+)\)\]/i,
+Intelligence: /\[RPGIntelligence \((\d+)\)\]/i,
+Charisma: /\[RPGCharisma \((\d+)\)\]/i,
+Agility: /\[RPGAgility \((\d+)\)\]/i,
+Pickaxe: /\[RPGPickaxe \((\d+)\)\]/i,
+Weapon: /\[RPGWeapon \((\d+)\)\]/i,
+Armor: /\[RPGArmor \((\d+)\)\]/i,
+House: /\[RPGHouse \((\d+)\)\]/i,
+Farm: /\[RPGFarm \((\d+)\)\]/i,
+Stamina: /\[RPGStamina \((\d+)\)\]/i,
+Health: /\[RPGHealth \((\d+)\)\]/i,
+Potion: /\[RPGPotion \((\d+)\)\]/i,
+Food: /\[RPGFood \((\d+)\)\]/i,
+Seeds: /\[RPGSeeds \((\d+)\)\]/i,
+}
 
 if (!global.db.data.chats) global.db.data.chats = {}
 if (!global.db.data.chats[m.chat]) global.db.data.chats[m.chat] = {}
+if (!global.db.data.users) global.db.data.users = {}
+if (!global.db.data.users[m.sender]) global.db.data.users[m.sender] = {}
 
-if (activarNSFW) {
-global.db.data.chats[m.chat].antiNsfw = true
-console.log('⚡ HanakoAI activó AntiNSFW')
-}
-if (desactivarNSFW) {
-global.db.data.chats[m.chat].antiNsfw = false
-console.log('⚡ HanakoAI desactivó AntiNSFW')
-}
+let chat = global.db.data.chats[m.chat]
+let user = global.db.data.users[m.sender]
 
-if (coinsRegex.test(respuesta)) {
-let cantidad = parseInt(respuesta.match(coinsRegex)[1])
-global.db.data.users[m.sender].coins += cantidad
-console.log(`✨ HanakoAI otorgó ${cantidad} MayCoins a ${m.sender}`)
+if (vars.AntiNSFWon.test(respuesta)) chat.antiNsfw = true
+if (vars.AntiNSFWoff.test(respuesta)) chat.antiNsfw = false
+
+for (let [key, regex] of Object.entries(vars)) {
+if (['AntiNSFWon', 'AntiNSFWoff'].includes(key)) continue
+if (regex.test(respuesta)) {
+let cantidad = parseInt(respuesta.match(regex)[1])
+user[key.toLowerCase()] = (user[key.toLowerCase()] || 0) + cantidad
+console.log(`✨ HanakoAI otorgó ${cantidad} de ${key} a ${m.sender}`)
 }
-if (xpRegex.test(respuesta)) {
-let cantidad = parseInt(respuesta.match(xpRegex)[1])
-global.db.data.users[m.sender].xp += cantidad
-console.log(`📈 HanakoAI otorgó ${cantidad} XP a ${m.sender}`)
-}
-if (nivelRegex.test(respuesta)) {
-let cantidad = parseInt(respuesta.match(nivelRegex)[1])
-global.db.data.users[m.sender].nivel += cantidad
-console.log(`🌟 HanakoAI subió de nivel a ${m.sender}`)
 }
 }
 
 function limpiarVariables(texto) {
-return texto
-.replace(/\[AntiNSFW \(on\)\]/ig, '')
-.replace(/\[AntiNSFW \(off\)\]/ig, '')
-.replace(/\[Coins \(\+\d+\)\]/ig, '')
-.replace(/\[XP \(\+\d+\)\]/ig, '')
-.replace(/\[Nivel \(\+\d+\)\]/ig, '')
-.trim()
-}
+return texto.replace(/\[(.*?)\]/g, '').trim()
+  }
