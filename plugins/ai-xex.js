@@ -7,12 +7,12 @@ const apis = {
   perplexity: 'https://api.perplexity.ai/chat'
 }
 
-const apiKeys = {
-  openrouter: [
-    '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',
-    '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',
-    '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'
-  ]
+const keysCatboxURL = 'https://files.catbox.moe/o1hpeb.json' // Tu JSON subido
+
+async function obtenerKeys() {
+  const res = await fetch(keysCatboxURL)
+  const data = await res.json()
+  return data.openrouter_keys
 }
 
 const handler = async (msg, { conn, args, usedPrefix, command }) => {
@@ -84,7 +84,9 @@ function cleanResponse(text) {
 }
 
 async function openRouterQuery(q, prompt) {
-  for (const key of apiKeys.openrouter) {
+  const keys = await obtenerKeys()
+
+  for (const key of keys) {
     try {
       const { data } = await axios.post(apis.openrouter, {
         model: 'mistralai/mixtral-8x7b-instruct',
@@ -100,7 +102,7 @@ async function openRouterQuery(q, prompt) {
       })
       return data.choices[0].message.content
     } catch (e) {
-      console.warn(`OpenRouter falló con key ${key}, probando siguiente...`)
+      console.warn(`Clave falló ${key}, probando siguiente...`)
     }
   }
   throw new Error('Todas las claves de OpenRouter fallaron')
