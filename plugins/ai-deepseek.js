@@ -46,6 +46,6 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
 
 handler.help = ['deepseek']
 handler.tags = ['tools']
-handler.command = /^(deep|deepseek|deeps)$/i
+handler.command = ['deep','deepseek','deeps']
 
 export default handler
