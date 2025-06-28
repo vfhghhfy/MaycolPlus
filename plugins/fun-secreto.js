@@ -26,8 +26,8 @@ const handler = async (m, { conn, text }) => {
 │ Y también escuchó este pensamiento anónimo... 🌑
 │ 『✧』 ${secretoTraducido} — *${autor}*
 │
-│ Puedes revisar más secretos aquí...
-> *_https://maysecretos.onrender.com_*
+│ Ser chismoso es malo lo sabes?...
+> *_Hecho por SoyMaycol <3_*
 ╰─────────────────⛩️`;
 
     await conn.sendMessage(m.chat, {
