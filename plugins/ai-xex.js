@@ -77,7 +77,7 @@ const handler = async (msg, { conn, args, usedPrefix, command }) => {
 // Funciones auxiliares (las mismas que tienes)
 async function getPrompt() {
   try {
-    const res = await fetch('https://raw.githubusercontent.com/elrebelde21/LoliBot-MD/main/src/text-chatgpt.txt');
+    const res = await fetch('https://raw.githubusercontent.com/SoySapo6/MaycolAIUltraMD/refs/heads/main/src/prompt-xex.js');
     return await res.text();
   } catch {
     return 'Eres un asistente inteligente';
