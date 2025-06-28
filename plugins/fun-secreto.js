@@ -5,12 +5,18 @@ const handler = async (m, { conn, text }) => {
   if (!secreto) throw 'Debes escribir tu secreto después de "secreto".';
 
   try {
+    // Secreto random en inglés
     const res = await fetch('https://dummyjson.com/quotes/random');
     const json = await res.json();
 
-    const secretoRandom = json?.quote
-      ? `${json.quote} — *${json.author}*`
-      : 'Alguien dejó su pensamiento en la oscuridad...';
+    const fraseIngles = json?.quote || 'Someone left their secret in the shadows...';
+    const autor = json?.author || 'Anónimo';
+
+    // Traducimos al español
+    const resTrad = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(fraseIngles)}&langpair=en|es`);
+    const jsonTrad = await resTrad.json();
+
+    const secretoTraducido = jsonTrad?.responseData?.translatedText || fraseIngles;
 
     const texto = `
 ╭───〔  𖣔  〕───⛩️
@@ -18,9 +24,10 @@ const handler = async (m, { conn, text }) => {
 │ 『✧』 ${secreto}
 │
 │ Y también escuchó este pensamiento anónimo... 🌑
-│ 『✧』 ${secretoRandom}
+│ 『✧』 ${secretoTraducido} — *${autor}*
 │
 │ Puedes revisar más secretos aquí...
+> *_https://maysecretos.onrender.com_*
 ╰─────────────────⛩️`;
 
     await conn.sendMessage(m.chat, {
