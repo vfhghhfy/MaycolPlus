@@ -4,22 +4,23 @@ const handler = async (m, { conn, text }) => {
   const secreto = text?.trim();
   if (!secreto) throw 'Debes escribir tu secreto después de "secreto".';
 
-  const url = `https://maycolaiultramd-secretos-api.onrender.com/MaycolAIUltraMD?secreto=${encodeURIComponent(secreto)}`;
-
   try {
-    const res = await fetch(url);
+    const res = await fetch('https://dummyjson.com/quotes/random');
     const json = await res.json();
 
-    const respuesta = json?.respuesta || 'Secreto registrado correctamente.';
+    const secretoRandom = json?.quote
+      ? `${json.quote} — *${json.author}*`
+      : 'Alguien dejó su pensamiento en la oscuridad...';
 
     const texto = `
 ╭───〔  𖣔  〕───⛩️
 │ *Hanako-kun ha escuchado tu secreto...*
+│ 『✧』 ${secreto}
 │
-│ 『✧』 ${respuesta}
+│ Y también escuchó este pensamiento anónimo... 🌑
+│ 『✧』 ${secretoRandom}
 │
-│  Puedes revisar tu Secreto aca...
-> *_https://maysecretos.onrender.com_*
+│ Puedes revisar más secretos aquí...
 ╰─────────────────⛩️`;
 
     await conn.sendMessage(m.chat, {
@@ -36,8 +37,10 @@ const handler = async (m, { conn, text }) => {
         }
       }
     }, { quoted: m });
+
   } catch (e) {
-    await m.reply('Hubo un error al registrar el secreto. Intenta nuevamente más tarde.');
+    console.log(e);
+    await m.reply('Hubo un error al registrar el secreto o al buscar otro... Intenta más tarde.');
   }
 };
 
