@@ -1,32 +1,51 @@
-import axios from 'axios'
+import fetch from 'node-fetch'
 
-const handler = async (m, { conn, text }) => {
-  if (!text) return conn.reply(m.chat, '*Ingresa un texto para hablar con DeepSeek AI.*', m)
+let handler = async (m, { conn, text, usedPrefix, command }) => {
+  
+  if (!text) {
+    return conn.reply(m.chat, 
+`╭─〔 𖣔 𝙈𝙖𝙮𝙘𝙤𝙡𝘼𝙄𝙐𝙡𝙩𝙧𝙖𝙈𝘿 ✦ DeepSeek ✦ 〕─⛩️
+│ ✧ *Consulta Vacía* ✧
+│ 
+│ Por favor, invoca tu duda o pregunta junto al comando.
+│ Ejemplo: *${usedPrefix + command} Qué es el cielo?*
+╰─❍`, m, rcanal)
+  }
+
+  await m.react('🐋')
 
   try {
-    const { data } = await axios.post('https://api.deepseek.com/chat/completions', {
-      model: 'deepseek-chat',
-      messages: [
-        { role: 'system', content: 'Eres un asistente útil y amigable.' },
-        { role: 'user', content: text }
-      ],
-      stream: false
-    }, {
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer sk-a109b3d56e1745dc83cca6e09ae9b878'
-      }
-    })
+    let api = await fetch(`https://api-pbt.onrender.com/api/ai/model/deepseek?texto=${encodeURIComponent(text)}&apikey=8jkh5icbf05`)
+    let json = await api.json()
 
-    let respuesta = data?.choices?.[0]?.message?.content
-    if (!respuesta) return m.reply('❌ No se obtuvo una respuesta válida de DeepSeek AI.')
-
-    await m.reply(respuesta)
-  } catch (e) {
-    console.log(e)
-    await m.reply('*❌ Error al procesar la solicitud de DeepSeek AI.*')
+    if (json?.data) {
+      await conn.reply(m.chat, 
+`╭─〔 ✦ DeepSeek te responde desde el baño ✦ 〕─🚽
+│ ✿ *Tu Pregunta:* ${text}
+│
+│ ✧ *Respuesta:* 
+│ ${json.data.trim()}
+╰─❍`, m, rcanal)
+    } else {
+      await m.react('✖️')
+      await conn.reply(m.chat, 
+`╭─〔 𖣔 MaycolAIUltraMD ✦ 〕─⛩️
+│ ⛔ No pude invocar la respuesta...
+│ Tal vez los fantasmas bloquearon la red.
+╰─❍`, m, rcanal)
+    }
+  } catch {
+    await m.react('✖️')
+    await conn.reply(m.chat, 
+`╭─〔 𖣔 MaycolAIUltraMD ✦ 〕─⛩️
+│ ⚠️ Algo salió mal...
+│ Puede que Hanako esté ocupado asustando a alguien.
+╰─❍`, m, rcanal)
   }
 }
 
-handler.command = ['deepseek']
+handler.help = ['deepseek']
+handler.tags = ['tools']
+handler.command = /^(deep|deepseek|deeps)$/i
+
 export default handler
