@@ -61,7 +61,7 @@ handler.help = ['hanakoai', 'chatgpt']
 handler.tags = ['ai']
 handler.command = ['hanakoai', 'maycolaiultramd', 'hanako']
 handler.group = true
-export default handler
+// export default handler
 
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
