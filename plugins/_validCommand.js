@@ -133,7 +133,7 @@ async function detectarNSFW(m, conn) {
             'pechos', 'pezones', 'pezon', 'gangbang', 'violacion', 'violada', 
             'violador', 'zoofilia', 'bestialidad', 'incesto', 'pedofilia', 'pedofilo',
             'lolicon', 'shotacon', 'hentai', 'ecchi', 'rule34', 'camshow',
-            'swingers', 'sextape', 'pornografia', 'pornografía'
+            'swingers', 'sextape', 'pornografia', 'pornografía', 'pornografia infantil', 'hot'
         ]
         
         // 1. Detectar texto NSFW con palabras completas
