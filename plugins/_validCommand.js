@@ -78,6 +78,7 @@ async function detectarNSFW(m, conn) {
                     
                     // Debug del bot JID
                     console.log('=== DEBUG BOT ADMIN ===')
+                    console.log('Bot user object:', conn.user)
                     console.log('Bot JID methods:', {
                         'conn.user?.jid': conn.user?.jid,
                         'conn.user?.id': conn.user?.id,
@@ -85,22 +86,44 @@ async function detectarNSFW(m, conn) {
                     })
                     
                     if (botJid) {
+                        console.log('Searching for bot JID:', botJid)
+                        console.log('All participants:', participants.map(p => ({ id: p.id, admin: p.admin })))
+                        
                         // Buscar bot en participantes (puede tener variaciones en el JID)
                         let botParticipant = participants.find(p => {
-                            return p.id === botJid || 
-                                   p.id.split('@')[0] === botJid.split('@')[0] ||
-                                   p.id.includes(botJid.split('@')[0])
+                            let match1 = p.id === botJid
+                            let match2 = p.id.split('@')[0] === botJid.split('@')[0]
+                            let match3 = p.id.includes(botJid.split('@')[0])
+                            let match4 = botJid.includes(p.id.split('@')[0])
+                            
+                            console.log(`Comparing ${p.id} with ${botJid}:`, { match1, match2, match3, match4 })
+                            
+                            return match1 || match2 || match3 || match4
                         })
                         
                         console.log('Bot participant found:', botParticipant)
-                        console.log('All participants JIDs:', participants.map(p => p.id))
                         
                         if (botParticipant) {
                             isBotAdmin = botParticipant.admin === 'admin' || botParticipant.admin === 'superadmin'
                             console.log('Bot is admin:', isBotAdmin, 'Admin level:', botParticipant.admin)
                         } else {
-                            console.log('Bot participant not found in group')
+                            console.log('❌ Bot participant not found in group')
+                            // Intentar buscar por número de teléfono si el JID tiene formato diferente
+                            let botNumber = botJid.split('@')[0].replace(/\D/g, '')
+                            console.log('Searching by bot number:', botNumber)
+                            
+                            botParticipant = participants.find(p => {
+                                let participantNumber = p.id.split('@')[0].replace(/\D/g, '')
+                                return participantNumber === botNumber
+                            })
+                            
+                            if (botParticipant) {
+                                isBotAdmin = botParticipant.admin === 'admin' || botParticipant.admin === 'superadmin'
+                                console.log('✅ Bot found by number! Is admin:', isBotAdmin)
+                            }
                         }
+                    } else {
+                        console.log('❌ No bot JID found')
                     }
                 }
             } catch (e) {
@@ -232,4 +255,4 @@ async function eliminarMensaje(m, conn, isBotAdmin, razon) {
         console.error('Error eliminando mensaje:', error)
         await conn.reply(m.chat, `❌ Error al procesar: ${razon}`, m)
     }
-}
+                    }
