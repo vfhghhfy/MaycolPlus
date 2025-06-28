@@ -1,7 +1,8 @@
 import fs from 'fs'
 
 let handler = async (m, { conn, args, usedPrefix, command }) => {
-    // Verificar si es owner primero
+    
+    // Verificar si es dueño supremo primero
     let isOwner = global.owner && global.owner.some(owner => {
         let ownerNumber = Array.isArray(owner) ? owner[0] : owner
         return ownerNumber === m.sender.split('@')[0]
@@ -9,43 +10,45 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
     
     let isAdmin = false
     
-    // Si es owner, no necesita ser admin
     if (!isOwner) {
-        // Verificar si es grupo (funciona con @g.us y @lid)
+        // Solo funciona en los reinos grupales
         if (!m.chat.includes('@g.us') && !m.chat.includes('@lid')) {
-            return conn.reply(m.chat, '❌ Este comando solo funciona en grupos.', m)
+            return conn.reply(m.chat, `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ ❌ Este hechizo solo funciona en grupos.
+╰─✦`, m)
         }
         
         try {
             let groupMetadata = await conn.groupMetadata(m.chat)
             if (!groupMetadata || !groupMetadata.participants) {
-                return conn.reply(m.chat, '❌ No pude obtener información del grupo. Intenta de nuevo.', m)
+                return conn.reply(m.chat, `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ ⚠️ No pude descifrar los registros mágicos del grupo, inténtalo otra vez.
+╰─✦`, m)
             }
-            
-            // Debug: mostrar información
-            console.log('=== DEBUG ADMIN ===')
-            console.log('Chat ID:', m.chat)
-            console.log('Sender:', m.sender)
-            console.log('Participants count:', groupMetadata.participants.length)
             
             let participants = groupMetadata.participants
             let userParticipant = participants.find(p => p.id === m.sender)
             
-            console.log('User participant found:', userParticipant)
-            
             if (userParticipant) {
                 isAdmin = userParticipant.admin === 'admin' || userParticipant.admin === 'superadmin'
-                console.log('Is admin:', isAdmin, 'Admin level:', userParticipant.admin)
             }
             
         } catch (error) {
-            console.error('Error obteniendo metadata del grupo:', error)
-            return conn.reply(m.chat, '❌ Error al verificar permisos. Intenta de nuevo.', m)
+            console.error('Error mágico:', error)
+            return conn.reply(m.chat, `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ ⚠️ Los poderes se debilitaron al intentar verificar los permisos.
+╰─✦`, m)
         }
     }
     
     if (!isAdmin && !isOwner) {
-        return conn.reply(m.chat, '❌ Solo los administradores del grupo o el owner pueden usar este comando.', m)
+        return conn.reply(m.chat, `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ ❌ Solo los guardianes (admins) o el supremo (owner) pueden invocar este conjuro.
+╰─✦`, m)
     }
     
     let chat = global.db.data.chats[m.chat]
@@ -57,24 +60,52 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
     let action = args[0]?.toLowerCase()
     
     if (!action || (action !== 'on' && action !== 'off')) {
-        return conn.reply(m.chat, `📋 *Uso del comando:*\n\n• ${usedPrefix}${command} on - Activar anti-NSFW\n• ${usedPrefix}${command} off - Desactivar anti-NSFW\n\n*Estado actual:* ${chat.antiNsfw ? '✅ Activado' : '❌ Desactivado'}`, m)
+        return conn.reply(m.chat, `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ 📜 *Uso del hechizo:*
+│   ⇝ ${usedPrefix}${command} on - Activar el escudo Anti-NSFW
+│   ⇝ ${usedPrefix}${command} off - Desactivar el escudo Anti-NSFW
+│
+├─ ✨ *Estado actual:* ${chat.antiNsfw ? '✅ Activado' : '❌ Desactivado'}
+╰─✦`, m)
     }
     
     if (action === 'on') {
         if (chat.antiNsfw) {
-            return conn.reply(m.chat, '⚠️ El sistema anti-NSFW ya está activado en este grupo.', m)
+            return conn.reply(m.chat, `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ ⚠️ El escudo mágico Anti-NSFW ya está activo protegiendo este reino.
+╰─✦`, m)
         }
         
         chat.antiNsfw = true
-        await conn.reply(m.chat, `✅ *Sistema Anti-NSFW Activado*\n\n🔒 Se eliminaran automáticamente:\n• Imágenes NSFW (>50%)\n• Mensajes con contenido +18\n• Stickers inapropiados\n\n⚡ Sistema activo para mantener el grupo seguro.`, m)
+        await conn.reply(m.chat, `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ ✅ *Escudo Anti-NSFW Activado*
+│
+├─ 🔒 Protección activa contra:
+│   ⇝ Imágenes prohibidas (+50% NSFW)
+│   ⇝ Mensajes de oscuridad +18
+│   ⇝ Stickers impuros
+│
+├─ ⚡ El reino ahora está protegido.
+╰─✦`, m)
         
     } else if (action === 'off') {
         if (!chat.antiNsfw) {
-            return conn.reply(m.chat, '⚠️ El sistema anti-NSFW ya está desactivado en este grupo.', m)
+            return conn.reply(m.chat, `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ ⚠️ El escudo Anti-NSFW ya estaba desactivado.
+╰─✦`, m)
         }
         
         chat.antiNsfw = false
-        await conn.reply(m.chat, '❌ *Sistema Anti-NSFW Desactivado*\n\nEl bot ya no filtrará contenido NSFW en este grupo.', m)
+        await conn.reply(m.chat, `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ ❌ *Escudo Anti-NSFW Desactivado*
+│
+├─ El reino queda sin protección frente a contenidos impuros.
+╰─✦`, m)
     }
 }
 
