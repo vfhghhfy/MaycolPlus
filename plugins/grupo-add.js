@@ -36,12 +36,36 @@ let handler = async (m, { conn, args, text, usedPrefix, command }) => {
             }
         }
         
-        // Verificar si el bot es admin
-        let botJid = conn.user?.jid || conn.user?.id
-        if (botJid) {
-            let botParticipant = participants.find(p => p.id === botJid)
-            if (botParticipant) {
-                isBotAdmin = botParticipant.admin === 'admin' || botParticipant.admin === 'superadmin'
+        // Verificar si el bot es admin (múltiples formas de obtener el JID)
+        let botJid = conn.user?.jid || conn.user?.id || conn.decodeJid?.(conn.user?.id) || conn.user?.number + '@s.whatsapp.net'
+        
+        // Debug para ver qué JID estamos usando
+        console.log('=== DEBUG BOT ADMIN ===')
+        console.log('Bot JID detectado:', botJid)
+        console.log('Conn.user:', conn.user)
+        
+        // Buscar el bot en participantes de diferentes formas
+        let botParticipant = participants.find(p => {
+            console.log('Comparando:', p.id, 'con:', botJid)
+            return p.id === botJid || 
+                   p.id.includes(botJid.split('@')[0]) ||
+                   botJid.includes(p.id.split('@')[0])
+        })
+        
+        console.log('Bot participant encontrado:', botParticipant)
+        
+        if (botParticipant) {
+            isBotAdmin = botParticipant.admin === 'admin' || botParticipant.admin === 'superadmin'
+            console.log('Bot es admin:', isBotAdmin, 'Nivel:', botParticipant.admin)
+        } else {
+            // Si no encontramos al bot, intentemos de otra forma
+            console.log('No encontré bot participant, buscando por número...')
+            if (conn.user?.number) {
+                botParticipant = participants.find(p => p.id.includes(conn.user.number))
+                if (botParticipant) {
+                    isBotAdmin = botParticipant.admin === 'admin' || botParticipant.admin === 'superadmin'
+                    console.log('Bot encontrado por número - es admin:', isBotAdmin)
+                }
             }
         }
         
@@ -55,9 +79,18 @@ let handler = async (m, { conn, args, text, usedPrefix, command }) => {
         return conn.reply(m.chat, `${emoji2} Solo los administradores del grupo pueden usar este comando.`, m)
     }
     
-    // Verificar si el bot es admin
+    // Verificar si el bot es admin (con fallback si la detección falla)
     if (!isBotAdmin) {
-        return conn.reply(m.chat, `${emoji2} El bot necesita ser administrador para generar enlaces de invitación.`, m)
+        // Intentar generar el código como prueba
+        try {
+            await conn.groupInviteCode(group)
+            // Si llegamos aquí, el bot SÍ es admin
+            isBotAdmin = true
+            console.log('Bot confirmado como admin mediante prueba de inviteCode')
+        } catch (testError) {
+            console.log('Bot confirmado NO admin - error:', testError.message)
+            return conn.reply(m.chat, `${emoji2} El bot necesita ser administrador para generar enlaces de invitación.`, m)
+        }
     }
     
     try {
