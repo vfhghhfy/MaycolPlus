@@ -30,9 +30,10 @@ try {
 const imageAnalysis = await fetchImageBuffer(content, img)
 const query = `${emoji} Descríbeme la imagen con muchos detalles, y dime si debo activar alguna función.`
 const prompt = `${basePrompt} La imagen que analizas es: ${imageAnalysis.result}`
-const description = await hanakoAI(query, username, prompt)
+let description = await hanakoAI(query, username, prompt)
 
 await ejecutarVariables(description, conn, m)
+description = limpiarVariables(description)
 await conn.reply(m.chat, description, m)
 } catch {
 await m.react(error)
@@ -45,9 +46,10 @@ try {
 const { key } = await conn.sendMessage(m.chat, { text: `${emoji2} HanakoAI está pensando... espera un poquito UwU~` }, { quoted: m })
 const query = text
 const prompt = `${basePrompt} Responde lo siguiente como Hanako-kun, con emojis, ternura y mucha personalidad: ${query}`
-const response = await hanakoAI(query, username, prompt)
+let response = await hanakoAI(query, username, prompt)
 
 await ejecutarVariables(response, conn, m)
+response = limpiarVariables(response)
 await conn.sendMessage(m.chat, { text: response, edit: key })
 await m.react(done)
 } catch {
@@ -57,9 +59,9 @@ await conn.reply(m.chat, '❌ No pude responder esa pregunta, perdóncito (⁠�
 }
 }
 
-handler.help = ['hanakoai']
+handler.help = ['hanakoai', 'chatgpt']
 handler.tags = ['ai']
-handler.command = ['hanakoai']
+handler.command = ['hanakoai', 'maycolaiultramd', 'hanako']
 handler.group = true
 export default handler
 
@@ -122,4 +124,14 @@ let cantidad = parseInt(respuesta.match(nivelRegex)[1])
 global.db.data.users[m.sender].nivel += cantidad
 console.log(`🌟 HanakoAI subió de nivel a ${m.sender}`)
 }
+}
+
+function limpiarVariables(texto) {
+return texto
+.replace(/\[AntiNSFW \(on\)\]/ig, '')
+.replace(/\[AntiNSFW \(off\)\]/ig, '')
+.replace(/\[Coins \(\+\d+\)\]/ig, '')
+.replace(/\[XP \(\+\d+\)\]/ig, '')
+.replace(/\[Nivel \(\+\d+\)\]/ig, '')
+.trim()
 }
