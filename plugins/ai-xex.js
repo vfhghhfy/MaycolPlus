@@ -1,80 +1,54 @@
-import axios from 'axios';      
-import fetch from 'node-fetch';      
+import axios from 'axios';
+import fetch from 'node-fetch';
 
 const handler = async (msg, { conn, args, usedPrefix, command }) => {
+  const text = args.join(' ');
   const chatId = msg.key.remoteJid;
-  const text = args.join(' ').trim();
 
-  // Si el mensaje comienza con ".xex xex |" o ".xex china |" procesamos directo con la IA
-  if (text.startsWith('xex |') || text.startsWith('china |')) {
-    let [modo, ...mensajeArr] = text.split('|');
-    modo = modo.trim(); // "xex" o "china"
-    const mensaje = mensajeArr.join('|').trim();
+  if (!text) {
+    return conn.sendMessage(chatId, {
+      text: `✳️ Ingresa tu pregunta\nEjemplo: *${usedPrefix + command}* ¿quién inventó WhatsApp?`
+    }, { quoted: msg });
+  }
 
-    if (!mensaje) {
-      return conn.sendMessage(chatId, { text: '❌ No escribiste el mensaje después del prefijo.' }, { quoted: msg });
-    }
+  try {
+    await conn.sendMessage(chatId, { react: { text: '🕳️', key: msg.key } });
 
-    const promptPrefix = modo === 'xex' ? 'Comportate como xex: ' : 'Comportate como china: ';
-    const promptFinal = promptPrefix + mensaje;
+    const name = msg.pushName || 'Usuario';
+    const prompt = await getPrompt();
+    let result = '';
 
     try {
-      await conn.sendMessage(chatId, { react: { text: '🕳️', key: msg.key } });
-
-      const name = msg.pushName || 'Usuario';
-      const promptBase = await getPrompt();
-
-      let result = '';
+      result = await luminaiQuery(text, name, prompt);
+      result = cleanResponse(result);
+    } catch (e) {
+      console.error('Error Luminai:', e);
       try {
-        result = await luminaiQuery(promptFinal, name, promptBase);
-        result = cleanResponse(result);
+        result = await perplexityQuery(text, prompt);
       } catch (e) {
-        console.error('Error Luminai:', e);
-        try {
-          result = await perplexityQuery(promptFinal, promptBase);
-        } catch (e) {
-          console.error('Error Perplexity:', e);
-          throw new Error('No se obtuvo respuesta de los servicios');
-        }
+        console.error('Error Perplexity:', e);
+        throw new Error('No se obtuvo respuesta de los servicios');
       }
-
-      await conn.sendMessage(chatId, { text: result }, { quoted: msg });
-      await conn.sendMessage(chatId, { react: { text: '✅', key: msg.key } });
-    } catch (error) {
-      console.error(error);
-      await conn.sendMessage(chatId, { text: `❌ Error: ${error.message}` }, { quoted: msg });
-      await conn.sendMessage(chatId, { react: { text: '❌', key: msg.key } });
     }
-    return;
+
+    const responseMsg = `${result}`;
+
+    await conn.sendMessage(chatId, {
+      text: responseMsg
+    }, { quoted: msg });
+
+    await conn.sendMessage(chatId, { react: { text: '💩', key: msg.key } });
+
+  } catch (error) {
+    console.error(error);
+    await conn.sendMessage(chatId, {
+      text: `❌ Error: ${error.message}`
+    }, { quoted: msg });
+
+    await conn.sendMessage(chatId, { react: { text: '❌', key: msg.key } });
   }
-
-  // Si no es un comando directo, mandamos la lista interactiva para elegir
-  if (!text) {
-    return conn.sendMessage(chatId, { text: `✳️ Ingresa tu mensaje después del comando\nEjemplo: ${usedPrefix + command} hola` }, { quoted: msg });
-  }
-
-  const sections = [
-    {
-      title: '¿Cómo quieres que responda?',
-      rows: [
-        { title: 'XEX', rowId: `.xex xex | ${text}`, description: 'El que mas insulta 🔥' },
-        { title: 'China', rowId: `.xex china | ${text}`, description: 'La mas caliente 🔥' }
-      ]
-    }
-  ];
-
-  const listMessage = {
-    text: `🗣️ Elige cómo quieres que responda:`,
-    footer: 'By MaycolAIUltraMD',
-    title: '🌟 Selecciona un personaje',
-    buttonText: 'Elige una opción',
-    sections
-  };
-
-  await conn.sendMessage(chatId, listMessage, { quoted: msg });
 };
 
-// Funciones auxiliares (las mismas que tienes)
 async function getPrompt() {
   try {
     const res = await fetch('https://raw.githubusercontent.com/SoySapo6/MaycolAIUltraMD/refs/heads/main/src/prompt-xex.js');
@@ -113,7 +87,7 @@ async function perplexityQuery(q, prompt) {
   return data.response;
 }
 
-handler.help = ['xex <mensaje>'];
+handler.help = ['xex <pregunta>'];
 handler.command = ['xex', 'ai', 'ask'];
 handler.tags = ['ai'];
 handler.register = true;
