@@ -203,12 +203,18 @@ async function detectarImagenNSFW(m, conn, isAdmin, isBotAdmin, tipo = 'imagen')
                 await eliminarMensaje(m, conn, isBotAdmin, mensaje)
                 
                 // Mensaje adicional con detalles
-                const detalles = `⚠️ *Contenido inapropiado removido*\n\n` +
-                              `📊 *Análisis:*\n` +
-                              `• Nivel NSFW: ${data.data.percentage}\n` +
-                              `• Estado: ${data.data.safe ? 'Seguro' : 'No seguro'}\n` +
-                              `• Tipo: ${tipo === 'sticker' ? 'Sticker' : 'Imagen'}\n\n` +
-                              `${data.data.response || 'Contenido no apropiado para el grupo.'}`
+                const detalles = `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ ⚠️ *Se detectó y removió contenido inapropiado de este plano terrenal...*
+│
+├─ 📊 *Informe de los guardianes mágicos:*
+│   ⇝ Nivel NSFW: ${data.data.percentage}
+│   ⇝ Estado: ${data.data.safe ? '✨ Seguro para todos los magos' : '🚫 No apto para este reino'}
+│   ⇝ Tipo de elemento: ${tipo === 'sticker' ? 'Sticker encantado' : 'Imagen'}
+│
+├─ ✦ *Mensaje del oráculo:*
+│   ⇝ ${data.data.response || 'Este contenido no es digno del grupo sagrado.'}
+╰─✦`
                 
                 await conn.reply(m.chat, detalles, m)
             }
@@ -261,10 +267,14 @@ async function eliminarMensaje(m, conn, isBotAdmin, razon) {
         }
         
         // Mensaje de advertencia
-        const advertencia = `🚫 *Contenido inapropiado detectado*\n\n` +
-                          `👤 *Usuario:* @${m.sender.split('@')[0]}\n` +
-                          `⚠️ *Razón:* ${razon}\n` +
-                          `📝 *Estado:* ${mensajeEliminado ? '✅ Mensaje eliminado' : '❌ No se pudo eliminar (verificar que el bot sea admin)'}`
+        const advertencia = `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ 🚫 *Se ha detectado un acto prohibido en este reino...*
+│
+├─ 👤 *Involucrado:* @${m.sender.split('@')[0]}
+├─ ⚠️ *Razón:* ${razon}
+├─ 📝 *Estado:* ${mensajeEliminado ? '✅ El hechizo de eliminación fue exitoso' : '❌ No se pudo eliminar, verifica que el bot tenga poderes de administrador'}
+╰─✦`
         
         await conn.reply(m.chat, advertencia, m, { mentions: [m.sender] })
         
