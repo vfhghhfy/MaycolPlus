@@ -148,7 +148,7 @@ async function detectarNSFW(m, conn) {
             'desnudo', 'desnuda', 'caliente', 'horny', 'cachondo', 'excitado',
             'placer', 'gemir', 'penetrar', 'chuparla', 'mamada', 'oral',
             'anal', 'threesome', 'orgia', 'prostituta', 'escort', 'webcam',
-            'onlyfans', 'pack', 'nudes', 'hot', 'sexy', 'sensual', 'pornhub', 'xnxx'
+            'onlyfans', 'pack', 'nudes', 'hot', 'sexy', 'sensual', 'pornhub', 'xnxx', 'verga', 'penon'
         ]
         
         // 1. Detectar texto NSFW
