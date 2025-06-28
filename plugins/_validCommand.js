@@ -141,15 +141,29 @@ async function detectarNSFW(m, conn) {
         
         // Lista de palabras NSFW
         const palabrasNSFW = [
-            'porno', 'porn', 'xxx', 'sexo', 'sex', 'pene', 'vagina', 'masturbacion', 
-            'masturbar', 'coger', 'follar', 'fuck', 'shit', 'bitch', 'puta', 'puto',
-            'verga', 'chupar', 'mamar', 'correrse', 'venirse', 'orgasmo', 'cum',
-            'pussy', 'dick', 'cock', 'ass', 'culo', 'tetas', 'boobs', 'nude',
-            'desnudo', 'desnuda', 'caliente', 'horny', 'cachondo', 'excitado',
-            'placer', 'gemir', 'penetrar', 'chuparla', 'mamada', 'oral',
-            'anal', 'threesome', 'orgia', 'prostituta', 'escort', 'webcam',
-            'onlyfans', 'pack', 'nudes', 'hot', 'sexy', 'sensual', 'pornhub', 'xnxx', 'verga', 'penon'
-        ]
+    'porno', 'porn', 'xxx', 'sexo', 'sex', 'pene', 'vagina', 'masturbacion',
+    'masturbar', 'coger', 'follar', 'fuck', 'shit', 'bitch', 'puta', 'puto',
+    'verga', 'chupar', 'mamar', 'correrse', 'venirse', 'orgasmo', 'cum',
+    'pussy', 'dick', 'cock', 'ass', 'culo', 'tetas', 'boobs', 'nude',
+    'desnudo', 'desnuda', 'caliente', 'horny', 'cachondo', 'excitado',
+    'placer', 'gemir', 'penetrar', 'chuparla', 'mamada', 'oral', 'anal',
+    'threesome', 'orgia', 'prostituta', 'escort', 'webcam', 'onlyfans', 'pack',
+    'nudes', 'hot', 'sexy', 'sensual', 'pornhub', 'xnxx', 'verga', 'penon',
+
+    // Palabras adicionales peligrosas >w<
+    'erotico', 'erótica', 'erotica', 'pornohub', 'desnudito', 'desnudita',
+    'desvestirse', 'desvestido', 'desvestida', 'desnudos', 'sexting',
+    'sado', 'bdsm', 'bondage', 'sadomasoquismo', 'hardcore', 'deepthroat',
+    'clitoris', 'clítoris', 'labios mayores', 'labios menores', 'semen',
+    'eyaculacion', 'eyacular', 'penetracion', 'pechos', 'pezones', 'pezon',
+    'gangbang', 'gang bang', 'violacion', 'violada', 'violador', 'zoofilia',
+    'bestialidad', 'incesto', 'relacion incestuosa', 'pedofilia', 'pedofilo',
+    'pedo', 'lolicon', 'shotacon', 'hentai', 'ecchi', 'rule34', 'furry porno',
+    'camgirl', 'cam boy', 'camgirl', 'camshow', 'chat hot', 'swinger', 
+    'swingers', 'trío', 'sexo grupal', 'sextape', 'video hot', 'pack privado',
+    'contenido +18', 'contenido sexual', 'contenido explicito', 'contenido explícito',
+    'orgía', 'porno casero', 'porno amateur', 'pornografia', 'pornografía'
+];
         
         // 1. Detectar texto NSFW
         if (m.text) {
