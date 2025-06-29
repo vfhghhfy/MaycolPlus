@@ -94,7 +94,7 @@ ${estiloSeleccionado.footer}
       externalAdReply: {
         title: global.botname,
         body: "Un amor que nunca se acaba Jeje <3",
-        thumbnailUrl: global.banner || 'https://files.catbox.moe/l8ohvs.jpeg',
+        thumbnailUrl: global.banner2 || 'https://files.catbox.moe/l8ohvs.jpeg',
         sourceUrl: global.channel || 'https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R',
         mediaType: 1,
         showAdAttribution: true,
@@ -122,7 +122,7 @@ ${estiloSeleccionado.footer}
       externalAdReply: {
         title: global.botname,
         body: "Un amor que nunca se acaba Jeje <3",
-        thumbnailUrl: global.banner || 'https://files.catbox.moe/l8ohvs.jpeg',
+        thumbnailUrl: global.banner2 || 'https://files.catbox.moe/l8ohvs.jpeg',
         sourceUrl: global.channel || 'https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R',
         mediaType: 1,
         showAdAttribution: true,
