@@ -3,7 +3,7 @@
  <img src= "https://files.catbox.moe/8iqvp8.gif">
     </p>
 
-> Bot basado en @soymaycol/maybaileys
+> Bot basado en @soymaycol/maybailyes
 
 ---
 
