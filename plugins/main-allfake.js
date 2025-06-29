@@ -37,7 +37,8 @@ global.fecha = d.toLocaleDateString('es', {day: 'numeric', month: 'numeric', yea
 global.mes = d.toLocaleDateString('es', {month: 'long'})
 global.año = d.toLocaleDateString('es', {year: 'numeric'})
 global.tiempo = d.toLocaleString('en-US', {hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true})
-
+global.ofcbot = `${conn.user.jid.split('@')[0]}`
+  
 var canal = 'https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R'  
 var comunidad = 'https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R'
 var git = 'https://github.com/SoySapo6'
