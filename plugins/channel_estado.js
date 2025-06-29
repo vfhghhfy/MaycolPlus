@@ -33,9 +33,9 @@ const contarMensajes = (m) => {
 // Para actualizar la última encuesta, en tu función de encuesta haz:
 // ultimaEncuesta = "Minijuego fuego vs agua" (o lo que sea)
 
-handlerEstado.help = ['estado'];
+handlerEstado.help = ['estadodelcan'];
 handlerEstado.tags = ['canal'];
-handlerEstado.command = ['estado'];
+handlerEstado.command = ['estadodelcanal'];
 handlerEstado.register = true;
 handlerEstado.channel = true;
 
