@@ -1,4 +1,7 @@
 // ✧･ﾟ: *✧･ﾟ:* Comando Exclusivo SubBots Hanako-Kun *:･ﾟ✧*:･ﾟ✧
+// Codigo hecho por SoyMaycol del Bot MaycolAIUltraMD ♣
+// GitHub: SoySapo6 - NO EDITAR ESTE FRAGMENTO NO QUITAR CREDITOS
+
 import fs from 'fs'
 
 let handler = async (m, { conn, args, command, usedPrefix, text }) => {
