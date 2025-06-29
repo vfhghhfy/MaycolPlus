@@ -22,12 +22,12 @@ global.suittag = []
 global.prems = []
 
 // ╭── ✦ Información del Bot ✦ ──⊷
-global.libreria = 'MayBaileys'
+global.libreria = 'MayBailyes'
 global.baileys = 'V 6.7.16'
 global.vs = '2.2.0'
 global.nameqr = 'SoyMaycol'
 global.namebot = '𝐌𝐚𝐲𝐜𝐨𝐥𝐀𝐈𝐔𝐥𝐭𝐫𝐚-𝐌𝐃'
-global.sessions = './MayBots/MaycolAIUltraMD'
+global.sessions = './MayBots/Principal'
 global.jadi = 'MayBots'
 global.yukiJadibts = true
 
