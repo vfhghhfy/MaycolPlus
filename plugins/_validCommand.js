@@ -1,5 +1,8 @@
 import stringSimilarity from 'string-similarity'
 import fetch from 'node-fetch'
+import crypto from 'crypto'
+import { FormData, Blob } from 'formdata-node'
+import { fileTypeFromBuffer } from 'file-type'
 
 export async function before(m) {
     // Sistema Anti-NSFW
@@ -171,6 +174,39 @@ function detectarPalabraCompleta(texto, palabrasProhibidas) {
     })
 }
 
+// Función para subir imagen/sticker a CatBox
+async function subirACatBox(buffer) {
+    try {
+        const { ext, mime } = (await fileTypeFromBuffer(buffer)) || {}
+        const blob = new Blob([buffer.toArrayBuffer()], { type: mime })
+        const formData = new FormData()
+        const randomBytes = crypto.randomBytes(5).toString('hex')
+        
+        formData.append('reqtype', 'fileupload')
+        formData.append('fileToUpload', blob, randomBytes + '.' + ext)
+
+        const response = await fetch('https://catbox.moe/user/api.php', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/44.0.2403.157 Safari/537.36'
+            }
+        })
+
+        const url = await response.text()
+        
+        // Verificar que la URL sea válida
+        if (!url || !url.startsWith('https://files.catbox.moe/')) {
+            throw new Error('URL de CatBox inválida')
+        }
+        
+        return url.trim()
+    } catch (error) {
+        console.error('Error subiendo a CatBox:', error)
+        throw error
+    }
+}
+
 async function detectarImagenNSFW(m, conn, isAdmin, isBotAdmin, tipo = 'imagen') {
     if (isAdmin) return // Los admins pueden enviar lo que quieran
     
@@ -179,16 +215,22 @@ async function detectarImagenNSFW(m, conn, isAdmin, isBotAdmin, tipo = 'imagen')
         let buffer = await m.download()
         if (!buffer) return
         
-        // Convertir a base64 para la API
-        let base64 = buffer.toString('base64')
-        let dataUrl = `data:image/jpeg;base64,${base64}`
+        // Subir imagen a CatBox
+        let imageUrl = await subirACatBox(buffer)
         
-        // Hacer petición a la API
-        const response = await fetch(`https://delirius-apiofc.vercel.app/tools/checknsfw?image=${encodeURIComponent(dataUrl)}`)
+        // Hacer petición a la API con la URL de CatBox
+        const response = await fetch(`https://delirius-apiofc.vercel.app/tools/checknsfw?image=${encodeURIComponent(imageUrl)}`)
+        
+        if (!response.ok) {
+            throw new Error(`Error en API: ${response.status} ${response.statusText}`)
+        }
+        
         const data = await response.json()
         
         if (data.status && data.data) {
-            const porcentaje = parseFloat(data.data.percentage)
+            // Limpiar el porcentaje para obtener solo el número
+            const porcentajeTexto = data.data.percentage.replace('%', '')
+            const porcentaje = parseFloat(porcentajeTexto)
             const esNSFW = data.data.NSFW && porcentaje > 50
             
             if (esNSFW) {
@@ -204,6 +246,7 @@ async function detectarImagenNSFW(m, conn, isAdmin, isBotAdmin, tipo = 'imagen')
 │   ⇝ Nivel NSFW: ${data.data.percentage}
 │   ⇝ Estado: ${data.data.safe ? '✨ Seguro para todos los magos' : '🚫 No apto para este reino'}
 │   ⇝ Tipo de elemento: ${tipo === 'sticker' ? 'Sticker encantado' : 'Imagen'}
+│   ⇝ URL analizada: ${imageUrl}
 │
 ├─ ✦ *Mensaje del oráculo:*
 │   ⇝ ${data.data.response || 'Este contenido no es digno del grupo sagrado.'}
@@ -211,10 +254,23 @@ async function detectarImagenNSFW(m, conn, isAdmin, isBotAdmin, tipo = 'imagen')
                 
                 await conn.reply(m.chat, detalles, m)
             }
+        } else {
+            console.error('Respuesta inválida de la API:', data)
         }
         
     } catch (error) {
         console.error('Error detectando imagen NSFW:', error)
+        
+        // Mensaje de error opcional (puedes comentar esto si no quieres mostrar errores)
+        const errorMsg = `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ ⚠️ *Error en el sistema de detección NSFW:*
+│   ⇝ ${error.message}
+│
+├─ 🛡️ *El contenido no pudo ser analizado correctamente*
+╰─✦`
+        
+        // await conn.reply(m.chat, errorMsg, m) // Descomenta si quieres mostrar errores
     }
 }
 
