@@ -53,7 +53,7 @@ Utiliza *${usedPrefix}unreg* para romper el sello actual.`)
 ✧ Formato correcto: *${usedPrefix + command} nombre.edad*
 ✧ Ejemplo: *${usedPrefix + command} ${name2}.18*
 
-"Para invocar a Hanako-kun, debes escribir tu nombre y edad correctamente..."`)
+"Para invocar a hanako kun, debes escribir tu nombre y edad correctamente..."`)
   }
 
   // ✧ Extraer la información del ritual
@@ -86,19 +86,19 @@ Utiliza *${usedPrefix}unreg* para romper el sello actual.`)
   // ✧ Certificado del pacto con Hanako-kun
   const certificadoPacto = `
 ╭─「 ⋆｡˚☽˚｡⋆ 七不思議 ⋆｡˚☽˚｡⋆ 」─╮
-│    ✧ 𝑷𝒂𝒄𝒕𝒐 𝑪𝒐𝒏 𝑯𝒂𝒏𝒂𝒌𝒐-𝒌𝒖𝒏 ✧    
+│    ✧ Pacto con ${global.namebot} ✧    
 │    
 │ ୨୧ *Nombre:* ${name}
 │ ✿ *Edad:* ${age} años
 │ ♱ *Sello Único:* ${sn}
 │    
 ├─ ✧ 𝑩𝒆𝒏𝒅𝒊𝒄𝒊𝒐𝒏𝒆𝒔 𝑶𝒕𝒐𝒓𝒈𝒂𝒅𝒂𝒔:
-│ ✦ *MayCoins:* +46
+│ ✦ *${global.moneda}:* +46
 │ ☽ *Energía Espiritual:* +310
 │ ❀ *Sellos de Invocación:* +25
 │    
 ├─ "Recuerda visitar el baño del 3er piso..."
-│ https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R
+│ ${global.canalLink}
 │    
 ╰─「 ⋆｡˚☽˚｡⋆ ✧ ⋆｡˚☽˚｡⋆ 」─╯
 `.trim()
@@ -111,10 +111,10 @@ Utiliza *${usedPrefix}unreg* para romper el sello actual.`)
     text: certificadoPacto,
     contextInfo: {
       externalAdReply: {
-        title: '✧ Pacto con Hanako-kun Completado ✧',
-        body: 'https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R',
+        title: `✧ Pacto con ${global.namebot} completado ✧`,
+        body: global.canalLink,
         thumbnailUrl: pp,
-        sourceUrl: 'https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R',
+        sourceUrl: global.canalLink,
         mediaType: 1,
         showAdAttribution: true,
         renderLargerThumbnail: true
@@ -123,7 +123,7 @@ Utiliza *${usedPrefix}unreg* para romper el sello actual.`)
   }, { quoted: m })
 
   // ✧ Notificar al Reino Espiritual (grupo de notificaciones)
-  const reinoEspiritual = '120363372883715167@newsletter'
+  const reinoEspiritual = `${global.canalIdM}`
   const mensajeNotificacion = `
 ╭─「 ❀ 𝑵𝒖𝒆𝒗𝒐 𝑨𝒔𝒊𝒔𝒕𝒆𝒏𝒕𝒆 ❀ 」─╮
 │ ୨୧ *Nombre:* ${name}
@@ -137,7 +137,7 @@ Utiliza *${usedPrefix}unreg* para romper el sello actual.`)
 │
 │ 📜 *Fecha del Pacto:* ${moment().format('YYYY-MM-DD HH:mm:ss')}
 ╰─「 𝑷𝒐𝒓 𝒍𝒐𝒔 𝑺𝒊𝒆𝒕𝒆 𝑴𝒊𝒔𝒕𝒆𝒓𝒊𝒐𝒔 」─╯
-> Hanako-kun & MaycolAIUltraMD`
+> ${global.author}`
 
   // ✧ Intento de comunicación con el Reino Espiritual
   try {
