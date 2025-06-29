@@ -66,6 +66,7 @@ global.welcom1 = '❍ Edita Con El Comando setwelcome'
 global.welcom2 = '❍ Edita Con El Comando setbye'
 global.banner = 'https://files.catbox.moe/l8ohvs.jpeg'
 global.avatar = 'https://files.catbox.moe/uvc28a.jpeg'
+global.video = 'https://files.catbox.moe/ks0qz0.mp4'
 
 // ╭── ✦ Enlaces Oficiales ✦ ──⊷
 global.gp1 = 'https://chat.whatsapp.com/EprzCjr7XFyAIFr9OfBh2o'
