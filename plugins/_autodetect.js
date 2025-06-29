@@ -1,4 +1,4 @@
-let WAMessageStubType = (await import('@whiskeysockets/baileys')).default  
+let WAMessageStubType = (await import('@soymaycol/maybaileys')).default  
 
 let handler = m => m  
 
