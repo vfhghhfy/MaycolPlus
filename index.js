@@ -51,7 +51,7 @@ say(global.namebotttt, {
 })
 
 say(`Hecho por ${global.nameqr}`, {
-    font: 'block',
+    font: 'console',
     align: 'center',
     gradient: ['magenta', 'cyan']
 })
