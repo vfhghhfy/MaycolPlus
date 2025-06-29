@@ -45,15 +45,15 @@ let { say } = cfonts
 console.log(chalk.bold.redBright(`\n✰ Iniciando Yuki-Suou-Bot ✰\n`))
 
 say(global.namebotttt, {
-font: 'block',
-align: 'center',
-colors: ['magentaBright']
+    font: 'block',
+    align: 'center',
+    colors: ['yellowBright']
 })
 
-say(`Hecho por ${global.apodo}`, {
-font: 'console',
-align: 'center',
-colors: ['blueBright']
+say(`Hecho por ${global.name}`, {
+    font: 'console',
+    align: 'center',
+    gradient: ['red', 'yellow', 'green', 'cyan', 'blue', 'magenta'] 
 })
 
 protoType()
