@@ -1,5 +1,5 @@
 //code traído por Xi_Crew
-import { generateWAMessageFromContent } from '@whiskeysockets/baileys'
+import { generateWAMessageFromContent } from '@soymaycol/maybaileys'
 import * as fs from 'fs'
 
 var handler = async (m, { conn, text, participants, isOwner, isAdmin }) => {
