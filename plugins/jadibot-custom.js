@@ -11,7 +11,7 @@ if (global.conn.user.jid == conn.user.jid) {
   return
 }
 
-const rutaConfig = '../settings.js'
+const rutaConfig = './settings.js'
 
 // Cargar y editar settings
 function editarSettings(buscar, reemplazar) {
