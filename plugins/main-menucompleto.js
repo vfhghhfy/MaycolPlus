@@ -31,7 +31,7 @@ let handler = async (m, { conn, args }) => {
   let estilosMenu = [
     // Estilo 1: Clásico Hanako
     {
-      header: `╭═══❖ 𝓗𝓪𝓷𝓪𝓴𝓸 𝓑𝓸𝓽 ❖═══╮`,
+      header: `╭═══❖ ${global.botname} ❖═══╮`,
       userSection: `┊ ｡ﾟ☆: *.${name}.* :☆ﾟ｡\n┊ *_${saludo}_*`,
       infoTitle: `╰═══❖ 𝓘𝓷𝓯𝓸 𝓓𝓮𝓵 𝓢𝓾𝓶𝓸𝓷 ❖═══╯`,
       categoryStyle: (tag, cmds, emoji) => `
@@ -43,7 +43,7 @@ ${cmds.map(cmd => `┊ ➤ ${cmd}`).join('\n')}
 
     // Estilo 2: Místico
     {
-      header: `✧･ﾟ: *✧･ﾟ:* 𝙷𝚊𝚗𝚊𝚔𝚘 𝙱𝚘𝚝 *:･ﾟ✧*:･ﾟ✧`,
+      header: `✧･ﾟ: *✧･ﾟ:* ${global.botname} *:･ﾟ✧*:･ﾟ✧`,
       userSection: `◦ •●◉✿ ${name} ✿◉●• ◦\n✦ *_${saludo}_*`,
       infoTitle: `◤ ◥ ◣ ◢ 𝙸𝙽𝙵𝙾 𝙳𝙴𝙻 𝙴𝚂𝙿𝙸𝚁𝙸𝚃𝚄 ◤ ◥ ◣ ◢`,
       categoryStyle: (tag, cmds, emoji) => `
@@ -67,7 +67,7 @@ ${cmds.map(cmd => `│ ♡ ${cmd}`).join('\n')}
 
     // Estilo 4: Gótico Elegante
     {
-      header: `▁ ▂ ▄ ▅ ▆ ▇ █ 𝙷𝚊𝚗𝚊𝚔𝚘 𝙱𝚘𝚝 █ ▇ ▆ ▅ ▄ ▂ ▁`,
+      header: `▁ ▂ ▄ ▅ ▆ ▇ █ ${global.botname} █ ▇ ▆ ▅ ▄ ▂ ▁`,
       userSection: `⌈ ${name} ⌉\n⟨ *_${saludo}_* ⟩`,
       infoTitle: `▰▱▰▱ 𝙸𝙽𝙵𝙾 𝙴𝚂𝙿𝙸𝚁𝙸𝚃𝚄𝙰𝙻 ▰▱▰▱`,
       categoryStyle: (tag, cmds, emoji) => `
@@ -79,7 +79,7 @@ ${cmds.map(cmd => `▸ ${cmd}`).join('\n')}
 
     // Estilo 5: Dreamy
     {
-      header: `･ﾟ✧*:･ﾟ✧ 𝚂𝚞𝚖𝚘𝚗 𝙷𝚊𝚗𝚊𝚔𝚘 ✧･ﾟ: *✧･ﾟ`,
+      header: `･ﾟ✧*:･ﾟ✧ ${global.botname} ✧･ﾟ: *✧･ﾟ`,
       userSection: `☾ ⋆*･ﾟ ${name} ･ﾟ*⋆ ☽\n～ *_${saludo}_* ～`,
       infoTitle: `⋆｡‧˚ʚ 𝙸𝙽𝙵𝙾 𝙼Á𝙶𝙸𝙲𝙰 ɞ˚‧｡⋆`,
       categoryStyle: (tag, cmds, emoji) => `
@@ -139,7 +139,7 @@ ${estiloSeleccionado.infoTitle}
 
 ${estiloSeleccionado.footer}
 
-> Hecho con amor por: *_SoyMaycol_* (⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤
+> Hecho con amor por: *_${global.apodo}_* (⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤
 `.trim()
 
   // Añadir categorías con el estilo seleccionado
@@ -171,10 +171,7 @@ ${estiloSeleccionado.footer}
   })
 
   // Lista de videos temáticos para más variedad
-  let videosHanako = [
-    'https://files.catbox.moe/i74z9e.mp4',
-    // Puedes agregar más URLs de videos aquí
-  ]
+  let videosHanako = global.video2
   let videoSeleccionado = videosHanako[Math.floor(Math.random() * videosHanako.length)]
 
   // Enviar menú con video
@@ -186,8 +183,8 @@ ${estiloSeleccionado.footer}
       mentionedJid: [m.sender, userId],
       isForwarded: true,
       forwardedNewsletterMessageInfo: {
-        newsletterJid: '120363372883715167@newsletter',
-        newsletterName: 'SoyMaycol <3',
+        newsletterJid: global.canalIdM,
+        newsletterName: global.botname,
         serverMessageId: -1,
       },
       forwardingScore: 999,
