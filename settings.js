@@ -77,6 +77,7 @@ global.cn = global.comunidad1
 global.owner_ngl = 'soymaycoldev'
 global.canalIdM = ["120363372883715167@newsletter"]
 global.canalNombreM = ["𝐒𝐨𝐲𝐌𝐚𝐲𝐜𝐨𝐥 <𝟑 • Actualizaciones"]
+global.canalLink = ["https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R"]
 
 // ╭── ✦ Catálogo y Estilo ✦ ──⊷
 global.catalogo = fs.readFileSync('./src/catalogo.jpg')
