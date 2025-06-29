@@ -25,6 +25,7 @@ global.namechannel = '𝐒𝐨𝐲𝐌𝐚𝐲𝐜𝐨𝐥 <𝟑 • Actualizaci
 global.namechannel2 = '𝐒𝐨𝐲𝐌𝐚𝐲𝐜𝐨𝐥 <𝟑 • Actualizaciones'
 global.namegrupo = '𝐒𝐨𝐲𝐌𝐚𝐲𝐜𝐨𝐥 <𝟑 • Actualizaciones'
 global.namecomu = '𝐒𝐨𝐲𝐌𝐚𝐲𝐜𝐨𝐥 <𝟑 • Actualizaciones'
+global.apodo = '𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹'
 
 // ╭── ✦ Información del Bot ✦ ──⊷
 global.libreria = 'MayBailyes'
