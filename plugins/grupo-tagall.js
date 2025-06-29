@@ -3,13 +3,88 @@
 - etiqueta en un grupo a todos
 - https://whatsapp.com/channel/0029VaJxgcB0bIdvuOwKTM2Y
 */
-const handler = async (m, { isOwner, isAdmin, conn, text, participants, args, command, usedPrefix }) => {
+
+// Función universal para verificar permisos de admin y bot
+async function verificarPermisos(m, conn) {
+    let isUserAdmin = false
+    let isBotAdmin = false
+    let isOwner = false
+    
+    // Verificar si es owner
+    if (global.owner) {
+        isOwner = global.owner.some(owner => {
+            let ownerNumber = Array.isArray(owner) ? owner[0] : owner
+            return ownerNumber === m.sender.split('@')[0]
+        })
+    }
+    
+    // Verificar permisos en grupos
+    if (m.chat.includes('@g.us') || m.chat.includes('@lid')) {
+        try {
+            let groupMetadata = await conn.groupMetadata(m.chat)
+            if (groupMetadata && groupMetadata.participants) {
+                let participants = groupMetadata.participants
+                
+                // Verificar si el usuario es admin (o si es owner)
+                if (!isOwner) {
+                    let userParticipant = participants.find(p => p.id === m.sender)
+                    if (userParticipant) {
+                        isUserAdmin = userParticipant.admin === 'admin' || userParticipant.admin === 'superadmin'
+                    }
+                } else {
+                    isUserAdmin = true // Owner siempre puede usar comandos de admin
+                }
+                
+                // Verificar si el bot es admin con múltiples métodos
+                let botJid = conn.user?.jid || conn.user?.id || conn.decodeJid?.(conn.user?.id)
+                
+                if (botJid) {
+                    // Buscar bot en participantes con múltiples métodos
+                    let botParticipant = participants.find(p => {
+                        return p.id === botJid || 
+                               p.id.split('@')[0] === botJid.split('@')[0] ||
+                               p.id.includes(botJid.split('@')[0]) ||
+                               botJid.includes(p.id.split('@')[0])
+                    })
+                    
+                    if (botParticipant) {
+                        isBotAdmin = botParticipant.admin === 'admin' || botParticipant.admin === 'superadmin'
+                    } else {
+                        // Búsqueda por número si no se encuentra
+                        let botNumber = botJid.split('@')[0].replace(/\D/g, '')
+                        botParticipant = participants.find(p => {
+                            let participantNumber = p.id.split('@')[0].replace(/\D/g, '')
+                            return participantNumber === botNumber
+                        })
+                        
+                        if (botParticipant) {
+                            isBotAdmin = botParticipant.admin === 'admin' || botParticipant.admin === 'superadmin'
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error verificando permisos:', error)
+        }
+    }
+    
+    return {
+        isUserAdmin: isUserAdmin || isOwner,
+        isBotAdmin,
+        isOwner
+    }
+}
+
+const handler = async (m, { conn, text, participants, args, command, usedPrefix }) => {
   if (usedPrefix == 'a' || usedPrefix == 'A') return;
 
   const customEmoji = global.db.data.chats[m.chat]?.customEmoji || '🍫';
   m.react(customEmoji);
 
-  if (!(isAdmin || isOwner)) {
+  // Usar la función mejorada de verificación de permisos
+  const permisos = await verificarPermisos(m, conn);
+  
+  if (!permisos.isUserAdmin) {
     global.dfail('admin', m, conn);
     throw false;
   }
@@ -50,7 +125,6 @@ const handler = async (m, { isOwner, isAdmin, conn, text, participants, args, co
 handler.help = ['todos *<mensaje opcional>*'];
 handler.tags = ['group'];
 handler.command = ['todos', 'invocar', 'tagall'];
-handler.admin = true;
 handler.group = true;
 
 export default handler;
