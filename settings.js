@@ -21,7 +21,6 @@ global.mods = []
 global.suittag = []
 global.prems = []
 global.creador = 'Wa.me/51921826291'
-global.ofcbot = `${conn.user.jid.split('@')[0]}`
 global.namechannel = '𝐒𝐨𝐲𝐌𝐚𝐲𝐜𝐨𝐥 <𝟑 • Actualizaciones'
 global.namechannel2 = '𝐒𝐨𝐲𝐌𝐚𝐲𝐜𝐨𝐥 <𝟑 • Actualizaciones'
 global.namegrupo = '𝐒𝐨𝐲𝐌𝐚𝐲𝐜𝐨𝐥 <𝟑 • Actualizaciones'
