@@ -1,30 +1,42 @@
-import { igdl } from 'ruhend-scraper';
+import fetch from 'node-fetch';
 
-const handler = async (m, { args, conn }) => {
-  if (!args[0]) {
-    return conn.reply(m.chat, `${emoji} Por favor, ingresa un enlace de Instagram.`, m);
-  }
-
+let handler = async (m, { conn, usedPrefix, command, args }) => {
   try {
-    await m.react(rwait);
-    const res = await igdl(args[0]);
-    const data = res.data;
-
-    for (let media of data) {
-      await conn.sendFile(m.chat, media.url, 'instagram.mp4', `${emoji} Aqui tienes ฅ^•ﻌ•^ฅ.`, m);
-    await m.react(done);
+    if (!args || !args[0]) {
+      return conn.reply(m.chat, `🌱 Ejemplo de uso: ${usedPrefix}${command} https://www.instagram.com/p/CK0tLXyAzEI`, m);
     }
+
+    if (!args[0].match(/(https:\/\/www.instagram.com)/gi)) {
+      return conn.reply(m.chat, `🍓 Ingresa una URL válida.`, m);
+    }
+
+    m.react('🕒');
+    const old = new Date();
+
+    const res = await fetch(`https://api.sylphy.xyz/download/instagram?url=${encodeURIComponent(args[0])}&apikey=Sylphiette's`);
+    const json = await res.json();
+
+    if (!json.status || !json.result?.dl) {
+      return conn.reply(m.chat, `Error al obtener el video.\n\n${JSON.stringify(json, null, 2)}`, m);
+    }
+
+    const { caption, username, like, comment, isVideo, dl } = json.result;
+
+    await conn.sendFile(m.chat, dl, 'instagram.mp4', 
+`🌸 \`Usuario :\` @${username}
+💬 \`Descripción :\` ${caption || 'Sin descripción'}
+❤️ \`Likes :\` ${like}
+💭 \`Comentarios :\` ${comment}
+📽️ \`Tipo :\` ${isVideo ? 'Video' : 'Imagen'}
+⏱️ \`Tiempo de respuesta :\` ${((new Date() - old))} ms`, m);
+
   } catch (e) {
-    return conn.reply(m.chat, `${msm} Ocurrió un error.`, m);
-    await m.react(error);
+    return conn.reply(m.chat, `Error: ${e.message}`, m);
   }
 };
 
-handler.command = ['instagram', 'ig'];
-handler.tags = ['descargas'];
-handler.help = ['instagram', 'ig'];
-handler.group = true;
-handler.register = true;
-handler.coin = 2;
+handler.help = ['instagram'];
+handler.command = ['ig', 'instagram'];
+handler.tags = ['download'];
 
 export default handler;
