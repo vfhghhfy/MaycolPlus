@@ -50,7 +50,7 @@ say(global.namebotttt, {
     colors: ['yellowBright']
 })
 
-say(`Hecho por ${global.name}`, {
+say(`Hecho por ${global.nameqr}`, {
     font: 'console',
     align: 'center',
     gradient: ['red', 'yellow', 'green', 'cyan', 'blue', 'magenta'] 
