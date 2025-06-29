@@ -3,6 +3,8 @@
  <img src= "https://files.catbox.moe/8iqvp8.gif">
     </p>
 
+> Bot basado en @soymaycol/maybaileys
+
 ---
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/I2I11GKDL4)
@@ -40,6 +42,7 @@
 - [ ] Más funciones próximamente...
 
 </details>
+
 ---
 
 # Instalacion por Render ₊˚⊹
