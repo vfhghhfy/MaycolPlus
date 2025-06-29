@@ -1,6 +1,6 @@
 //Codígo modificado por ya saben xd wa.me/5351524614
 
-import { delay } from "@whiskeysockets/baileys";
+import { delay } from "@soymaycol/maybaileys";
 
 const handler = async (m, { args, usedPrefix, command, conn }) => {
   const fa = `${emoji} Por favor, ingresa la cantidad que desea apostar.`.trim();
