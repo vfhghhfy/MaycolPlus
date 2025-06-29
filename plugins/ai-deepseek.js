@@ -4,7 +4,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
   
   if (!text) {
     return conn.reply(m.chat, 
-`╭─〔 𖣔 𝙈𝙖𝙮𝙘𝙤𝙡𝘼𝙄𝙐𝙡𝙩𝙧𝙖𝙈𝘿 ✦ DeepSeek ✦ 〕─⛩️
+`╭─〔 𖣔 ${global.namebot} ✦ DeepSeek ✦ 〕─⛩️
 │ ✧ *Consulta Vacía* ✧
 │ 
 │ Por favor, invoca tu duda o pregunta junto al comando.
@@ -29,7 +29,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
     } else {
       await m.react('✖️')
       await conn.reply(m.chat, 
-`╭─〔 𖣔 MaycolAIUltraMD ✦ 〕─⛩️
+`╭─〔 𖣔 ${global.namebot} ✦ 〕─⛩️
 │ ⛔ No pude invocar la respuesta...
 │ Tal vez los fantasmas bloquearon la red.
 ╰─❍`, m, rcanal)
@@ -37,7 +37,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
   } catch {
     await m.react('✖️')
     await conn.reply(m.chat, 
-`╭─〔 𖣔 MaycolAIUltraMD ✦ 〕─⛩️
+`╭─〔 𖣔 ${global.namebot} ✦ 〕─⛩️
 │ ⚠️ Algo salió mal...
 │ Puede que Hanako esté ocupado asustando a alguien.
 ╰─❍`, m, rcanal)
