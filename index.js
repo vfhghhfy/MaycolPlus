@@ -51,9 +51,9 @@ say(global.namebotttt, {
 })
 
 say(`Hecho por ${global.nameqr}`, {
-    font: 'console',
+    font: 'block',
     align: 'center',
-    gradient: ['red', 'yellow', 'green', 'cyan', 'blue', 'magenta'] 
+    gradient: ['red', 'yellow', 'green', 'cyan', 'blue', 'magenta']
 })
 
 protoType()
