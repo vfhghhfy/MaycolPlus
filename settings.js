@@ -75,8 +75,8 @@ global.md = 'https://github.com/SoySapo6/MaycolAI'
 global.correo = 'karatekidamericatv@gmail.com'
 global.cn = global.comunidad1
 global.owner_ngl = 'soymaycoldev'
-global.canalIdM = ["120363372883715167@newsletter", "120363372883715167@newsletter"]
-global.canalNombreM = ["𝐒𝐨𝐲𝐌𝐚𝐲𝐜𝐨𝐥 <𝟑 • Actualizaciones", "𝐒𝐨𝐲𝐌𝐚𝐲𝐜𝐨𝐥 <𝟑 • Actualizaciones"]
+global.canalIdM = ["120363372883715167@newsletter"]
+global.canalNombreM = ["𝐒𝐨𝐲𝐌𝐚𝐲𝐜𝐨𝐥 <𝟑 • Actualizaciones"]
 
 // ╭── ✦ Catálogo y Estilo ✦ ──⊷
 global.catalogo = fs.readFileSync('./src/catalogo.jpg')
