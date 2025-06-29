@@ -38,6 +38,7 @@ global.mes = d.toLocaleDateString('es', {month: 'long'})
 global.año = d.toLocaleDateString('es', {year: 'numeric'})
 global.tiempo = d.toLocaleString('en-US', {hour: 'numeric', minute: 'numeric', second: 'numeric', hour12: true})
 global.ofcbot = `${conn.user.jid.split('@')[0]}`
+global.emojis = [emoji, emoji2, emoji3, emoji4].getRandom()
   
 var canal = 'https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R'  
 var comunidad = 'https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R'
