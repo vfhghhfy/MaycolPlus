@@ -33,7 +33,7 @@ export async function before(m) {
     global.comandosEnMantenimiento = global.comandosEnMantenimiento || []
 
     if (global.comandosEnMantenimiento.includes(command)) {
-        const mensaje = `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ El hechizo *${usedPrefix}${command}* está en *mantenimiento*.\n│\n├─ Vuelve a intentarlo más tarde~\n╰─✦`
+        const mensaje = `╭─❍「 ✦ ${global.apodo} ✦ 」\n│\n├─ El hechizo *${usedPrefix}${command}* está en *mantenimiento*.\n│\n├─ Vuelve a intentarlo más tarde~\n╰─✦`
         await m.reply(mensaje)
         return
     }
@@ -42,13 +42,13 @@ export async function before(m) {
         const { bestMatch } = stringSimilarity.findBestMatch(command, allCommands)
         const suggestion = bestMatch.rating > 0.3 ? `¿Quisiste decir *${usedPrefix}${bestMatch.target}*?` : ''
 
-        const mensaje = `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ El hechizo *${usedPrefix}${command}* no existe en los registros del más allá.\n│\n├─ ${suggestion || 'Consulta los conjuros disponibles con:'}\n│   ⇝ *${usedPrefix}help*\n╰─✦`    
+        const mensaje = `╭─❍「 ✦ ${global.apodo} ✦ 」\n│\n├─ El hechizo *${usedPrefix}${command}* no existe en los registros del más allá.\n│\n├─ ${suggestion || 'Consulta los conjuros disponibles con:'}\n│   ⇝ *${usedPrefix}help*\n╰─✦`    
         await m.reply(mensaje)    
         return
     }
 
     if (chat?.isBanned) {
-        const avisoDesactivado = `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ El poder de Hanako ha sido *sellado* en este grupo.\n│\n├─ Invoca su regreso con:\n│   ⇝ *${usedPrefix}bot on*\n╰─✦`
+        const avisoDesactivado = `╭─❍「 ✦ ${global.apodo} ✦ 」\n│\n├─ El poder de Hanako ha sido *sellado* en este grupo.\n│\n├─ Invoca su regreso con:\n│   ⇝ *${usedPrefix}bot on*\n╰─✦`
         await m.reply(avisoDesactivado)
         return
     }
@@ -238,7 +238,7 @@ async function detectarImagenNSFW(m, conn, isAdmin, isBotAdmin, tipo = 'imagen')
                 await eliminarMensaje(m, conn, isBotAdmin, mensaje)
                 
                 // Mensaje adicional con detalles
-                const detalles = `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+                const detalles = `╭─❍「 ✦ ${global.apodo} ✦ 」
 │
 ├─ ⚠️ *Se detectó y removió contenido inapropiado de este plano terrenal...*
 │
@@ -262,7 +262,7 @@ async function detectarImagenNSFW(m, conn, isAdmin, isBotAdmin, tipo = 'imagen')
         console.error('Error detectando imagen NSFW:', error)
         
         // Mensaje de error opcional (puedes comentar esto si no quieres mostrar errores)
-        const errorMsg = `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+        const errorMsg = `╭─❍「 ✦ ${global.apodo} ✦ 」
 │
 ├─ ⚠️ *Error en el sistema de detección NSFW:*
 │   ⇝ ${error.message}
