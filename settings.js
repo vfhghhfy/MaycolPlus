@@ -20,6 +20,12 @@ global.owner = ['51921826291']
 global.mods = []
 global.suittag = []
 global.prems = []
+global.creador = 'Wa.me/51921826291'
+global.ofcbot = `${conn.user.jid.split('@')[0]}`
+global.namechannel = '𝐒𝐨𝐲𝐌𝐚𝐲𝐜𝐨𝐥 <𝟑 • Actualizaciones'
+global.namechannel2 = '𝐒𝐨𝐲𝐌𝐚𝐲𝐜𝐨𝐥 <𝟑 • Actualizaciones'
+global.namegrupo = '𝐒𝐨𝐲𝐌𝐚𝐲𝐜𝐨𝐥 <𝟑 • Actualizaciones'
+global.namecomu = '𝐒𝐨𝐲𝐌𝐚𝐲𝐜𝐨𝐥 <𝟑 • Actualizaciones'
 
 // ╭── ✦ Información del Bot ✦ ──⊷
 global.libreria = 'MayBailyes'
@@ -39,6 +45,23 @@ global.author = '𝙃𝙚𝙘𝙝𝙤 𝙥𝙤𝙧 𝙎𝙤𝙮𝙈𝙖𝙮𝙘�
 global.dev = global.author
 global.textbot = '𝐌𝐚𝐲𝐜𝐨𝐥𝐀𝐈𝐔𝐥𝐭𝐫𝐚-𝐌𝐃 • 𝙃𝙚𝙘𝙝𝙤 𝙥𝙤𝙧 𝙎𝙤𝙮𝙈𝙖𝙮𝙘𝙤𝙡 <3'
 global.etiqueta = '𝙼𝚊𝚢𝚌𝚘𝚕𝙰𝙸'
+global.listo = 'Aca lo tienes ୧⁠(⁠＾⁠ ⁠〰⁠ ⁠＾⁠)⁠୨'
+global.rwait = '🕒'
+global.done = '🇯🇵'
+global.error = '🈲'
+global.msm = '⚠︎'
+global.emoji = '🇯🇵'
+global.emoji2 = '💕'
+global.emoji3 = '😍'
+global.emoji4 = '🥴'
+global.emoji5 = '👻'
+global.emojis = [emoji, emoji2, emoji3, emoji4].getRandom()
+global.wait = '¡Esperame (⁠´⁠∩⁠｡⁠•⁠ ⁠ᵕ⁠ ⁠•⁠｡⁠∩⁠`⁠)!';
+global.waitt = '¡Esperame (⁠´⁠∩⁠｡⁠•⁠ ⁠ᵕ⁠ ⁠•⁠｡⁠∩⁠`⁠)!';
+global.waittt = '¡Esperame (⁠´⁠∩⁠｡⁠•⁠ ⁠ᵕ⁠ ⁠•⁠｡⁠∩⁠`⁠)!';
+global.waitttt = '¡Esperame (⁠´⁠∩⁠｡⁠•⁠ ⁠ᵕ⁠ ⁠•⁠｡⁠∩⁠`⁠)!';
+global.packsticker = `°.⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸.°\nᰔᩚ Usuario: ${nombre}\n❀ Bot: ${botname}\n✦ Fecha: ${fecha}\nⴵ Hora: ${tiempo}`;
+global.packsticker2 = `\n°.⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸.°\n\n${dev}`
 
 // ╭── ✦ Configuración General ✦ ──⊷
 global.moneda = 'MayCoins'
@@ -56,6 +79,8 @@ global.md = 'https://github.com/SoySapo6/MaycolAI'
 global.correo = 'karatekidamericatv@gmail.com'
 global.cn = global.comunidad1
 global.owner_ngl = 'soymaycoldev'
+global.canalIdM = ["120363372883715167@newsletter", "120363372883715167@newsletter"]
+global.canalNombreM = ["𝐒𝐨𝐲𝐌𝐚𝐲𝐜𝐨𝐥 <𝟑 • Actualizaciones", "𝐒𝐨𝐲𝐌𝐚𝐲𝐜𝐨𝐥 <𝟑 • Actualizaciones"]
 
 // ╭── ✦ Catálogo y Estilo ✦ ──⊷
 global.catalogo = fs.readFileSync('./src/catalogo.jpg')
