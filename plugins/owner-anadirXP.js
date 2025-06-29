@@ -1,5 +1,5 @@
 import db from '../lib/database.js';
-import MessageType from '@whiskeysockets/baileys';
+import MessageType from '@soymaycol/maybaileys';
 
 let pajak = 0;
 
