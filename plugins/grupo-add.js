@@ -1,13 +1,5 @@
-let handler = async (m, { conn, args, text, usedPrefix, command }) => {
-    const emoji = '📧'
-    const emoji2 = '⚠️'
-    
-    // Verificar si es grupo (compatible con @g.us y @lid)
-    if (!m.chat.includes('@g.us') && !m.chat.includes('@lid')) {
-        return conn.reply(m.chat, `${emoji2} Este comando solo funciona en grupos.`, m)
-    }
-    
-    // Verificar permisos manualmente
+// Función universal para verificar permisos de admin y bot
+async function verificarPermisos(m, conn) {
     let isUserAdmin = false
     let isBotAdmin = false
     let isOwner = false
@@ -20,52 +12,89 @@ let handler = async (m, { conn, args, text, usedPrefix, command }) => {
         })
     }
     
-    try {
-        let groupMetadata = await conn.groupMetadata(m.chat)
-        if (!groupMetadata || !groupMetadata.participants) {
-            return conn.reply(m.chat, `${emoji2} No pude obtener información del grupo. Intenta de nuevo.`, m)
-        }
-        
-        let participants = groupMetadata.participants
-        
-        // Verificar si el usuario es admin (o si es owner)
-        if (!isOwner) {
-            let userParticipant = participants.find(p => p.id === m.sender)
-            if (userParticipant) {
-                isUserAdmin = userParticipant.admin === 'admin' || userParticipant.admin === 'superadmin'
+    // Verificar permisos en grupos
+    if (m.chat.includes('@g.us') || m.chat.includes('@lid')) {
+        try {
+            let groupMetadata = await conn.groupMetadata(m.chat)
+            if (groupMetadata && groupMetadata.participants) {
+                let participants = groupMetadata.participants
+                
+                // Verificar si el usuario es admin (o si es owner)
+                if (!isOwner) {
+                    let userParticipant = participants.find(p => p.id === m.sender)
+                    if (userParticipant) {
+                        isUserAdmin = userParticipant.admin === 'admin' || userParticipant.admin === 'superadmin'
+                    }
+                } else {
+                    isUserAdmin = true // Owner siempre puede usar comandos de admin
+                }
+                
+                // Verificar si el bot es admin con múltiples métodos
+                let botJid = conn.user?.jid || conn.user?.id || conn.decodeJid?.(conn.user?.id)
+                
+                if (botJid) {
+                    // Buscar bot en participantes con múltiples métodos
+                    let botParticipant = participants.find(p => {
+                        return p.id === botJid || 
+                               p.id.split('@')[0] === botJid.split('@')[0] ||
+                               p.id.includes(botJid.split('@')[0]) ||
+                               botJid.includes(p.id.split('@')[0])
+                    })
+                    
+                    if (botParticipant) {
+                        isBotAdmin = botParticipant.admin === 'admin' || botParticipant.admin === 'superadmin'
+                    } else {
+                        // Búsqueda por número si no se encuentra
+                        let botNumber = botJid.split('@')[0].replace(/\D/g, '')
+                        botParticipant = participants.find(p => {
+                            let participantNumber = p.id.split('@')[0].replace(/\D/g, '')
+                            return participantNumber === botNumber
+                        })
+                        
+                        if (botParticipant) {
+                            isBotAdmin = botParticipant.admin === 'admin' || botParticipant.admin === 'superadmin'
+                        }
+                    }
+                }
             }
-        } else {
-            isUserAdmin = true // Owner siempre puede usar el comando
+        } catch (error) {
+            console.error('Error verificando permisos:', error)
         }
-        
-        // Verificar si el bot es admin
-        let botJid = conn.user?.jid || conn.user?.id
-        if (botJid) {
-            let botParticipant = participants.find(p => p.id === botJid)
-            if (botParticipant) {
-                isBotAdmin = botParticipant.admin === 'admin' || botParticipant.admin === 'superadmin'
-            }
-        }
-        
-        // Debug info
-        console.log('=== DEBUG INVITE ===')
-        console.log('Chat:', m.chat)
-        console.log('User admin:', isUserAdmin)
-        console.log('Bot admin:', isBotAdmin)
-        console.log('Is owner:', isOwner)
-        
-    } catch (error) {
-        console.error('Error verificando permisos:', error)
-        return conn.reply(m.chat, `${emoji2} Error al verificar permisos del grupo.`, m)
     }
     
+    return {
+        isUserAdmin: isUserAdmin || isOwner,
+        isBotAdmin,
+        isOwner
+    }
+}
+
+let handler = async (m, { conn, args, text, usedPrefix, command }) => {
+    const emoji = '📧'
+    const emoji2 = '⚠️'
+    
+    // Verificar si es grupo (compatible con @g.us y @lid)
+    if (!m.chat.includes('@g.us') && !m.chat.includes('@lid')) {
+        return conn.reply(m.chat, `${emoji2} Este comando solo funciona en grupos.`, m)
+    }
+    
+    // Verificar permisos usando la función universal
+    const permisos = await verificarPermisos(m, conn)
+    
+    // Debug info
+    console.log('=== DEBUG INVITE ===')
+    console.log('Chat:', m.chat)
+    console.log('User admin:', permisos.isUserAdmin)
+    console.log('Bot admin:', permisos.isBotAdmin)
+    console.log('Is owner:', permisos.isOwner)
+    
     // Verificar si el usuario puede usar el comando
-    if (!isUserAdmin && !isOwner) {
+    if (!permisos.isUserAdmin) {
         return conn.reply(m.chat, `${emoji2} Solo los administradores del grupo pueden usar este comando.`, m)
     }
     
     // Verificar si el bot es admin
-    if (!isBotAdmin) {
+    if (!permisos.isBotAdmin) {
         return conn.reply(m.chat, `${emoji2} El bot necesita ser administrador para generar enlaces de invitación.`, m)
     }
     
@@ -122,7 +151,6 @@ let handler = async (m, { conn, args, text, usedPrefix, command }) => {
 handler.help = ['invite *<número>*', 'add *<número>*']
 handler.tags = ['group']
 handler.command = ['add', 'agregar', 'añadir', 'invite', 'invitar']
-// Removemos handler.group, handler.admin y handler.botAdmin
-// Ya que manejamos todo manualmente
+handler.group = true
 
 export default handler
