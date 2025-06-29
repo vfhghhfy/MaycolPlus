@@ -30,7 +30,7 @@ import store from './lib/store.js'
 import pkg from 'google-libphonenumber'
 const { PhoneNumberUtil } = pkg
 const phoneUtil = PhoneNumberUtil.getInstance()
-import baileys from '@whiskeysockets/baileys'
+import baileys from '@soymaycol/maybaileys'
 const {proto, DisconnectReason, useMultiFileAuthState, MessageRetryMap, fetchLatestBaileysVersion, makeCacheableSignalKeyStore, jidNormalizedUser} = baileys
 import readline, { createInterface } from 'readline'
 import NodeCache from 'node-cache'
