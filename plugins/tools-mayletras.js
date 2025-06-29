@@ -20,18 +20,13 @@ let handler = async (m, { conn, args }) => {
   
     if (!json.lyrics) return m.reply('🚫 No encontré la letra, revisa los datos UwU')
   
-    let letras = json.lyrics.split('\n').filter(v => v.trim())
-  
+    let letras = json.lyrics.trim()
+
     if (!letras.length) return m.reply('🚫 No hay líneas de letra para mostrar UwU')
   
-    m.reply(`🎤 *${artista} - ${cancion}*\nLetras llegando en 3... 2... 1... (⁠｡⁠･⁠ω⁠･⁠｡⁠)⁠ﾉ⁠♡`)
+    let mensaje = `🎤 *${artista} - ${cancion}*\n\n${letras}\n\n✅ *Letra completa UwU* (⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤`
 
-    for (let linea of letras) {
-        await new Promise(r => setTimeout(r, 1000)) // Espera de 1 segundo
-        await conn.sendMessage(m.chat, { text: linea }, { quoted: m })
-    }
-
-    await conn.sendMessage(m.chat, { text: `✅ *Letra completa de:* ${artista} - ${cancion}\n(⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤` }, { quoted: m })
+    await conn.sendMessage(m.chat, { text: mensaje }, { quoted: m })
 }
 
 handler.help = ['mayletras artista | canción']
