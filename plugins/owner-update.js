@@ -1,8 +1,6 @@
 import { exec } from 'child_process';
 
 let handler = async (m, { conn }) => {
-  m.reply(`${emoji2} Actualizando el bot...`);
-
   exec('git pull', (err, stdout, stderr) => {
     if (err) {
       conn.reply(m.chat, `${msm} Error: No se pudo realizar la actualización.\nRazón: ${err.message}`, m);
@@ -24,6 +22,5 @@ let handler = async (m, { conn }) => {
 handler.help = ['update'];
 handler.tags = ['owner'];
 handler.command = ['update'];
-handler.rowner = true;
 
 export default handler;
