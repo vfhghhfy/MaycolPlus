@@ -1,5 +1,5 @@
 import fetch from 'node-fetch'
-import { downloadContentFromMessage } from '@soymaycol/maybaileys'
+import { downloadContentFromMessage } from '@soymaycol/maybailyes'
 
 let handler = async (m, { text, usedPrefix, command }) => {
   let q = m.quoted || m
