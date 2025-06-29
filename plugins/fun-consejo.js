@@ -1,4 +1,4 @@
-const { generateWAMessageFromContent, proto } = (await import('@soymaycol/maybaileys')).default
+const { generateWAMessageFromContent, proto } = (await import('@soymaycol/maybailyes')).default
 
 var handler = async (m, { conn, text}) => {
 

@@ -1,4 +1,4 @@
-import Presence from '@soymaycol/maybaileys';
+import Presence from '@soymaycol/maybailyes';
 const handler = async (m, {conn, args, text}) => {
   if (!text) throw `${emoji} Por favor, ingresé el nuevo nombre qué desea ponerle al grupo.`;
   try {

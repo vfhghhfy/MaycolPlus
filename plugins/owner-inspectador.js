@@ -2,7 +2,7 @@
 // Código compatible con canales y comunidades de WhatsApp 
 // También encontrarás código para comandos enfocados para canales de WhatsApp
 
-import { getUrlFromDirectPath } from "@soymaycol/maybaileys"
+import { getUrlFromDirectPath } from "@soymaycol/maybailyes"
 import _ from "lodash"
 import axios from 'axios' 
 

@@ -1,4 +1,4 @@
-import { delay } from '@soymaycol/maybaileys';
+import { delay } from '@soymaycol/maybailyes';
 
 const salasRuleta = {};
 

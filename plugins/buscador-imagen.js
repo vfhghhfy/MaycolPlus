@@ -4,7 +4,7 @@
 */
 
 import { googleImage } from '@bochilteam/scraper';
-import baileys from '@soymaycol/maybaileys';
+import baileys from '@soymaycol/maybailyes';
 
 async function sendAlbumMessage(jid, medias, options = {}) {
     if (typeof jid !== "string") throw new TypeError(`jid must be string, received: ${jid}`);

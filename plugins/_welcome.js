@@ -2,7 +2,7 @@
 // ┋ 『 ᴴᵃⁿᵃᵏᵒ⋆⁺₊𝕂𝕌ℕ 』 ⋆ Bienvenidas & Despedidas ⋆
 // ┗━━━━━━༻❀༺━━━━━━┛
 
-import { WAMessageStubType } from '@soymaycol/maybaileys'
+import { WAMessageStubType } from '@soymaycol/maybailyes'
 import fetch from 'node-fetch'
 
 // ♡～(‘▽^人) antes de que llegue el mensajitooo

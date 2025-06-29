@@ -2,7 +2,7 @@ import { xpRange } from '../lib/levelling.js'
 import fs from 'fs'
 import fetch from 'node-fetch'
 import { join } from 'path'
-import pkg from '@soymaycol/maybaileys';
+import pkg from '@soymaycol/maybailyes';
 const { generateWAMessageFromContent, proto } = pkg;
 
 let handler = async (m, { conn, args, command, isPrems }) => {

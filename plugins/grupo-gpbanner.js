@@ -1,4 +1,4 @@
-import { makeWASocket } from '@soymaycol/maybaileys';
+import { makeWASocket } from '@soymaycol/maybailyes';
 
 let handler = async (m, { conn, usedPrefix, command }) => {
   let q = m.quoted ? m.quoted : m;

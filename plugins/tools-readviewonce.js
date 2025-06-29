@@ -1,4 +1,4 @@
-let { downloadContentFromMessage } = (await import('@soymaycol/maybaileys'));
+let { downloadContentFromMessage } = (await import('@soymaycol/maybailyes'));
 
 let handler = async (m, { conn }) => {
 if (!m.quoted) return conn.reply(m.chat, `🍬 Responde a una imagen ViewOnce.`, m)

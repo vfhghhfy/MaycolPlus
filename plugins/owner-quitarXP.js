@@ -1,5 +1,5 @@
 import db from '../lib/database.js';
-import MessageType from '@soymaycol/maybaileys';
+import MessageType from '@soymaycol/maybailyes';
 
 let handler = async (m, { conn, text }) => {
     let who;

@@ -5,7 +5,7 @@ const {
   prepareWAMessageMedia,
   generateWAMessageContent,
   getDevice
-} = (await import("@soymaycol/maybaileys")).default;
+} = (await import("@soymaycol/maybailyes")).default;
 
 let handler = async (message, { conn, text, usedPrefix, command }) => {
   if (!text) {

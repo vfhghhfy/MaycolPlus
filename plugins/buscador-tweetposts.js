@@ -2,7 +2,7 @@
 // https://whatsapp.com/channel/0029Vanjyqb2f3ERifCpGT0W
 
 import axios from 'axios';
-const { proto, generateWAMessageFromContent, generateWAMessageContent } = (await import('@soymaycol/maybaileys')).default;
+const { proto, generateWAMessageFromContent, generateWAMessageContent } = (await import('@soymaycol/maybailyes')).default;
 
 let handler = async (m, { conn, text }) => {
 if (!text) { return conn.reply(m.chat, `${emoji} Por favor, ingresa el texto de Lo que quieres buscar en Twitter.`, m); }

@@ -1,4 +1,4 @@
-import pkg from '@soymaycol/maybaileys'
+import pkg from '@soymaycol/maybailyes'
 import fs from 'fs'
 import fetch from 'node-fetch'
 import axios from 'axios'
