@@ -3,11 +3,11 @@ import fetch from 'node-fetch'
 
 let handler = async (m, { conn, args }) => {
 try {
-let res = await fetch('https://api.github.com/repos/SoySapo6/MaycolAIUltraMD')
+let res = await fetch(`https://api.github.com/repos/${global.repo}`)
 if (!res.ok) throw new Error('Error al obtener datos del repositorio')
 let json = await res.json()
 
-let txt = `╭─❍「 ✦ 𝙼𝚊𝚢𝚌𝚘𝚕𝙰𝙸 ✦ 」\n`
+let txt = `╭─❍「 ✦ ${global.apodo} ✦ 」\n`
 txt += `│\n`
 txt += `├─ *Nombre:* ${json.name}\n`
 txt += `├─ *Visitas:* ${json.watchers_count}\n`
@@ -17,7 +17,7 @@ txt += `├─ *Repositorio:* ${json.html_url}\n`
 txt += `├─ *Forks:* ${json.forks_count}\n`
 txt += `├─ *Stars:* ${json.stargazers_count}\n`
 txt += `│\n`
-txt += `╰─✦ Hecho por *SoyMaycol*`
+txt += `╰─✦ Hecho por *${global.apodo}*`
 
 await conn.sendMessage(m.chat, {
 text: txt,
@@ -31,7 +31,7 @@ newsletterJid: channelRD.id,
 externalAdReply: {
 title: packname,
 body: dev,
-thumbnailUrl: 'https://files.catbox.moe/co1doa.jpeg',
+thumbnailUrl: global.banner,
 sourceUrl: redes,
 mediaType: 1,
 renderLargerThumbnail: true
