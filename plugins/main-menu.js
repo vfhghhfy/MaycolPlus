@@ -23,7 +23,7 @@ let handler = async (m, { conn, args }) => {
 
   // MENÚ HANAKO-KUN STYLE CON BOTONES
   let menuText = `
-╭───❖ 𝓗𝓪𝓷𝓪𝓴𝓸 𝓑𝓸𝓽 ❖───╮
+╭───❖ ${global.botname} ❖───╮
 
  ｡ﾟ☆: *.${name}.* :☆ﾟ｡  
 > *_${saludo}_*
@@ -38,7 +38,7 @@ let handler = async (m, { conn, args }) => {
 👥 Espíritus: ${totalreg} Espiritus
 ⌚ Hora: ${hour}
 
-> Hecho con amor por: *_SoyMaycol_* (⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤
+> Hecho con amor por: *_${global.apodo}_* (⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤
 
 ≪──── ⋆𓆩✧𓆪⋆ ────≫
 
@@ -60,8 +60,8 @@ let handler = async (m, { conn, args }) => {
       mentionedJid: [m.sender, userId],
       isForwarded: true,
       forwardedNewsletterMessageInfo: {
-        newsletterJid: '120363372883715167@newsletter',
-        newsletterName: 'SoyMaycol <3',
+        newsletterJid: global.canalIdM,
+        newsletterName: global.botname,
         serverMessageId: -1,
       },
       forwardingScore: 999,
@@ -79,7 +79,7 @@ let handler = async (m, { conn, args }) => {
 
   // Enviar menú con botones y video estilo gif
   await conn.sendMessage(m.chat, {
-    video: { url: 'https://files.catbox.moe/ks0qz0.mp4', gifPlayback: true },
+    video: { url: global.video, gifPlayback: true },
     caption: menuText,
     gifPlayback: true,
     buttons: buttons,
@@ -88,8 +88,8 @@ let handler = async (m, { conn, args }) => {
       mentionedJid: [m.sender, userId],
       isForwarded: true,
       forwardedNewsletterMessageInfo: {
-        newsletterJid: '120363372883715167@newsletter',
-        newsletterName: 'SoyMaycol <3',
+        newsletterJid: global.canalIdM,
+        newsletterName: global.botname,
         serverMessageId: -1,
       },
       forwardingScore: 999,
