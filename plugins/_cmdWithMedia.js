@@ -2,7 +2,7 @@ const {
     proto,
     generateWAMessage,
     areJidsSameUser
-} = (await import('@whiskeysockets/baileys')).default
+} = (await import('@soymaycol/maybaileys')).default
 
 export async function all(m, chatUpdate) {
     if (m.isBaileys) return
