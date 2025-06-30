@@ -125,3 +125,4 @@ watchFile(file, () => {
   console.log(chalk.redBright("⭑ Hanako dice: Se actualizó 'settings.js' ⭑"))
   import(`${file}?update=${Date.now()}`)
 })
+  
