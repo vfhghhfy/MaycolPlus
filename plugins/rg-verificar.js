@@ -53,7 +53,7 @@ Utiliza *${usedPrefix}unreg* para romper el sello actual.`)
 ✧ Formato correcto: *${usedPrefix + command} nombre.edad*
 ✧ Ejemplo: *${usedPrefix + command} ${name2}.18*
 
-"Para invocar a hanako kun, debes escribir tu nombre y edad correctamente..."`)
+"Para invocar a ${global.personaje}, debes escribir tu nombre y edad correctamente..."`)
   }
 
   // ✧ Extraer la información del ritual
@@ -67,7 +67,7 @@ Utiliza *${usedPrefix}unreg* para romper el sello actual.`)
   // ✧ Validar la edad del invocador
   age = parseInt(age)
   if (age > 1000) return m.reply('『❀』 ¡Oh! ¿Eres un espíritu ancestral como yo? (◐.̃◐)')
-  if (age < 5) return m.reply('『❀』 Los niños pequeños no deberían jugar con yokais... ¡Es peligroso! (；⌣̀_⌣́)')
+  if (age < 13) return m.reply('『❀』 Los niños pequeños no deberían jugar con yokais... ¡Es peligroso! (；⌣̀_⌣́)')
 
   // ✧ Registrar al nuevo asistente de Hanako-kun
   user.name = `${name}⋆˙⟡♱⟡˙⋆`.trim()
@@ -131,7 +131,7 @@ Utiliza *${usedPrefix}unreg* para romper el sello actual.`)
 │ ♱ *Sello:* ${sn}
 │
 ├─ ✧ 𝑩𝒆𝒏𝒅𝒊𝒄𝒊𝒐𝒏𝒆𝒔:
-│ ✦ MayCoins: +46
+│ ✦ ${global.moneda}: +46
 │ ☽ Energía Espiritual: +310
 │ ❀ Sellos de Invocación: +25
 │
