@@ -5,6 +5,7 @@ import path, { join } from 'path'
 import { unwatchFile, watchFile } from 'fs'
 import chalk from 'chalk'
 import fetch from 'node-fetch'
+import './settings.js'
 
 const { proto } = (await import('@soymaycol/maybailyes')).default
 const isNumber = x => typeof x === 'number' && !isNaN(x)
@@ -377,6 +378,10 @@ if ((m.id.startsWith('NJX-') || (m.id.startsWith('BAE5') && m.id.length === 16) 
 if (!isAccept) {
 continue
 }
+if (plugin.mantenimiento && !isROwner) {
+    m.reply(`╭─❍「 ✦ ${global.apodo} ✦ 」\n│\n├─ El hechizo *${usedPrefix}${command}* está en *mantenimiento*.\n│\n├─ Vuelve a intentarlo más tarde~\n╰─✦`)
+    continue
+}
 m.plugin = name
 if (m.chat in global.db.data.chats || m.sender in global.db.data.users) {
 let chat = global.db.data.chats[m.chat]
@@ -582,7 +587,7 @@ let verifyaleatorio = ['registrar', 'reg', 'verificar', 'verify', 'register'].ge
 
 const msg = {
   rowner: `
-╔═══════❖『 ✦ HANAKO-SAMA ✦ 』❖═══════╗
+╔═══════❖『 ✦ ${global.botname} ✦ 』❖═══════╗
 ║ (≖ᴗ≖✿) El hechizo *${comando}* solo puede ser
 ║ invocado por los Dioses del retrete (creadores).
 ╚════════════════════════════════════╝`,
