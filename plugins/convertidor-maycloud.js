@@ -21,7 +21,7 @@ let handler = async (m, { conn }) => {
     msg += `📁 *Archivo*: ${result.filename}\n`;
     msg += `🧠 *Tamaño*: ${formatBytes(result.size)}\n`;
     msg += `🌸 *Tipo*: ${result.mimetype}\n\n`;
-    msg += `╰(*´︶\`*)╯♡  *Subido con amor por Hanako~*`;
+    msg += `╰(*´︶\`*)╯♡  *Subido con amor por ${personaje}~*`;
 
     await conn.sendFile(m.chat, media, result.filename, msg, m);
     await m.react('✅');
@@ -35,6 +35,8 @@ let handler = async (m, { conn }) => {
 handler.help = ['maycloud'];
 handler.tags = ['uploader'];
 handler.command = ['maycloud', 'tomaycloud'];
+handler.mamtenimiento = true
+
 export default handler;
 
 // ────────────── Utils kawaii ✨ ──────────────
