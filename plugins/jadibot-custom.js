@@ -87,4 +87,4 @@ handler.tags = ['serbot']
 handler.command = ['setname', 'setbanner', 'setvideo']
 handler.help = ['setname <nombre>', 'setbanner <banner> <banner2> <avatar>', 'setvideo <url>']
 
-export default handler
+// export default handler
