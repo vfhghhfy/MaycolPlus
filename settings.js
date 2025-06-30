@@ -37,6 +37,7 @@ global.vs = '2.2.0'
 global.nameqr = 'SoyMaycol'
 global.namebotttt = 'MaycolAIUltraMD'
 global.namebot = '𝐌𝐚𝐲𝐜𝐨𝐥𝐀𝐈𝐔𝐥𝐭𝐫𝐚-𝐌𝐃'
+global.personaje = 'Hanako Kun'
 global.sessions = './MayBots/Principal'
 global.jadi = 'MayBots'
 global.yukiJadibts = true
