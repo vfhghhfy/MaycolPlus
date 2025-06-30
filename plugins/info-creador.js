@@ -1,9 +1,8 @@
 import PhoneNumber from 'awesome-phonenumber';
 
 let handler = async (m, { conn }) => {
-  m.react('👋');
+  m.react(global.emoji5);
 
-  const numeroPropio = '51921826291';
   let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? conn.user.jid : m.sender;
   let pp = await conn.profilePictureUrl(who).catch(_ => 'https://files.catbox.moe/67ulz8.jpeg');
   let biografia = await conn.fetchStatus(`${numeroPropio}@s.whatsapp.net`).catch(_ => 'Sin Biografía');
@@ -11,7 +10,7 @@ let handler = async (m, { conn }) => {
   let name = await conn.getName(who);
 
   await sendContactArray(conn, m.chat, [
-    [numeroPropio, `SoyMaycol`, 'MaycolAIUltraMD', '❀ No hacer spam', 'soymaycol.cn@gmail.com', '⊹˚• Perú •˚⊹', 'https://nightapi.is-a.dev/', bio]
+    [global.creador, global.apodo, global.namebot, '❀ No hacer spam', global.correo, global.pais, `https://github.com/${global.github}`, bio]
   ], m);
 };
 
