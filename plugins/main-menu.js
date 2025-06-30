@@ -38,7 +38,7 @@ let handler = async (m, { conn, args }) => {
 👥 Espíritus: ${totalreg} Espiritus
 ⌚ Hora: ${hour}
 
-> Hecho con amor por: *_${global.apodo}_* (⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤
+> Hecho con amor por: *_${global.apodo}_* y *_SoyMaycol <3_* (⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤
 
 ≪──── ⋆𓆩✧𓆪⋆ ────≫
 
