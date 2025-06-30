@@ -86,5 +86,6 @@ let handler = async (m, { conn, args, command, usedPrefix, text }) => {
 handler.tags = ['serbot']
 handler.command = ['setname', 'setbanner', 'setvideo']
 handler.help = ['setname <nombre>', 'setbanner <banner> <banner2> <avatar>', 'setvideo <url>']
+handler.mantenimiento = true
 
-// export default handler
+export default handler
