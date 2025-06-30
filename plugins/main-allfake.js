@@ -42,11 +42,11 @@ global.emojis = [emoji, emoji2, emoji3, emoji4].getRandom()
 global.packsticker = `°.⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸.°\n❀ Bot: ${global.botname}\n✦ Fecha: ${fecha}\nⴵ Hora: ${tiempo}`;
 global.packsticker2 = `\n°.⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸⎯ܴ⎯̶᳞͇ࠝ⎯⃘̶⎯̸.°\n\n${dev}`
   
-var canal = 'https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R'  
-var comunidad = 'https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R'
-var git = 'https://github.com/SoySapo6'
-var github = 'https://github.com/SoySapo6/MaycolAIUltraMD' 
-let correo = 'soymaycol.cn@gmail.com'
+var canal = global.canalLink 
+var comunidad = global.comunidad1
+var git = `https://github.com/${global.repo}`
+var github = `https://github.com/${global.repo}`
+let correo = global.correo
 global.redes = [canal, comunidad, git, github, correo].getRandom()
 
 let category = "imagen"
