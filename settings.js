@@ -28,6 +28,7 @@ global.namecomu = '𝐒𝐨𝐲𝐌𝐚𝐲𝐜𝐨𝐥 <𝟑 • Actualizacione
 global.apodo = '𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹'
 global.repo = 'SoySapo6/MaycolAIUltraMD'
 global.pais = '⊹˚• Perú •˚⊹'
+global.github = 'SoySapo6'
 
 // ╭── ✦ Información del Bot ✦ ──⊷
 global.libreria = 'MayBailyes'
