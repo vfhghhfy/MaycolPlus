@@ -1,19 +1,93 @@
-import fetch from 'node-fetch'
 
-let handler = async (m, { conn, text, usedPrefix, command }) => {
+import { format } from 'util'
 
-if (!text) throw m.reply(`${emoji} Por favor, ingresa un link de mediafire.`);
-conn.sendMessage(m.chat, { react: { text: "🕒", key: m.key } });
-        let ouh = await fetch(`https://api.agatz.xyz/api/mediafire?url=${text}`)
-  let gyh = await ouh.json() 
-        await conn.sendFile(m.chat, gyh.data[0].link, `${gyh.data[0].nama}`, `乂  *¡MEDIAFIRE - DESCARGAS!*  乂\n\n✩ *Nombre* : ${gyh.data[0].nama}\n✩ *Peso* : ${gyh.data[0].size}\n✩ *MimeType* : ${gyh.data[0].mime}\n> ${dev}`, m)       
-        await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key }})
+async function mediaFire(url) {
+  try {
+    const response = await fetch('https://r.jina.ai/' + url);
+    const text = await response.text();
+
+    const result = {
+      title: (text.match(/Title: (.+)/) || [])[1]?.trim() || '',
+      link: (text.match(/URL Source: (.+)/) || [])[1]?.trim() || '',
+      filename: '',
+      url: '',
+      size: '',
+      repair: ''
+    };
+
+    if (result.link) {
+      const fileMatch = result.link.match(/\/([^\/]+\.zip)/);
+      if (fileMatch) result.filename = fileMatch[1];
+    }
+
+    const matches = [...text.matchAll(/\[(.*?)\]\((https:\/\/[^\s]+)\)/g)];
+    for (const match of matches) {
+      const desc = match[1].trim();
+      const link = match[2].trim();
+      
+      if (desc.toLowerCase().includes('download') && desc.match(/\((\d+(\.\d+)?[KMGT]B)\)/)) {
+        result.url = link;
+        result.size = (desc.match(/\((\d+(\.\d+)?[MG]B)\)/) || [])[1] || '';
+      }
+      if (desc.toLowerCase().includes('repair')) {
+        result.repair = link;
+      }
+    }
+
+    return result;
+  } catch (error) {
+    return { error: error.message };
+  }
 }
-handler.help = ['mediafire']
-handler.tags = ['descargas']
-handler.command = ['mf', 'mediafire']
-handler.coin = 10
-handler.register = true
-handler.group = true
 
-export default handler
+let handler = async (m, { conn, args, usedPrefix, command }) => {
+  if (!args[0]) {
+    return m.reply(`🚩 Ingrese el enlace de un archivo de Mediafire`);
+  }
+  
+  if (!args[0].match(/mediafire/gi)) {
+    return m.reply('¡Ingresa un enlace Valido!');
+  }
+  
+  try {
+    m.react(global.done);
+    
+    const result = await mediaFire(args[0]);
+    
+    if (result.error) {
+      return m.reply(`Error: ${result.error}`);
+    }
+    
+    if (!result.url) {
+    }
+    
+    let mediaFireInfo = `
+乂  *M E D I A F I R E  -  D O W N L O A D*
+
+	✩ *💜 Nombre:* ${result.title || result.filename || 'Unknown'}
+	✩ *🔗 Link:* ${result.link || args[0]}`;
+    
+    await conn.sendMessage(m.chat, { 
+      document: { url: result.url }, 
+      mimetype: 'application/zip',
+      fileName: result.filename || result.title || 'mediafire_download.zip',
+      caption: mediaFireInfo
+    }, { quoted: m });
+    
+    if (result.repair) {
+    }
+    
+    m.react('✅');
+   
+  } catch (error) {
+    console.error(error);
+    m.reply(`Error: ${error.message}`);
+  }
+};
+
+handler.help = ['mediafire', 'mf'];
+handler.tags = ['downloader'];
+handler.command = /^(mediafire|mf)$/i;
+handler.limit = false;
+
+export default handler;
