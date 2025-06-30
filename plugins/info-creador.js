@@ -5,7 +5,7 @@ let handler = async (m, { conn }) => {
 
   let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? conn.user.jid : m.sender;
   let pp = await conn.profilePictureUrl(who).catch(_ => 'https://files.catbox.moe/67ulz8.jpeg');
-  let biografia = await conn.fetchStatus(`${numeroPropio}@s.whatsapp.net`).catch(_ => 'Sin Biografía');
+  let biografia = await conn.fetchStatus(`${global.creador}@s.whatsapp.net`).catch(_ => 'Sin Biografía');
   let bio = biografia.status?.toString() || 'Sin Biografía';
   let name = await conn.getName(who);
 
