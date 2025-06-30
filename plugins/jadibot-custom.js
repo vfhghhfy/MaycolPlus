@@ -27,11 +27,11 @@ case 'setname': {
   if (!text) return conn.reply(m.chat, `🌙 Debes decir el nuevo nombre\nEjemplo: *${usedPrefix + command} Hanako-KunBot*`, m)
   
   editarSettings(/global\.namebotttt\s*=\s*['"].*?['"]/, `global.namebotttt = '${text}'`)
-  global.namebot = text
-  global.packname = text
-  global.botname = text
-  global.wm = text
-  global.etiqueta = text
+  editarSettings(/global\.namebot\s*=\s*['"].*?['"]/, `global.namebot = '${text}'`)
+  editarSettings(/global\.packname\s*=\s*['"].*?['"]/, `global.packname = '${text}'`)
+  editarSettings(/global\.botname\s*=\s*['"].*?['"]/, `global.botname = '${text}'`)
+  editarSettings(/global\.wm\s*=\s*['"].*?['"]/, `global.wm = '${text}'`)
+  editarSettings(/global\.etiqueta\s*=\s*['"].*?['"]/, `global.etiqueta = '${text}'`)
 
   conn.reply(m.chat, `✨ El nombre mágico ha sido cambiado a: *${text}*\n¡Solo afecta a este Sub-Bot!`, m)
 }
