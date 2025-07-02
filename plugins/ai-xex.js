@@ -18,7 +18,7 @@ const handler = async (msg, { conn, args, usedPrefix, command }) => {
 
     if (!data.status) throw new Error('No se obtuvo respuesta de la IA')
 
-    const respuesta = `${data.result}\n\n> ${data.creator}`
+    const respuesta = `${data.result}\n\n> Hecho por ${data.creator}`
 
     await conn.sendMessage(chatId, { text: respuesta }, { quoted: msg })
     await conn.sendMessage(chatId, { react: { text: '✅', key: msg.key } })
