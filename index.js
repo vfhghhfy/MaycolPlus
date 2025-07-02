@@ -42,7 +42,7 @@ const PORT = process.env.PORT || process.env.SERVER_PORT || 3000
 //let require = createRequire(megu)
 let { say } = cfonts
 
-console.log(chalk.bold.redBright(`\n✰ Iniciando Yuki-Suou-Bot ✰\n`))
+console.log(chalk.bold.redBright(`\n✰ Iniciando MaycolAIUltraMD ✰\n`))
 
 say(global.namebotttt, {
     font: 'block',
@@ -50,7 +50,13 @@ say(global.namebotttt, {
     colors: ['yellowBright']
 })
 
-say(`Hecho por ${global.nameqr}`, {
+say(`Hecho por SoyMaycol & ${global.nameqr}`, {
+    font: 'console',
+    align: 'center',
+    gradient: ['magenta', 'cyan']
+})
+
+say(`Usando de Base a MaycolAIUltraMD hecho por SoyMaycol`, {
     font: 'console',
     align: 'center',
     gradient: ['magenta', 'cyan']
@@ -124,7 +130,7 @@ if (!fs.existsSync(carpeta)) {
     fs.mkdirSync(carpeta, { recursive: true })
     console.log('✔ Carpeta tmp creada con éxito UwU')
 } else {
-    console.log('✔ La carpeta tmp ya existe, todo bien (⁠｡⁠･⁠ω⁠･⁠｡⁠)⁠ﾉ⁠♡')
+    console.log('✔ La carpeta tmp ya existe, todo bien (。・ω・。)ノ♡')
 }
 
 const question = (texto) => new Promise((resolver) => rl.question(texto, resolver))
@@ -222,31 +228,31 @@ if (opcion == '1' || methodCodeQR) {
 console.log(chalk.bold.yellow(`\n❐ ESCANEA EL CÓDIGO QR EXPIRA EN 45 SEGUNDOS`))}
 }
 if (connection == 'open') {
-console.log(chalk.bold.green('\n❀ YukiBot-MD Conectada con éxito ❀'))
+console.log(chalk.bold.green('\n❀ MaycolAIUltraMD Conectada con éxito ❀'))
 }
 let reason = new Boom(lastDisconnect?.error)?.output?.statusCode
 if (connection === 'close') {
 if (reason === DisconnectReason.badSession) {
-console.log(chalk.bold.cyanBright(`\n⚠︎ SIN CONEXIÓN, BORRE LA CARPETA ${global.sessions} Y ESCANEA EL CÓDIGO QR ⚠︎`))
+console.log(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ ⚠︎ SIN CONEXIÓN, BORRE LA CARPETA ${global.sessions} Y ESCANEA EL CÓDIGO QR\n╰─✦`)
 } else if (reason === DisconnectReason.connectionClosed) {
-console.log(chalk.bold.magentaBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ☹\n┆ ⚠︎ CONEXION CERRADA, RECONECTANDO....\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ☹`))
+console.log(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ ⚠︎ CONEXIÓN CERRADA, RECONECTANDO...\n╰─✦`)
 await global.reloadHandler(true).catch(console.error)
 } else if (reason === DisconnectReason.connectionLost) {
-console.log(chalk.bold.blueBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ☂\n┆ ⚠︎ CONEXIÓN PERDIDA CON EL SERVIDOR, RECONECTANDO....\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ☂`))
+console.log(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ ⚠︎ CONEXIÓN PERDIDA CON EL SERVIDOR, RECONECTANDO...\n╰─✦`)
 await global.reloadHandler(true).catch(console.error)
 } else if (reason === DisconnectReason.connectionReplaced) {
-console.log(chalk.bold.yellowBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ✗\n┆ ⚠︎ CONEXIÓN REEMPLAZADA, SE HA ABIERTO OTRA NUEVA SESION, POR FAVOR, CIERRA LA SESIÓN ACTUAL PRIMERO.\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ✗`))
+console.log(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ ⚠︎ CONEXIÓN REEMPLAZADA, CIERRA LA SESIÓN ACTUAL PRIMERO\n╰─✦`)
 } else if (reason === DisconnectReason.loggedOut) {
-console.log(chalk.bold.redBright(`\n⚠︎ SIN CONEXIÓN, BORRE LA CARPETA ${global.sessions} Y ESCANEA EL CÓDIGO QR ⚠︎`))
+console.log(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ ⚠︎ SIN CONEXIÓN, BORRE LA CARPETA ${global.sessions} Y ESCANEA EL CÓDIGO QR\n╰─✦`)
 await global.reloadHandler(true).catch(console.error)
 } else if (reason === DisconnectReason.restartRequired) {
-console.log(chalk.bold.cyanBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ✓\n┆ ✧ CONECTANDO AL SERVIDOR...\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ✓`))
+console.log(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ ✧ CONECTANDO AL SERVIDOR...\n╰─✦`)
 await global.reloadHandler(true).catch(console.error)
 } else if (reason === DisconnectReason.timedOut) {
-console.log(chalk.bold.yellowBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ▸\n┆ ⧖ TIEMPO DE CONEXIÓN AGOTADO, RECONECTANDO....\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ▸`))
+console.log(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ ⧖ TIEMPO DE CONEXIÓN AGOTADO, RECONECTANDO...\n╰─✦`)
 await global.reloadHandler(true).catch(console.error) //process.send('reset')
 } else {
-console.log(chalk.bold.redBright(`\n⚠︎！ RAZON DE DESCONEXIÓN DESCONOCIDA: ${reason || 'No encontrado'} >> ${connection || 'No encontrado'}`))
+console.log(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ ⚠︎ RAZÓN DE DESCONEXIÓN DESCONOCIDA: ${reason || 'No encontrado'}\n╰─✦`)
 }}
 }
 process.on('uncaughtException', console.error)
@@ -281,7 +287,8 @@ conn.credsUpdate = saveCreds.bind(global.conn, true)
 
 const currentDateTime = new Date()
 const messageDateTime = new Date(conn.ev)
-const isGroupId = jid => jid.endsWith('@g.us') || jid.endsWith('@lid');
+// Función mejorada para detectar grupos que funciona con @g.us y @lid
+const isGroupId = jid => jid.endsWith('@g.us') || jid.endsWith('@lid') || jid.includes('@g.us') || jid.includes('@lid');
 
 let chats
 if (currentDateTime >= messageDateTime) {
@@ -308,9 +315,9 @@ global.rutaJadiBot = join(__dirname, './JadiBots')
 if (global.yukiJadibts) {
 if (!existsSync(global.rutaJadiBot)) {
 mkdirSync(global.rutaJadiBot, { recursive: true }) 
-console.log(chalk.bold.cyan(`La carpeta: ${jadi} se creó correctamente.`))
+console.log(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ La carpeta: ${jadi} se creó correctamente\n╰─✦`)
 } else {
-console.log(chalk.bold.cyan(`La carpeta: ${jadi} ya está creada.`)) 
+console.log(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ La carpeta: ${jadi} ya está creada\n╰─✦`) 
 }
 
 const readRutaJadiBot = readdirSync(rutaJadiBot)
@@ -429,11 +436,11 @@ unlinkSync(`./${jadi}/${directorio}/${fileInDir}`)
 }})
 }})
 if (SBprekey.length === 0) {
-console.log(chalk.bold.green(`\n╭» ❍ ${jadi} ❍\n│→ NADA POR ELIMINAR \n╰― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ⌫ ♻︎`))
+console.log(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ ${jadi} - NADA POR ELIMINAR\n╰─✦`)
 } else {
-console.log(chalk.bold.cyanBright(`\n╭» ❍ ${jadi} ❍\n│→ ARCHIVOS NO ESENCIALES ELIMINADOS\n╰― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ⌫ ♻︎︎`))
+console.log(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ ${jadi} - ARCHIVOS NO ESENCIALES ELIMINADOS\n╰─✦`)
 }} catch (err) {
-console.log(chalk.bold.red(`\n╭» ❍ ${jadi} ❍\n│→ OCURRIÓ UN ERROR\n╰― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ⌫ ♻\n` + err))
+console.log(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ ${jadi} - OCURRIÓ UN ERROR\n╰─✦\n` + err)
 }}
 
 function purgeOldFiles() {
@@ -446,9 +453,9 @@ if (file !== 'creds.json') {
 const filePath = path.join(dir, file);
 unlinkSync(filePath, err => {
 if (err) {
-console.log(chalk.bold.red(`\n╭» ❍ ARCHIVO ❍\n│→ ${file} NO SE LOGRÓ BORRAR\n╰― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ⌫ ✘\n` + err))
+console.log(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ ARCHIVO ${file} NO SE LOGRÓ BORRAR\n╰─✦\n` + err)
 } else {
-console.log(chalk.bold.green(`\n╭» ❍ ARCHIVO ❍\n│→ ${file} BORRADO CON ÉXITO\n╰― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ⌫ ♻`))
+console.log(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ ARCHIVO ${file} BORRADO CON ÉXITO\n╰─✦`)
 } }) }
 }) }) }) }
 
@@ -465,12 +472,12 @@ originalConsoleMethod.apply(console, arguments)
 setInterval(async () => {
 if (stopped === 'close' || !conn || !conn.user) return
 await clearTmp()
-console.log(chalk.bold.cyanBright(`\n╭» ❍ MULTIMEDIA ❍\n│→ ARCHIVOS DE LA CARPETA TMP ELIMINADAS\n╰― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ⌫ ♻`))}, 1000 * 60 * 4) // 4 min 
+console.log(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ MULTIMEDIA - ARCHIVOS DE LA CARPETA TMP ELIMINADAS\n╰─✦`)}, 1000 * 60 * 4) // 4 min 
 
 setInterval(async () => {
 if (stopped === 'close' || !conn || !conn.user) return
 await purgeSession()
-console.log(chalk.bold.cyanBright(`\n╭» ❍ ${global.sessions} ❍\n│→ SESIONES NO ESENCIALES ELIMINADAS\n╰― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ⌫ ♻`))}, 1000 * 60 * 10) // 10 min
+console.log(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ ${global.sessions} - SESIONES NO ESENCIALES ELIMINADAS\n╰─✦`)}, 1000 * 60 * 10) // 10 min
 
 setInterval(async () => {
 if (stopped === 'close' || !conn || !conn.user) return
@@ -479,9 +486,9 @@ await purgeSessionSB()}, 1000 * 60 * 10)
 setInterval(async () => {
 if (stopped === 'close' || !conn || !conn.user) return
 await purgeOldFiles()
-console.log(chalk.bold.cyanBright(`\n╭» ❍ ARCHIVOS ❍\n│→ ARCHIVOS RESIDUALES ELIMINADAS\n╰― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ⌫ ♻`))}, 1000 * 60 * 10)
+console.log(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ ARCHIVOS - ARCHIVOS RESIDUALES ELIMINADAS\n╰─✦`)}, 1000 * 60 * 10)
 
-_quickTest().then(() => conn.logger.info(chalk.bold(`✦  H E C H O\n`.trim()))).catch(console.error)
+_quickTest().then(() => conn.logger.info(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ ✦ SISTEMA INICIADO CORRECTAMENTE ✦\n╰─✦`.trim())).catch(console.error)
 
 async function isValidPhoneNumber(number) {
 try {
