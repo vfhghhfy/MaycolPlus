@@ -5,6 +5,8 @@
 
 > Bot basado en @soymaycol/maybailyes
 
+>  Este bot es gratuito asi que el creador no se hace responsable se los errores de tu fork
+
 ---
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/I2I11GKDL4)
