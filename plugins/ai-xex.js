@@ -41,7 +41,7 @@ const handler = async (msg, { conn, args, usedPrefix, command }) => {
 
 async function getPrompt() {
   try {
-    const res = await fetch('https://raw.githubusercontent.com/SoySapo6/SoySapo6/refs/heads/main/prompt-xex.may')
+    const res = await fetch('https://raw.githubusercontent.com/SoySapo6/SoySapo6/main/prompt-xex.may')
     return await res.text()
   } catch {
     return 'Eres un asistente inteligente'
