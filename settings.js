@@ -1,6 +1,7 @@
 // ╭─────────────────────⊷
 // │ 𖥔 MaycolAIUltraMD - Configuración
 // │ Tematizado al estilo Hanako-Kun (◍•ᴗ•◍)❤
+// Hecho por SoyMaycol - NO QUITAR CREDITOS NI EL MISMO SOYMAYCOL
 // ╰─────────────────────⊷
 
 import { watchFile, unwatchFile } from 'fs'
