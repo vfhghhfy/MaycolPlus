@@ -1,5 +1,3 @@
-> Advertencia: El bot dejo de tener constantes actualizaciones. Osea si se actualiza pero no como antes.
-
 <h1 align="center">⊹˚₊ MaycolAIUltraMD ₊˚⊹</h1>
 
  <img src= "https://files.catbox.moe/8iqvp8.gif">
