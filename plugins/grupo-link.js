@@ -86,5 +86,6 @@ handler.help = ['link']
 handler.tags = ['grupo']
 handler.command = ['link', 'enlace']
 handler.group = true
+handler.mantenimiento = true
 
 export default handler
