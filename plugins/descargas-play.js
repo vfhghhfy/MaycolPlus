@@ -20,17 +20,24 @@ const handler = async (m, { conn, text, command }) => {
         url: text
       }
 
-      const searchResult = await yts({ videoId: getYouTubeID(text) })
-      if (searchResult && searchResult.video) {
-        const v = searchResult.video
-        video.title = v.title || "Sin título"
-        video.author = { name: v.author.name || "Desconocido" }
-        video.views = v.views || "Desconocidas"
+      const videoId = getYouTubeID(text)
+      if (!videoId) {
+        return m.reply("❌ No se pudo extraer el ID del video del enlace proporcionado.")
+      }
+
+      // Corregir esta línea - usar el videoId directamente como string
+      const searchResult = await yts(videoId)
+      
+      if (searchResult && searchResult.videoId) {
+        // searchResult es el video directamente
+        video.title = searchResult.title || "Sin título"
+        video.author = { name: searchResult.author?.name || "Desconocido" }
+        video.views = searchResult.views || "Desconocidas"
         video.duration = {
-          seconds: v.seconds || 0,
-          timestamp: v.timestamp || "Desconocida"
+          seconds: searchResult.seconds || 0,
+          timestamp: searchResult.timestamp || "Desconocida"
         }
-        video.thumbnail = v.thumbnail
+        video.thumbnail = searchResult.thumbnail
       } else {
         return m.reply("❌ No se pudo obtener información del video desde el link proporcionado.")
       }
