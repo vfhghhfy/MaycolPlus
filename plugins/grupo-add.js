@@ -152,5 +152,6 @@ handler.help = ['invite *<número>*', 'add *<número>*']
 handler.tags = ['group']
 handler.command = ['add', 'agregar', 'añadir', 'invite', 'invitar']
 handler.group = true
+handler.mantenimiento = true
 
 export default handler
