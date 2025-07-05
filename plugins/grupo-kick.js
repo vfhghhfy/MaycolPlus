@@ -114,5 +114,6 @@ handler.tags = ['grupo'];
 handler.command = ['kick','echar','hechar','sacar','ban'];
 handler.group = true;
 handler.register = true
+handler.mantenimiento = true
 
 export default handler;
