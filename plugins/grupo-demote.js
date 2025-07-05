@@ -154,5 +154,6 @@ handler.tags = ['grupo']
 handler.command = ['demote','quitarpija', 'degradar']
 handler.group = true
 handler.fail = null
+handler.mantenimiento = true
 
 export default handler
