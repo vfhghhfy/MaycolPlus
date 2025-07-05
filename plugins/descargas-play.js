@@ -25,21 +25,65 @@ const handler = async (m, { conn, text, command }) => {
         return m.reply("❌ No se pudo extraer el ID del video del enlace proporcionado.")
       }
 
-      // Corregir esta línea - usar el videoId directamente como string
-      const searchResult = await yts(videoId)
-      
-      if (searchResult && searchResult.videoId) {
-        // searchResult es el video directamente
-        video.title = searchResult.title || "Sin título"
-        video.author = { name: searchResult.author?.name || "Desconocido" }
-        video.views = searchResult.views || "Desconocidas"
-        video.duration = {
-          seconds: searchResult.seconds || 0,
-          timestamp: searchResult.timestamp || "Desconocida"
+      console.log("🔍 ID del video extraído:", videoId)
+
+      try {
+        // Intentar buscar por ID del video
+        const searchResult = await yts(videoId)
+        console.log("📋 Resultado de búsqueda:", searchResult)
+        
+        if (searchResult) {
+          // Verificar diferentes formatos de respuesta
+          if (searchResult.videoId || searchResult.title) {
+            // searchResult es el video directamente
+            video.title = searchResult.title || "Sin título"
+            video.author = { name: searchResult.author?.name || "Desconocido" }
+            video.views = searchResult.views || "Desconocidas"
+            video.duration = {
+              seconds: searchResult.seconds || 0,
+              timestamp: searchResult.timestamp || "Desconocida"
+            }
+            video.thumbnail = searchResult.thumbnail
+          } else if (searchResult.videos && searchResult.videos.length > 0) {
+            // Formato con array de videos
+            const v = searchResult.videos[0]
+            video.title = v.title || "Sin título"
+            video.author = { name: v.author?.name || "Desconocido" }
+            video.views = v.views || "Desconocidas"
+            video.duration = {
+              seconds: v.seconds || 0,
+              timestamp: v.timestamp || "Desconocida"
+            }
+            video.thumbnail = v.thumbnail
+          } else {
+            throw new Error("Formato de respuesta no reconocido")
+          }
+        } else {
+          throw new Error("No se recibió respuesta de la búsqueda")
         }
-        video.thumbnail = searchResult.thumbnail
-      } else {
-        return m.reply("❌ No se pudo obtener información del video desde el link proporcionado.")
+      } catch (searchError) {
+        console.log("⚠️ Error buscando por ID, intentando con URL completa...")
+        
+        // Fallback: buscar con la URL completa
+        try {
+          const fallbackResult = await yts(text)
+          if (fallbackResult && fallbackResult.videos && fallbackResult.videos.length > 0) {
+            const v = fallbackResult.videos[0]
+            video.title = v.title || "Sin título"
+            video.author = { name: v.author?.name || "Desconocido" }
+            video.views = v.views || "Desconocidas"
+            video.duration = {
+              seconds: v.seconds || 0,
+              timestamp: v.timestamp || "Desconocida"
+            }
+            video.thumbnail = v.thumbnail
+          } else {
+            return m.reply("❌ No se pudo obtener información del video desde el link proporcionado.")
+          }
+        } catch (fallbackError) {
+          console.error("❌ Error en fallback:", fallbackError)
+          return m.reply("❌ No se pudo obtener información del video desde el link proporcionado.")
+        }
       }
     } else {
       const res = await yts(text)
@@ -208,8 +252,24 @@ const downloadVideo = async (conn, m, video, title) => {
 }
 
 const getYouTubeID = (url) => {
-  const match = url.match(/(?:v=|\/)([0-9A-Za-z_-]{11})(?:\?|&|$)/)
-  return match ? match[1] : null
+  // Remover parámetros adicionales como 'si'
+  const cleanUrl = url.split('&')[0].split('?')[0]
+  
+  // Diferentes patrones de URL de YouTube
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/v\/)([^&\n?#]+)/,
+    /youtube\.com\/watch\?.*v=([^&\n?#]+)/,
+    /youtu\.be\/([^&\n?#]+)/
+  ]
+  
+  for (const pattern of patterns) {
+    const match = url.match(pattern)
+    if (match && match[1]) {
+      return match[1]
+    }
+  }
+  
+  return null
 }
 
 handler.command = handler.help = ['play', 'playaudio', 'ytmp3', 'play2', 'ytv', 'ytmp4']
