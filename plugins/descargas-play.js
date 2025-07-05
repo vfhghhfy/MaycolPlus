@@ -92,12 +92,23 @@ const downloadAudio = async (conn, m, video, title) => {
       throw new Error("No se pudo obtener el enlace de descarga del audio")
     }
 
+    // Validación adicional del enlace antes de enviar
+    if (api.result.download.includes('googlevideo.com')) {
+      throw new Error("Enlace de descarga no válido (Google Video)")
+    }
+
     console.log("🎶 Enviando audio...")
+    console.log("📁 URL de descarga:", api.result.download)
+    
     await conn.sendFile(
       m.chat,
       api.result.download,
       `${(api.result.title || title).replace(/[^\w\s]/gi, '')}.mp3`,
-      `🎵 *${api.result.title || title}*`,
+      `🎵 *${api.result.title || title}*
+      
+> *✧ Calidad:* ${api.result.quality || 'Desconocida'}
+> *✧ Tamaño:* ${api.result.size || 'Desconocido'}
+> *✧ Formato:* ${api.result.format || 'mp3'}`,
       m
     )
 
@@ -117,13 +128,33 @@ const downloadVideo = async (conn, m, video, title) => {
 
     const api = await ytv(video.url)
 
-    if (!api || !api.url) {
+    // Manejar ambos formatos de respuesta (nuevo y viejo)
+    let downloadUrl, videoTitle, videoSize, videoQuality
+    
+    if (api.status && api.result) {
+      // Formato nuevo
+      downloadUrl = api.result.download
+      videoTitle = api.result.title
+      videoSize = api.result.size
+      videoQuality = api.result.quality
+    } else if (api.url) {
+      // Formato viejo
+      downloadUrl = api.url
+      videoTitle = api.title || title
+      videoSize = 'Unknown'
+      videoQuality = 'Unknown'
+    } else {
       throw new Error("No se pudo obtener el enlace de descarga del video")
+    }
+
+    // Validación adicional del enlace antes de enviar
+    if (downloadUrl.includes('googlevideo.com')) {
+      throw new Error("Enlace de descarga no válido (Google Video)")
     }
 
     let sizemb = 0
     try {
-      const res = await fetch(api.url, { method: 'HEAD' })
+      const res = await fetch(downloadUrl, { method: 'HEAD' })
       const cont = res.headers.get('content-length')
       if (cont) {
         const bytes = parseInt(cont, 10)
@@ -140,11 +171,17 @@ const downloadVideo = async (conn, m, video, title) => {
     const doc = sizemb >= limit && sizemb > 0
 
     console.log("🎥 Enviando video...")
+    console.log("📁 URL de descarga:", downloadUrl)
+    
     await conn.sendFile(
       m.chat,
-      api.url,
-      `${(api.title || title).replace(/[^\w\s]/gi, '')}.mp4`,
-      `📹 *${api.title || title}*`,
+      downloadUrl,
+      `${(videoTitle || title).replace(/[^\w\s]/gi, '')}.mp4`,
+      `📹 *${videoTitle || title}*
+      
+> *✧ Calidad:* ${videoQuality || 'Desconocida'}
+> *✧ Tamaño:* ${videoSize || (sizemb > 0 ? `${sizemb.toFixed(2)} MB` : 'Desconocido')}
+> *✧ Formato:* mp4`,
       m,
       null,
       {
