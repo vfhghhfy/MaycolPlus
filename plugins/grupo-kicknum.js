@@ -114,5 +114,6 @@ const handler = async (m, {conn, args, groupMetadata, participants, usedPrefix, 
 handler.command = ['kicknum', 'listnum', 'listanum'];
 handler.group = true;
 handler.fail = null;
+handler.mantenimiento = true
 
 export default handler;
