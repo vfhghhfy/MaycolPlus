@@ -160,16 +160,27 @@ const downloadAudio = async (conn, m, video, title) => {
     const audioQuality = api.result.quality || '128kbps'
     const audioSize = api.result.size || 'Desconocido'
 
-    // Verificar tamaño del archivo
+    // Verificar tamaño del archivo real
     let sizemb = 0
+    let isValidAudio = false
+    
     try {
       const res = await fetch(downloadUrl, { method: 'HEAD' })
       const cont = res.headers.get('content-length')
+      const contentType = res.headers.get('content-type')
+      
       if (cont) {
         sizemb = parseInt(cont, 10) / (1024 * 1024)
+        // Verificar si es un archivo de audio válido (mayor a 1MB)
+        isValidAudio = sizemb > 1.5 && (contentType?.includes('audio') || contentType?.includes('video'))
       }
     } catch (sizeError) {
-      console.log("⚠️ No se pudo verificar tamaño")
+      console.log("⚠️ No se pudo verificar archivo")
+    }
+
+    // Si el archivo es muy pequeño (1MB o menos), probablemente esté corrupto
+    if (sizemb > 0 && sizemb <= 1.5) {
+      throw new Error("Audio corrupto detectado (archivo muy pequeño)")
     }
 
     if (sizemb > limit && sizemb > 0) {
@@ -182,31 +193,88 @@ const downloadAudio = async (conn, m, video, title) => {
 
     const cleanTitle = audioTitle.replace(/[^\w\s\-\_]/gi, '').substring(0, 50)
     
-    // MÉTODO ÚNICO: Enviar como documento para evitar corrupción
-    await conn.sendMessage(m.chat, {
-      document: { url: downloadUrl },
-      mimetype: 'audio/mp4', // Cambiar a mp4 para mejor compatibilidad
-      fileName: `${cleanTitle}.m4a`,
-      caption: `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+    // Intentar múltiples métodos de envío
+    try {
+      // Método 1: Como audio directo (mejor para reproducción)
+      await conn.sendMessage(m.chat, {
+        audio: { url: downloadUrl },
+        mimetype: 'audio/mpeg',
+        fileName: `${cleanTitle}.mp3`,
+        ptt: false
+      }, { quoted: m })
+
+      // Mensaje de confirmación separado
+      await m.reply(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
 │
 ├─ 🎵 *${audioTitle}*
 │
 ├─ *✧ Calidad:* ${audioQuality}
 ├─ *✧ Tamaño:* ${audioSize}
-├─ *✧ Formato:* M4A
+├─ *✧ Formato:* MP3
+│
+├─ ✅ Audio enviado
+╰─✦`)
+
+    } catch (audioError) {
+      // Método 2: Como documento si falla el audio
+      await conn.sendMessage(m.chat, {
+        document: { url: downloadUrl },
+        mimetype: 'audio/mpeg',
+        fileName: `${cleanTitle}.mp3`,
+        caption: `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ 🎵 *${audioTitle}*
+│
+├─ *✧ Calidad:* ${audioQuality}
+├─ *✧ Tamaño:* ${audioSize}
+├─ *✧ Formato:* MP3 (como documento)
 │
 ├─ ✅ Audio enviado
 ╰─✦`
-    }, { quoted: m })
+      }, { quoted: m })
+    }
 
     await m.react("✅")
 
   } catch (error) {
     console.error("❌ Error descargando audio:", error)
+    
+    // Método de respaldo: Intentar con una API alternativa o mostrar error específico
+    try {
+      // Intentar una segunda vez con la misma API
+      const apiRetry = await yta(video.url)
+      if (apiRetry && apiRetry.status && apiRetry.result) {
+        const retryUrl = apiRetry.result.download || apiRetry.result.url
+        
+        if (retryUrl) {
+          await conn.sendFile(
+            m.chat,
+            retryUrl,
+            `${title.replace(/[^\w\s\-\_]/gi, '').substring(0, 50)}.mp3`,
+            `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ 🎵 *${title}*
+│
+├─ ✅ Audio (método alternativo)
+╰─✦`,
+            m,
+            null,
+            { asDocument: true, mimetype: 'audio/mpeg' }
+          )
+          await m.react("✅")
+          return
+        }
+      }
+    } catch (retryError) {
+      console.error("❌ Error en reintento:", retryError)
+    }
+    
     await m.reply(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
 │
 ├─ ❌ Error en descarga de audio
 ├─ ${error.message}
+├─ 
+├─ 💡 Intenta con otro video o URL
 ╰─✦`)
     await m.react("❌")
   }
