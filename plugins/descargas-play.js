@@ -8,11 +8,10 @@ const handler = async (m, { conn, text, command }) => {
 │
 ├─ El hechizo necesita un encantamiento
 │
+> Ingresa el nombre de un video o una URL de YouTube.
 ├─ Consulta los conjuros disponibles con:
 │   ⇝ *.help*
-╰─✦
-
-> Ingresa el nombre de un video o una URL de YouTube.`)
+╰─✦`)
 
   await m.react("🕛")
 
