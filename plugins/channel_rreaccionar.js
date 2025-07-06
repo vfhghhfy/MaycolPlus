@@ -36,6 +36,5 @@ if (!args[0].startsWith("https://whatsapp.com/channel/")) return m.reply("Link n
 handler.help = ['reaccionar <texto>'];
 handler.tags = ['fun', 'tools'];
 handler.command = ['reaccionar'];
-handler.channel = true;
 
 export default handler
