@@ -104,21 +104,57 @@ const handler = async (m, { conn, text, command }) => {
     const url = video.url || ""
     const thumbnail = video.thumbnail || ""
 
-    // Crear botones para elegir formato
-    const buttons = [
-      {
-        buttonId: `ytmp3 ${url}`,
-        buttonText: { displayText: "🎵 Descargar Audio" },
-        type: 1
-      },
-      {
-        buttonId: `ytmp4 ${url}`,
-        buttonText: { displayText: "📹 Descargar Video" },
-        type: 1
-      }
-    ]
+    // Verificar si es un comando específico (descarga directa)
+    const isDirectDownload = ["play", "playaudio", "ytmp3", "play2", "playvid", "ytv", "ytmp4"].includes(command)
 
-    const processingMessage = `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+    if (isDirectDownload) {
+      // Descarga directa sin botones
+      const processingMessage = `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ *「❀」${title}*
+│
+├─ *✧ Canal:* ${authorName}
+├─ *✧ Duración:* ${durationTimestamp}
+├─ *✧ Vistas:* ${views}
+│
+├─ ⏳ Descargando... Espera un momento
+╰─✦`
+
+      let sentMessage
+      if (thumbnail) {
+        try {
+          sentMessage = await conn.sendFile(m.chat, thumbnail, "thumb.jpg", processingMessage, m)
+        } catch (thumbError) {
+          console.log("⚠️ No se pudo enviar la miniatura:", thumbError.message)
+          sentMessage = await m.reply(processingMessage)
+        }
+      } else {
+        sentMessage = await m.reply(processingMessage)
+      }
+
+      // Ejecutar descarga según comando
+      if (["play", "playaudio", "ytmp3"].includes(command)) {
+        await downloadAudio(conn, m, video, title)
+      } else if (["play2", "playvid", "ytv", "ytmp4"].includes(command)) {
+        await downloadVideo(conn, m, video, title)
+      }
+
+    } else {
+      // Mostrar botones para elegir formato (comando genérico)
+      const buttons = [
+        {
+          buttonId: `ytmp3 ${url}`,
+          buttonText: { displayText: "🎵 Descargar Audio" },
+          type: 1
+        },
+        {
+          buttonId: `ytmp4 ${url}`,
+          buttonText: { displayText: "📹 Descargar Video" },
+          type: 1
+        }
+      ]
+
+      const processingMessage = `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
 │
 ├─ *「❀」${title}*
 │
@@ -129,36 +165,30 @@ const handler = async (m, { conn, text, command }) => {
 ├─ Selecciona el formato de descarga:
 ╰─✦`
 
-    let sentMessage
-    if (thumbnail) {
-      try {
-        sentMessage = await conn.sendMessage(m.chat, {
-          image: { url: thumbnail },
-          caption: processingMessage,
-          buttons: buttons,
-          headerType: 4
-        }, { quoted: m })
-      } catch (thumbError) {
-        console.log("⚠️ No se pudo enviar la miniatura:", thumbError.message)
+      let sentMessage
+      if (thumbnail) {
+        try {
+          sentMessage = await conn.sendMessage(m.chat, {
+            image: { url: thumbnail },
+            caption: processingMessage,
+            buttons: buttons,
+            headerType: 4
+          }, { quoted: m })
+        } catch (thumbError) {
+          console.log("⚠️ No se pudo enviar la miniatura:", thumbError.message)
+          sentMessage = await conn.sendMessage(m.chat, {
+            text: processingMessage,
+            buttons: buttons,
+            headerType: 1
+          }, { quoted: m })
+        }
+      } else {
         sentMessage = await conn.sendMessage(m.chat, {
           text: processingMessage,
           buttons: buttons,
           headerType: 1
         }, { quoted: m })
       }
-    } else {
-      sentMessage = await conn.sendMessage(m.chat, {
-        text: processingMessage,
-        buttons: buttons,
-        headerType: 1
-      }, { quoted: m })
-    }
-
-    // Ejecutar descarga directa solo si se especifica el comando exacto
-    if (["play", "playaudio", "ytmp3"].includes(command)) {
-      await downloadAudio(conn, m, video, title)
-    } else if (["play2", "playvid", "ytv", "ytmp4"].includes(command)) {
-      await downloadVideo(conn, m, video, title)
     }
 
   } catch (error) {
@@ -180,16 +210,6 @@ const downloadAudio = async (conn, m, video, title) => {
   try {
     console.log("🎧 Solicitando audio...")
 
-    // Mensaje de descarga con decoración
-    await m.reply(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
-│
-├─ 🎵 Preparando audio mágico
-│
-├─ *${title}*
-│
-├─ ⏳ Descargando... Espera un momento
-╰─✦`)
-
     const api = await yta(video.url)
 
     if (!api || !api.status || !api.result || !api.result.download) {
@@ -208,8 +228,11 @@ const downloadAudio = async (conn, m, video, title) => {
     await conn.sendMessage(m.chat, {
       audio: { url: api.result.download },
       mimetype: 'audio/mpeg',
-      fileName: `${(api.result.title || title).replace(/[^\w\s]/gi, '')}.mp3`,
-      caption: `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+      fileName: `${(api.result.title || title).replace(/[^\w\s]/gi, '')}.mp3`
+    }, { quoted: m })
+
+    // Mensaje de confirmación separado
+    await m.reply(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
 │
 ├─ 🎵 *${api.result.title || title}*
 │
@@ -218,8 +241,7 @@ const downloadAudio = async (conn, m, video, title) => {
 ├─ *✧ Formato:* MP3
 │
 ├─ Audio listo para escuchar ✨
-╰─✦`
-    }, { quoted: m })
+╰─✦`)
 
     await m.react("✅")
     console.log("✅ Audio enviado exitosamente")
@@ -241,16 +263,6 @@ const downloadAudio = async (conn, m, video, title) => {
 const downloadVideo = async (conn, m, video, title) => {
   try {
     console.log("📹 Solicitando video...")
-
-    // Mensaje de descarga con decoración
-    await m.reply(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
-│
-├─ 📹 Preparando video mágico
-│
-├─ *${title}*
-│
-├─ ⏳ Descargando... Espera un momento
-╰─✦`)
 
     const api = await ytv(video.url)
 
@@ -367,7 +379,7 @@ const getYouTubeID = (url) => {
   return null
 }
 
-handler.command = handler.help = ['play', 'playaudio', 'ytmp3', 'play2', 'ytv', 'ytmp4']
+handler.command = handler.help = ['play', 'playaudio', 'ytmp3', 'play2', 'playvid', 'ytv', 'ytmp4']
 handler.tags = ['descargas']
 
 export default handler
