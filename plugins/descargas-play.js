@@ -379,7 +379,7 @@ const getYouTubeID = (url) => {
   return null
 }
 
-handler.command = handler.help = ['play', 'playaudio', 'ytmp3', 'play2', 'playvid', 'ytv', 'ytmp4']
+handler.command = handler.help = ['play', 'yt', 'playaudio', 'ytmp3', 'play2', 'playvid', 'ytv', 'ytmp4']
 handler.tags = ['descargas']
 
 export default handler
