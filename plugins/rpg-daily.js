@@ -17,10 +17,10 @@
 import moment from 'moment-timezone'
 
 // ✧ Emojis y configuración
-const emojiHanako = '🇯🇵' 
-const emojiTiempo = '⏳'
-const moneda = 'MayCoins'
-const canalId = '120363417511396883@g.us'
+const emojiHanako = global.done
+const emojiTiempo = global.rwait
+const moneda = global.moneda
+const canalId = global.canalIdM
 
 let handler = async (m, { conn }) => {
     try {
@@ -94,8 +94,7 @@ Usa el comando: *_.registrar nombre.edad_*`,
 │ ✦ *${moneda}:* +${coin}
 │ ✨ *Energía Espiritual:* +${exp}
 │ 💎 *Gemas Místicas:* +${d}
-│ 🗨️ *Canal:* https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R
-│ 🗨️ *Donde saliste:* https://chat.whatsapp.com/IxoNAHj00aBLTB0jeiJROa
+│ 🗨️ *Canal:* ${global.canalLink}
 │ 📜 *Fecha:* ${moment().format('YYYY-MM-DD HH:mm:ss')}
 │    
 ╰─「 ⋆｡˚☽˚｡⋆ ✧ ⋆｡˚☽˚｡⋆ 」─╯
@@ -115,10 +114,10 @@ Usa el comando: *_.registrar nombre.edad_*`,
                 text: mensajeRecompensa,
                 contextInfo: {
                     externalAdReply: {
-                        title: '✧ Obsequio Diario de Hanako-kun ✧',
-                        body: 'https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R',
-                        thumbnailUrl: 'https://files.catbox.moe/xr2m6u.jpg',
-                        sourceUrl: 'https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R',
+                        title: `✧ Obsequio Diario de ${global.packname} ✧`,
+                        body: global.canalLink,
+                        thumbnailUrl: global.banner,
+                        sourceUrl: global.canalLink,
                         mediaType: 1,
                         showAdAttribution: true,
                         renderLargerThumbnail: true
@@ -157,7 +156,7 @@ Usa el comando: *_.registrar nombre.edad_*`,
                 try {
                     pp = await conn.profilePictureUrl(m.sender, 'image')
                 } catch (ppError) {
-                    pp = 'https://files.catbox.moe/xr2m6u.jpg'
+                    pp = global.banner
                 }
 
                 await global.conn.sendMessage(canalId, {
@@ -171,7 +170,7 @@ Usa el comando: *_.registrar nombre.edad_*`,
                 try {
                     pp = await conn.profilePictureUrl(m.sender, 'image')
                 } catch (ppError) {
-                    pp = 'https://files.catbox.moe/xr2m6u.jpg'
+                    pp = global.banner
                 }
 
                 await conn.sendMessage(canalId, {
