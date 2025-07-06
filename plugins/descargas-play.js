@@ -203,18 +203,6 @@ const downloadAudio = async (conn, m, video, title) => {
         ptt: false
       }, { quoted: m })
 
-      // Mensaje de confirmación separado
-      await m.reply(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
-│
-├─ 🎵 *${audioTitle}*
-│
-├─ *✧ Calidad:* ${audioQuality}
-├─ *✧ Tamaño:* ${audioSize}
-├─ *✧ Formato:* MP3
-│
-├─ ✅ Audio enviado
-╰─✦`)
-
     } catch (audioError) {
       // Método 2: Como documento si falla el audio
       await conn.sendMessage(m.chat, {
@@ -229,7 +217,6 @@ const downloadAudio = async (conn, m, video, title) => {
 ├─ *✧ Tamaño:* ${audioSize}
 ├─ *✧ Formato:* MP3 (como documento)
 │
-├─ ✅ Audio enviado
 ╰─✦`
       }, { quoted: m })
     }
@@ -255,7 +242,7 @@ const downloadAudio = async (conn, m, video, title) => {
 │
 ├─ 🎵 *${title}*
 │
-├─ ✅ Audio (método alternativo)
+> Hecho por *_SoyMaycol <3_*
 ╰─✦`,
             m,
             null,
@@ -339,7 +326,6 @@ const downloadVideo = async (conn, m, video, title) => {
 ├─ *✧ Tamaño:* ${videoSize || (sizemb > 0 ? `${sizemb.toFixed(2)} MB` : 'Desconocido')}
 ├─ *✧ Formato:* MP4
 │
-├─ ✅ Video enviado
 ╰─✦`,
       m,
       null,
