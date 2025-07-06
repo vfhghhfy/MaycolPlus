@@ -15,62 +15,53 @@ const handler = async (m, { conn, text, command }) => {
 
   await m.react("🕛")
 
-  console.log("🔍 Buscando en YouTube...")
-
   try {
     let video
     const isUrl = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/.test(text)
 
     if (isUrl) {
       // Procesar URL directamente
-      video = { url: text }
       const videoId = getYouTubeID(text)
-      
       if (!videoId) {
         return m.reply("❌ No se pudo extraer el ID del video del enlace proporcionado.")
       }
 
-      // Búsqueda rápida por ID
-      const searchResult = await yts(videoId)
-      
-      if (searchResult && (searchResult.title || searchResult.videoId)) {
-        video.title = searchResult.title || "Sin título"
-        video.author = { name: searchResult.author?.name || "Desconocido" }
-        video.views = searchResult.views || "Desconocidas"
-        video.duration = {
-          seconds: searchResult.seconds || 0,
-          timestamp: searchResult.timestamp || "Desconocida"
-        }
-        video.thumbnail = searchResult.thumbnail
+      // Buscar información del video
+      const searchResult = await yts({ videoId: videoId })
+      if (searchResult && searchResult.title) {
+        video = searchResult
+        video.url = text
       } else {
-        // Fallback básico
-        video.title = "Video de YouTube"
-        video.author = { name: "Desconocido" }
-        video.views = "Desconocidas"
-        video.duration = { seconds: 0, timestamp: "Desconocida" }
-        video.thumbnail = null
+        // Buscar por ID como segunda opción
+        const searchById = await yts(videoId)
+        if (searchById && searchById.title) {
+          video = searchById
+          video.url = text
+        } else {
+          return m.reply("❌ No se pudo obtener información del video.")
+        }
       }
     } else {
       // Búsqueda por texto
       const res = await yts(text)
-      if (!res || !res.all || !Array.isArray(res.all) || res.all.length === 0) {
+      if (!res || !res.videos || res.videos.length === 0) {
         return m.reply("❌ No se encontraron resultados para tu búsqueda.")
       }
-      video = res.all[0]
+      video = res.videos[0]
     }
 
     const title = video.title || "Sin título"
-    const authorName = video.author?.name || "Desconocido"
-    const durationTimestamp = video.duration?.timestamp || "Desconocida"
+    const authorName = video.author?.name || video.channelTitle || "Desconocido"
+    const durationTimestamp = video.duration?.timestamp || video.timestamp || "Desconocida"
     const views = video.views || "Desconocidas"
     const url = video.url || ""
-    const thumbnail = video.thumbnail || ""
+    const thumbnail = video.thumbnail || video.image || ""
 
     // Verificar tipo de comando
     const isDirectDownload = ["play", "playaudio", "ytmp3", "play2", "playvid", "ytv", "ytmp4"].includes(command)
 
     if (isDirectDownload) {
-      // Descarga directa - mensaje simple
+      // Mensaje único de procesamiento con estadísticas
       await m.reply(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
 │
 ├─ *「❀」${title}*
@@ -136,7 +127,6 @@ const handler = async (m, { conn, text, command }) => {
           }, { quoted: m })
         }
       } catch (buttonError) {
-        console.log("⚠️ Error con botones, enviando mensaje simple:", buttonError.message)
         await m.reply(processingMessage + "\n\n*Responde:*\n• `1` para audio\n• `2` para video")
       }
     }
@@ -155,24 +145,20 @@ const handler = async (m, { conn, text, command }) => {
 
 const downloadAudio = async (conn, m, video, title) => {
   try {
-    console.log("🎧 Descargando audio...")
-
     const api = await yta(video.url)
-    console.log("📊 Respuesta API Audio:", api) // Debug
 
     if (!api || !api.status || !api.result) {
-      throw new Error("API no devolvió datos válidos")
+      throw new Error("Error en la API de audio")
     }
 
-    // Verificar múltiples formatos de respuesta
-    const downloadUrl = api.result.download || api.result.url || api.result.link
-    const audioTitle = api.result.title || title
-    const audioQuality = api.result.quality || '128kbps'
-    const audioSize = api.result.size || 'Desconocido'
-    
+    const downloadUrl = api.result.download || api.result.url
     if (!downloadUrl) {
       throw new Error("No se pudo obtener el enlace de descarga del audio")
     }
+
+    const audioTitle = api.result.title || title
+    const audioQuality = api.result.quality || '128kbps'
+    const audioSize = api.result.size || 'Desconocido'
 
     // Verificar tamaño del archivo
     let sizemb = 0
@@ -183,7 +169,7 @@ const downloadAudio = async (conn, m, video, title) => {
         sizemb = parseInt(cont, 10) / (1024 * 1024)
       }
     } catch (sizeError) {
-      console.log("⚠️ No se pudo verificar tamaño:", sizeError.message)
+      console.log("⚠️ No se pudo verificar tamaño")
     }
 
     if (sizemb > limit && sizemb > 0) {
@@ -196,112 +182,44 @@ const downloadAudio = async (conn, m, video, title) => {
 
     const cleanTitle = audioTitle.replace(/[^\w\s\-\_]/gi, '').substring(0, 50)
     
-    console.log("🎶 Enviando audio...")
-    
-    // Intentar enviar audio con múltiples métodos
-    try {
-      // Método 1: Audio directo (mejor calidad)
-      await conn.sendMessage(m.chat, {
-        audio: { url: downloadUrl },
-        mimetype: 'audio/mpeg',
-        fileName: `${cleanTitle}.mp3`,
-        ptt: false
-      }, { quoted: m })
-      
-      // Enviar información adicional
-      await conn.sendMessage(m.chat, {
-        text: `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+    // MÉTODO ÚNICO: Enviar como documento para evitar corrupción
+    await conn.sendMessage(m.chat, {
+      document: { url: downloadUrl },
+      mimetype: 'audio/mp4', // Cambiar a mp4 para mejor compatibilidad
+      fileName: `${cleanTitle}.m4a`,
+      caption: `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
 │
 ├─ 🎵 *${audioTitle}*
 │
 ├─ *✧ Calidad:* ${audioQuality}
 ├─ *✧ Tamaño:* ${audioSize}
-├─ *✧ Formato:* MP3
+├─ *✧ Formato:* M4A
 │
-├─ ✅ Audio enviado exitosamente
+├─ ✅ Audio enviado
 ╰─✦`
-      }, { quoted: m })
-      
-    } catch (audioError) {
-      console.log("⚠️ Error enviando como audio, probando como documento:", audioError.message)
-      
-      // Método 2: Documento (más compatible)
-      await conn.sendMessage(m.chat, {
-        document: { url: downloadUrl },
-        mimetype: 'audio/mpeg',
-        fileName: `${cleanTitle}.mp3`,
-        caption: `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
-│
-├─ 🎵 *${audioTitle}*
-│
-├─ *✧ Calidad:* ${audioQuality}
-├─ *✧ Tamaño:* ${audioSize}
-├─ *✧ Formato:* MP3
-│
-├─ ✅ Audio como documento
-╰─✦`
-      }, { quoted: m })
-    }
+    }, { quoted: m })
 
     await m.react("✅")
-    console.log("✅ Audio enviado exitosamente")
 
   } catch (error) {
     console.error("❌ Error descargando audio:", error)
-    
-    // Método de respaldo usando sendFile
-    try {
-      console.log("🔄 Intentando método de respaldo...")
-      
-      const api = await yta(video.url)
-      if (api && api.status && api.result && (api.result.download || api.result.url)) {
-        const downloadUrl = api.result.download || api.result.url
-        const audioTitle = api.result.title || title
-        
-        await conn.sendFile(
-          m.chat,
-          downloadUrl,
-          `${audioTitle.replace(/[^\w\s\-\_]/gi, '').substring(0, 50)}.mp3`,
-          `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+    await m.reply(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
 │
-├─ 🎵 *${audioTitle}*
-│
-├─ ✅ Audio (método alternativo)
-╰─✦`,
-          m,
-          null,
-          { asDocument: true, mimetype: 'audio/mpeg' }
-        )
-        await m.react("✅")
-      } else {
-        throw new Error("Método de respaldo también falló")
-      }
-    } catch (altError) {
-      console.error("❌ Error en método de respaldo:", altError)
-      await m.reply(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
-│
-├─ ❌ El hechizo de audio falló
-│
-├─ Error: ${error.message}
-├─ Alternativo: ${altError.message}
+├─ ❌ Error en descarga de audio
+├─ ${error.message}
 ╰─✦`)
-      await m.react("❌")
-    }
+    await m.react("❌")
   }
 }
 
 const downloadVideo = async (conn, m, video, title) => {
   try {
-    console.log("📹 Descargando video...")
-
     const api = await ytv(video.url)
-    console.log("📊 Respuesta API Video:", api) // Debug
 
     let downloadUrl, videoTitle, videoSize, videoQuality
     
-    // Verificar múltiples formatos de respuesta
     if (api && api.status && api.result) {
-      downloadUrl = api.result.download || api.result.url || api.result.link
+      downloadUrl = api.result.download || api.result.url
       videoTitle = api.result.title || title
       videoSize = api.result.size || 'Desconocido'
       videoQuality = api.result.quality || 'Desconocida'
@@ -311,11 +229,11 @@ const downloadVideo = async (conn, m, video, title) => {
       videoSize = api.size || 'Desconocido'
       videoQuality = api.quality || 'Desconocida'
     } else {
-      throw new Error("No se pudo obtener el enlace de descarga del video")
+      throw new Error("Error en la API de video")
     }
 
     if (!downloadUrl) {
-      throw new Error("URL de descarga no válida")
+      throw new Error("No se pudo obtener el enlace de descarga del video")
     }
 
     // Verificar tamaño del archivo
@@ -327,7 +245,7 @@ const downloadVideo = async (conn, m, video, title) => {
         sizemb = parseInt(cont, 10) / (1024 * 1024)
       }
     } catch (sizeError) {
-      console.log("⚠️ No se pudo verificar tamaño:", sizeError.message)
+      console.log("⚠️ No se pudo verificar tamaño")
     }
 
     if (sizemb > limit && sizemb > 0) {
@@ -338,10 +256,8 @@ const downloadVideo = async (conn, m, video, title) => {
 ╰─✦`)
     }
 
-    console.log("🎥 Enviando video...")
-    
     const cleanTitle = (videoTitle || title).replace(/[^\w\s\-\_]/gi, '').substring(0, 50)
-    const asDocument = sizemb > 50 // Enviar como documento si es mayor a 50MB
+    const asDocument = sizemb > 50
     
     await conn.sendFile(
       m.chat,
@@ -355,7 +271,7 @@ const downloadVideo = async (conn, m, video, title) => {
 ├─ *✧ Tamaño:* ${videoSize || (sizemb > 0 ? `${sizemb.toFixed(2)} MB` : 'Desconocido')}
 ├─ *✧ Formato:* MP4
 │
-├─ ✅ Video enviado exitosamente
+├─ ✅ Video enviado
 ╰─✦`,
       m,
       null,
@@ -366,15 +282,13 @@ const downloadVideo = async (conn, m, video, title) => {
     )
 
     await m.react("✅")
-    console.log("✅ Video enviado exitosamente")
 
   } catch (error) {
     console.error("❌ Error descargando video:", error)
     await m.reply(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
 │
-├─ ❌ El hechizo de video falló
-│
-├─ Error: ${error.message}
+├─ ❌ Error en descarga de video
+├─ ${error.message}
 ╰─✦`)
     await m.react("❌")
   }
