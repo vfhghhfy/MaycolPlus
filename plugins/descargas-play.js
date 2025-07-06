@@ -1,3 +1,7 @@
+/* SoyMaycol - Play
+--> GitHub: SoyMaycol
+--> No quitar créditos*/
+
 import yts from "yt-search"
 import { ytv, yta } from "@soymaycol/maytube"
 
