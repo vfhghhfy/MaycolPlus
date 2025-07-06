@@ -1,6 +1,5 @@
-
 const handler = async (m, { conn }) => {
-    if (!args[0]) return m.reply(`ejemplo:\n.channelReact https://whatsapp.com/channel/xxxx hola`);
+    if (!args[0]) return m.reply(`ejemplo:\n.reaccionar https://whatsapp.com/channel/xxxx hola`);
 
 if (!args[0].startsWith("https://whatsapp.com/channel/")) return m.reply("Link no es válido.");
 
@@ -37,7 +36,6 @@ if (!args[0].startsWith("https://whatsapp.com/channel/")) return m.reply("Link n
 handler.help = ['reaccionar <texto>'];
 handler.tags = ['fun', 'tools'];
 handler.command = ['reaccionar'];
-handler.register = true;
 handler.channel = true;
 
 export default handler
