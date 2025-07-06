@@ -1,34 +1,38 @@
-const handler = async (m, { conn, args }) => {
-  const textoObjetivo = args.join(" ")?.trim();
 
-  if (!textoObjetivo) {
-    return conn.reply(m.chat, `⛔ Usa el comando así:\n.reaccionar <texto>\n\nEj: .reaccionar hola`, m);
-  }
+const handler = async (m, { conn }) => {
+    if (!args[0]) return m.reply(`ejemplo:\n.channelReact https://whatsapp.com/channel/xxxx hola`);
 
-  // Evitar texto que sea solo emojis
-  if (/^[\p{Emoji}\s]+$/u.test(textoObjetivo)) {
-    return conn.reply(m.chat, `🚫 No se permite reaccionar solo a emojis`, m);
-  }
+if (!args[0].startsWith("https://whatsapp.com/channel/")) return m.reply("Link no es válido.");
 
-  let mensajes = await conn.loadMessages(m.chat, 50); // Carga los últimos 50 mensajes
+    const hurufGaya = {
+        a: '🅐', b: '🅑', c: '🅒', d: '🅓', e: '🅔', f: '🅕', g: '🅖',
+        h: '🅗', i: '🅘', j: '🅙', k: '🅚', l: '🅛', m: '🅜', n: '🅝',
+        o: '🅞', p: '🅟', q: '🅠', r: '🅡', s: '🅢', t: '🅣', u: '🅤',
+        v: '🅥', w: '🅦', x: '🅧', y: '🅨', z: '🅩',
+        '0': '⓿', '1': '➊', '2': '➋', '3': '➌', '4': '➍',
+        '5': '➎', '6': '➏', '7': '➐', '8': '➑', '9': '➒'
+    };
 
-  let mensajeObjetivo = mensajes.find(msg =>
-    msg?.message?.conversation?.trim().toLowerCase() === textoObjetivo.toLowerCase() ||
-    msg?.message?.extendedTextMessage?.text?.trim().toLowerCase() === textoObjetivo.toLowerCase()
-  );
+    const emojiInput = args.slice(1).join(' ').toLowerCase();
+    const emoji = emojiInput.split('').map(c => {
+        if (c === ' ') return '―';
+        return hurufGaya[c] || c;
+    }).join('');
 
-  if (!mensajeObjetivo) {
-    return conn.reply(m.chat, `😿 No encontré un mensaje que diga:\n"${textoObjetivo}"`, m);
-  }
+    try {
+        const link = args[0];
+        const channelId = link.split('/')[4];
+        const messageId = link.split('/')[5];
 
-  // Reacciona con una carita (puedes cambiarla si quieres)
-  await conn.sendMessage(m.chat, {
-    react: {
-      text: "❤️", // Cambia este emoji si quieres otra reacción
-      key: mensajeObjetivo.key
+        const res = await conn.newsletterMetadata("invite", channelId);
+        await conn.newsletterReactMessage(res.id, messageId, emoji);
+
+        return m.reply(`Se envió correctamente la reacción *${emoji}* al mensaje en el canal *${res.name}*.`);
+    } catch (e) {
+        console.error(e);
+        return m.reply("Error al enviar reacción. Asegúrate de que el enlace y el emoji sean válidos.");
     }
-  });
-};
+}
 
 handler.help = ['reaccionar <texto>'];
 handler.tags = ['fun', 'tools'];
@@ -36,4 +40,4 @@ handler.command = ['reaccionar'];
 handler.register = true;
 handler.channel = true;
 
-export default handler;
+export default handler
