@@ -4,7 +4,15 @@ import { ytv, yta } from "@soymaycol/maytube"
 const limit = 100
 
 const handler = async (m, { conn, text, command }) => {
-  if (!text) return m.reply("> Ingresa el nombre de un video o una URL de YouTube.")
+  if (!text) return m.reply(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ El hechizo necesita un encantamiento
+│
+├─ Consulta los conjuros disponibles con:
+│   ⇝ *.help*
+╰─✦
+
+> Ingresa el nombre de un video o una URL de YouTube.`)
 
   await m.react("🕛")
 
@@ -28,14 +36,11 @@ const handler = async (m, { conn, text, command }) => {
       console.log("🔍 ID del video extraído:", videoId)
 
       try {
-        // Intentar buscar por ID del video
         const searchResult = await yts(videoId)
         console.log("📋 Resultado de búsqueda:", searchResult)
         
         if (searchResult) {
-          // Verificar diferentes formatos de respuesta
           if (searchResult.videoId || searchResult.title) {
-            // searchResult es el video directamente
             video.title = searchResult.title || "Sin título"
             video.author = { name: searchResult.author?.name || "Desconocido" }
             video.views = searchResult.views || "Desconocidas"
@@ -45,7 +50,6 @@ const handler = async (m, { conn, text, command }) => {
             }
             video.thumbnail = searchResult.thumbnail
           } else if (searchResult.videos && searchResult.videos.length > 0) {
-            // Formato con array de videos
             const v = searchResult.videos[0]
             video.title = v.title || "Sin título"
             video.author = { name: v.author?.name || "Desconocido" }
@@ -64,7 +68,6 @@ const handler = async (m, { conn, text, command }) => {
       } catch (searchError) {
         console.log("⚠️ Error buscando por ID, intentando con URL completa...")
         
-        // Fallback: buscar con la URL completa
         try {
           const fallbackResult = await yts(text)
           if (fallbackResult && fallbackResult.videos && fallbackResult.videos.length > 0) {
@@ -101,25 +104,57 @@ const handler = async (m, { conn, text, command }) => {
     const url = video.url || ""
     const thumbnail = video.thumbnail || ""
 
-    const processingMessage = `*「❀」${title}*
-> *✧ Canal:* ${authorName}
-> *✧ Duración:* ${durationTimestamp}
-> *✧ Vistas:* ${views}
+    // Crear botones para elegir formato
+    const buttons = [
+      {
+        buttonId: `ytmp3 ${url}`,
+        buttonText: { displayText: "🎵 Descargar Audio" },
+        type: 1
+      },
+      {
+        buttonId: `ytmp4 ${url}`,
+        buttonText: { displayText: "📹 Descargar Video" },
+        type: 1
+      }
+    ]
 
-⏳ *Descargando...* Espera un momento.`
+    const processingMessage = `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ *「❀」${title}*
+│
+├─ *✧ Canal:* ${authorName}
+├─ *✧ Duración:* ${durationTimestamp}
+├─ *✧ Vistas:* ${views}
+│
+├─ Selecciona el formato de descarga:
+╰─✦`
 
     let sentMessage
     if (thumbnail) {
       try {
-        sentMessage = await conn.sendFile(m.chat, thumbnail, "thumb.jpg", processingMessage, m)
+        sentMessage = await conn.sendMessage(m.chat, {
+          image: { url: thumbnail },
+          caption: processingMessage,
+          buttons: buttons,
+          headerType: 4
+        }, { quoted: m })
       } catch (thumbError) {
         console.log("⚠️ No se pudo enviar la miniatura:", thumbError.message)
-        sentMessage = await m.reply(processingMessage)
+        sentMessage = await conn.sendMessage(m.chat, {
+          text: processingMessage,
+          buttons: buttons,
+          headerType: 1
+        }, { quoted: m })
       }
     } else {
-      sentMessage = await m.reply(processingMessage)
+      sentMessage = await conn.sendMessage(m.chat, {
+        text: processingMessage,
+        buttons: buttons,
+        headerType: 1
+      }, { quoted: m })
     }
 
+    // Ejecutar descarga directa solo si se especifica el comando exacto
     if (["play", "playaudio", "ytmp3"].includes(command)) {
       await downloadAudio(conn, m, video, title)
     } else if (["play2", "playvid", "ytv", "ytmp4"].includes(command)) {
@@ -128,7 +163,15 @@ const handler = async (m, { conn, text, command }) => {
 
   } catch (error) {
     console.error("❌ Error general:", error)
-    await m.reply(`❌ Hubo un error al procesar tu solicitud:\n\n${error.message}`)
+    await m.reply(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ El hechizo falló
+│
+├─ Error: ${error.message}
+│
+├─ Consulta los conjuros disponibles con:
+│   ⇝ *.help*
+╰─✦`)
     await m.react("❌")
   }
 }
@@ -136,6 +179,16 @@ const handler = async (m, { conn, text, command }) => {
 const downloadAudio = async (conn, m, video, title) => {
   try {
     console.log("🎧 Solicitando audio...")
+
+    // Mensaje de descarga con decoración
+    await m.reply(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ 🎵 Preparando audio mágico
+│
+├─ *${title}*
+│
+├─ ⏳ Descargando... Espera un momento
+╰─✦`)
 
     const api = await yta(video.url)
 
@@ -151,24 +204,36 @@ const downloadAudio = async (conn, m, video, title) => {
     console.log("🎶 Enviando audio...")
     console.log("📁 URL de descarga:", api.result.download)
     
-    await conn.sendFile(
-      m.chat,
-      api.result.download,
-      `${(api.result.title || title).replace(/[^\w\s]/gi, '')}.mp3`,
-      `🎵 *${api.result.title || title}*
-      
-> *✧ Calidad:* ${api.result.quality || 'Desconocida'}
-> *✧ Tamaño:* ${api.result.size || 'Desconocido'}
-> *✧ Formato:* ${api.result.format || 'mp3'}`,
-      m
-    )
+    // Enviar como audio/MP3 específicamente
+    await conn.sendMessage(m.chat, {
+      audio: { url: api.result.download },
+      mimetype: 'audio/mpeg',
+      fileName: `${(api.result.title || title).replace(/[^\w\s]/gi, '')}.mp3`,
+      caption: `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ 🎵 *${api.result.title || title}*
+│
+├─ *✧ Calidad:* ${api.result.quality || 'Desconocida'}
+├─ *✧ Tamaño:* ${api.result.size || 'Desconocido'}
+├─ *✧ Formato:* MP3
+│
+├─ Audio listo para escuchar ✨
+╰─✦`
+    }, { quoted: m })
 
     await m.react("✅")
     console.log("✅ Audio enviado exitosamente")
 
   } catch (error) {
     console.error("❌ Error descargando audio:", error)
-    await m.reply(`❌ Error al descargar el audio:\n\n${error.message}`)
+    await m.reply(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ El hechizo de audio falló
+│
+├─ Error: ${error.message}
+│
+├─ Intenta con otro encantamiento
+╰─✦`)
     await m.react("❌")
   }
 }
@@ -176,6 +241,16 @@ const downloadAudio = async (conn, m, video, title) => {
 const downloadVideo = async (conn, m, video, title) => {
   try {
     console.log("📹 Solicitando video...")
+
+    // Mensaje de descarga con decoración
+    await m.reply(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ 📹 Preparando video mágico
+│
+├─ *${title}*
+│
+├─ ⏳ Descargando... Espera un momento
+╰─✦`)
 
     const api = await ytv(video.url)
 
@@ -216,7 +291,15 @@ const downloadVideo = async (conn, m, video, title) => {
     }
 
     if (sizemb > limit && sizemb > 0) {
-      return m.reply(`🚫 El archivo es muy pesado (${sizemb.toFixed(2)} MB). El límite es ${limit} MB. Intenta con un video más corto 🥲`)
+      return m.reply(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ 🚫 El archivo es muy pesado
+│
+├─ *Tamaño:* ${sizemb.toFixed(2)} MB
+├─ *Límite:* ${limit} MB
+│
+├─ Intenta con un video más corto 🥲
+╰─✦`)
     }
 
     const doc = sizemb >= limit && sizemb > 0
@@ -228,11 +311,16 @@ const downloadVideo = async (conn, m, video, title) => {
       m.chat,
       downloadUrl,
       `${(videoTitle || title).replace(/[^\w\s]/gi, '')}.mp4`,
-      `📹 *${videoTitle || title}*
-      
-> *✧ Calidad:* ${videoQuality || 'Desconocida'}
-> *✧ Tamaño:* ${videoSize || (sizemb > 0 ? `${sizemb.toFixed(2)} MB` : 'Desconocido')}
-> *✧ Formato:* mp4`,
+      `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ 📹 *${videoTitle || title}*
+│
+├─ *✧ Calidad:* ${videoQuality || 'Desconocida'}
+├─ *✧ Tamaño:* ${videoSize || (sizemb > 0 ? `${sizemb.toFixed(2)} MB` : 'Desconocido')}
+├─ *✧ Formato:* MP4
+│
+├─ Video listo para ver ✨
+╰─✦`,
       m,
       null,
       {
@@ -246,7 +334,14 @@ const downloadVideo = async (conn, m, video, title) => {
 
   } catch (error) {
     console.error("❌ Error descargando video:", error)
-    await m.reply(`❌ Error al descargar el video:\n\n${error.message}`)
+    await m.reply(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ El hechizo de video falló
+│
+├─ Error: ${error.message}
+│
+├─ Intenta con otro encantamiento
+╰─✦`)
     await m.react("❌")
   }
 }
