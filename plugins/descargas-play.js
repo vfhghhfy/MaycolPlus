@@ -143,12 +143,12 @@ const handler = async (m, { conn, text, command }) => {
       // Mostrar botones para elegir formato (comando genérico)
       const buttons = [
         {
-          buttonId: `ytmp3 ${url}`,
+          buttonId: `.ytmp3 ${url}`,
           buttonText: { displayText: "🎵 Descargar Audio" },
           type: 1
         },
         {
-          buttonId: `ytmp4 ${url}`,
+          buttonId: `.ytmp4 ${url}`,
           buttonText: { displayText: "📹 Descargar Video" },
           type: 1
         }
