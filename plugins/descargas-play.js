@@ -75,7 +75,11 @@ const handler = async (m, { conn, text, command }) => {
 │
 ├─ *「❀」${title}*
 │
-├─ ⏳ Procesando... 
+├─ *✧ Canal:* ${authorName}
+├─ *✧ Duración:* ${durationTimestamp}
+├─ *✧ Vistas:* ${views}
+│
+├─ ⏳ Procesando descarga...
 ╰─✦`)
 
       // Ejecutar descarga según comando
@@ -154,33 +158,90 @@ const downloadAudio = async (conn, m, video, title) => {
     console.log("🎧 Descargando audio...")
 
     const api = await yta(video.url)
+    console.log("📊 Respuesta API Audio:", api) // Debug
 
-    if (!api || !api.status || !api.result || !api.result.download) {
+    if (!api || !api.status || !api.result) {
+      throw new Error("API no devolvió datos válidos")
+    }
+
+    // Verificar múltiples formatos de respuesta
+    const downloadUrl = api.result.download || api.result.url || api.result.link
+    const audioTitle = api.result.title || title
+    const audioQuality = api.result.quality || '128kbps'
+    const audioSize = api.result.size || 'Desconocido'
+    
+    if (!downloadUrl) {
       throw new Error("No se pudo obtener el enlace de descarga del audio")
     }
 
-    const downloadUrl = api.result.download
-    const audioTitle = api.result.title || title
-    const cleanTitle = audioTitle.replace(/[^\w\s]/gi, '').substring(0, 50)
+    // Verificar tamaño del archivo
+    let sizemb = 0
+    try {
+      const res = await fetch(downloadUrl, { method: 'HEAD' })
+      const cont = res.headers.get('content-length')
+      if (cont) {
+        sizemb = parseInt(cont, 10) / (1024 * 1024)
+      }
+    } catch (sizeError) {
+      console.log("⚠️ No se pudo verificar tamaño:", sizeError.message)
+    }
 
-    console.log("🎶 Enviando audio como documento...")
+    if (sizemb > limit && sizemb > 0) {
+      return m.reply(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ 🚫 Archivo muy pesado: ${sizemb.toFixed(2)} MB
+├─ 📏 Límite: ${limit} MB
+╰─✦`)
+    }
+
+    const cleanTitle = audioTitle.replace(/[^\w\s\-\_]/gi, '').substring(0, 50)
     
-    // Enviar como documento MP3 para evitar corrupción
-    await conn.sendMessage(m.chat, {
-      document: { url: downloadUrl },
-      mimetype: 'audio/mpeg',
-      fileName: `${cleanTitle}.mp3`,
-      caption: `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+    console.log("🎶 Enviando audio...")
+    
+    // Intentar enviar audio con múltiples métodos
+    try {
+      // Método 1: Audio directo (mejor calidad)
+      await conn.sendMessage(m.chat, {
+        audio: { url: downloadUrl },
+        mimetype: 'audio/mpeg',
+        fileName: `${cleanTitle}.mp3`,
+        ptt: false
+      }, { quoted: m })
+      
+      // Enviar información adicional
+      await conn.sendMessage(m.chat, {
+        text: `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
 │
 ├─ 🎵 *${audioTitle}*
 │
-├─ *✧ Calidad:* ${api.result.quality || '128kbps'}
-├─ *✧ Tamaño:* ${api.result.size || 'Desconocido'}
+├─ *✧ Calidad:* ${audioQuality}
+├─ *✧ Tamaño:* ${audioSize}
 ├─ *✧ Formato:* MP3
 │
-├─ Audio listo ✨
+├─ ✅ Audio enviado exitosamente
 ╰─✦`
-    }, { quoted: m })
+      }, { quoted: m })
+      
+    } catch (audioError) {
+      console.log("⚠️ Error enviando como audio, probando como documento:", audioError.message)
+      
+      // Método 2: Documento (más compatible)
+      await conn.sendMessage(m.chat, {
+        document: { url: downloadUrl },
+        mimetype: 'audio/mpeg',
+        fileName: `${cleanTitle}.mp3`,
+        caption: `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ 🎵 *${audioTitle}*
+│
+├─ *✧ Calidad:* ${audioQuality}
+├─ *✧ Tamaño:* ${audioSize}
+├─ *✧ Formato:* MP3
+│
+├─ ✅ Audio como documento
+╰─✦`
+      }, { quoted: m })
+    }
 
     await m.react("✅")
     console.log("✅ Audio enviado exitosamente")
@@ -188,21 +249,24 @@ const downloadAudio = async (conn, m, video, title) => {
   } catch (error) {
     console.error("❌ Error descargando audio:", error)
     
-    // Intentar método alternativo
+    // Método de respaldo usando sendFile
     try {
-      console.log("🔄 Intentando método alternativo...")
+      console.log("🔄 Intentando método de respaldo...")
       
       const api = await yta(video.url)
-      if (api && api.status && api.result && api.result.download) {
+      if (api && api.status && api.result && (api.result.download || api.result.url)) {
+        const downloadUrl = api.result.download || api.result.url
+        const audioTitle = api.result.title || title
+        
         await conn.sendFile(
           m.chat,
-          api.result.download,
-          `${(api.result.title || title).replace(/[^\w\s]/gi, '')}.mp3`,
+          downloadUrl,
+          `${audioTitle.replace(/[^\w\s\-\_]/gi, '').substring(0, 50)}.mp3`,
           `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
 │
-├─ 🎵 Audio alternativo
+├─ 🎵 *${audioTitle}*
 │
-├─ *${api.result.title || title}*
+├─ ✅ Audio (método alternativo)
 ╰─✦`,
           m,
           null,
@@ -210,15 +274,16 @@ const downloadAudio = async (conn, m, video, title) => {
         )
         await m.react("✅")
       } else {
-        throw new Error("Método alternativo también falló")
+        throw new Error("Método de respaldo también falló")
       }
     } catch (altError) {
-      console.error("❌ Error en método alternativo:", altError)
+      console.error("❌ Error en método de respaldo:", altError)
       await m.reply(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
 │
-├─ El hechizo de audio falló
+├─ ❌ El hechizo de audio falló
 │
 ├─ Error: ${error.message}
+├─ Alternativo: ${altError.message}
 ╰─✦`)
       await m.react("❌")
     }
@@ -230,24 +295,30 @@ const downloadVideo = async (conn, m, video, title) => {
     console.log("📹 Descargando video...")
 
     const api = await ytv(video.url)
+    console.log("📊 Respuesta API Video:", api) // Debug
 
     let downloadUrl, videoTitle, videoSize, videoQuality
     
-    if (api.status && api.result) {
-      downloadUrl = api.result.download
-      videoTitle = api.result.title
-      videoSize = api.result.size
-      videoQuality = api.result.quality
-    } else if (api.url) {
+    // Verificar múltiples formatos de respuesta
+    if (api && api.status && api.result) {
+      downloadUrl = api.result.download || api.result.url || api.result.link
+      videoTitle = api.result.title || title
+      videoSize = api.result.size || 'Desconocido'
+      videoQuality = api.result.quality || 'Desconocida'
+    } else if (api && api.url) {
       downloadUrl = api.url
       videoTitle = api.title || title
-      videoSize = 'Desconocido'
-      videoQuality = 'Desconocida'
+      videoSize = api.size || 'Desconocido'
+      videoQuality = api.quality || 'Desconocida'
     } else {
       throw new Error("No se pudo obtener el enlace de descarga del video")
     }
 
-    // Verificar tamaño rápidamente
+    if (!downloadUrl) {
+      throw new Error("URL de descarga no válida")
+    }
+
+    // Verificar tamaño del archivo
     let sizemb = 0
     try {
       const res = await fetch(downloadUrl, { method: 'HEAD' })
@@ -256,7 +327,7 @@ const downloadVideo = async (conn, m, video, title) => {
         sizemb = parseInt(cont, 10) / (1024 * 1024)
       }
     } catch (sizeError) {
-      console.log("⚠️ No se pudo verificar tamaño")
+      console.log("⚠️ No se pudo verificar tamaño:", sizeError.message)
     }
 
     if (sizemb > limit && sizemb > 0) {
@@ -269,8 +340,8 @@ const downloadVideo = async (conn, m, video, title) => {
 
     console.log("🎥 Enviando video...")
     
-    const doc = sizemb > 50 // Enviar como documento si es mayor a 50MB
-    const cleanTitle = (videoTitle || title).replace(/[^\w\s]/gi, '').substring(0, 50)
+    const cleanTitle = (videoTitle || title).replace(/[^\w\s\-\_]/gi, '').substring(0, 50)
+    const asDocument = sizemb > 50 // Enviar como documento si es mayor a 50MB
     
     await conn.sendFile(
       m.chat,
@@ -284,12 +355,12 @@ const downloadVideo = async (conn, m, video, title) => {
 ├─ *✧ Tamaño:* ${videoSize || (sizemb > 0 ? `${sizemb.toFixed(2)} MB` : 'Desconocido')}
 ├─ *✧ Formato:* MP4
 │
-├─ Video listo ✨
+├─ ✅ Video enviado exitosamente
 ╰─✦`,
       m,
       null,
       {
-        asDocument: doc,
+        asDocument: asDocument,
         mimetype: "video/mp4"
       }
     )
@@ -301,7 +372,7 @@ const downloadVideo = async (conn, m, video, title) => {
     console.error("❌ Error descargando video:", error)
     await m.reply(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
 │
-├─ El hechizo de video falló
+├─ ❌ El hechizo de video falló
 │
 ├─ Error: ${error.message}
 ╰─✦`)
