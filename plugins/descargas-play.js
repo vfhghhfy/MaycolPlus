@@ -231,18 +231,6 @@ const downloadAudio = async (conn, m, video, title) => {
       fileName: `${(api.result.title || title).replace(/[^\w\s]/gi, '')}.mp3`
     }, { quoted: m })
 
-    // Mensaje de confirmación separado
-    await m.reply(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
-│
-├─ 🎵 *${api.result.title || title}*
-│
-├─ *✧ Calidad:* ${api.result.quality || 'Desconocida'}
-├─ *✧ Tamaño:* ${api.result.size || 'Desconocido'}
-├─ *✧ Formato:* MP3
-│
-├─ Audio listo para escuchar ✨
-╰─✦`)
-
     await m.react("✅")
     console.log("✅ Audio enviado exitosamente")
 
