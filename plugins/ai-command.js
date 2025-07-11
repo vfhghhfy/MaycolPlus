@@ -5,61 +5,66 @@ const handler = async (m, { conn }) => {
   if (!texto.startsWith('&')) return
 
   const comando = texto.slice(1).trim().split(/\s+/)[0]
-  if (!comando) return await conn.reply(m.chat, 'Falta comando luego del &', m)
+  if (!comando) return await conn.reply(m.chat, 'Debes escribir algo luego del "&"', m)
 
   const prompt = `haz un plugin perfecto con prefix & y perfecto para ${comando} hazlo a tu manera`
-  const apiURL = `https://nightapi.is-a.dev/api/maycode/models/v3/?message=${encodeURIComponent(prompt)}`
+  const url = `https://nightapi.is-a.dev/api/maycode/models/v3/?message=${encodeURIComponent(prompt)}`
 
   try {
-    const res = await fetch(apiURL)
+    const res = await fetch(url)
     const json = await res.json()
 
-    if (!json?.code) {
-      return await conn.reply(m.chat, 'La IA no devolvió ningún código 😭', m)
+    if (!json || !json.code) {
+      return await conn.reply(m.chat, 'La IA no devolvió código válido 😢', m)
     }
 
-    let code = json.code
+    // 🧹 Limpiar código: sin require, sin module, sin export
+    let raw = json.code
+    raw = raw.replace(/require\(.*?\)/g, '// require eliminado')
+             .replace(/module\.exports\s*=\s*.*;/g, '// module.exports eliminado')
+             .replace(/export\s+default\s+handler\s*;?/gi, '')
+             .trim()
 
-    // 🧹 Limpiamos código que no sirve en ESM
-    code = code
-      .replace(/(import .*?;)/g, '')            // elimina imports
-      .replace(/(export\s+default\s+handler\s*;?)/g, '') // elimina export default handler
-      .replace(/(require\(.*?\))/g, 'undefined') // evita require
-      .replace(/(module\..*?;)/g, '')            // elimina module.exports
-
-    // 🌟 Creamos variable donde irá el handler generado
+    // 🧠 Iniciar handler como variable en un scope local
     let handlerIA = null
 
-    // 👀 Evaluamos el código
     try {
-      eval(`${code}; handlerIA = handler`)
-    } catch (e) {
-      console.error('💥 Error al evaluar código generado:', e)
-      return await conn.reply(m.chat, 'Error al interpretar el código generado 😔', m)
+      const sandbox = { handler: null }
+
+      const evalCode = `(async () => {
+        let handler = null;
+        ${raw}
+        return handler;
+      })()`
+
+      handlerIA = await eval(evalCode)
+    } catch (err) {
+      console.error('Error al evaluar código generado:', err)
+      return await conn.reply(m.chat, '⚠️ El código generado tiene errores sintácticos o usa cosas no permitidas.\n\n' + err.message, m)
     }
 
     if (typeof handlerIA !== 'function') {
-      return await conn.reply(m.chat, 'La IA no devolvió un handler válido UwU', m)
+      return await conn.reply(m.chat, 'La IA no devolvió un handler válido :(', m)
     }
 
-    // ✅ Registrar handler temporalmente
+    // 🛠️ Agregar el plugin temporal
     conn.plugins[comando] = handlerIA
-    await conn.reply(m.chat, `✅ Comando *${comando}* creado por IA y activado 🎉`, m)
+    await conn.reply(m.chat, `✅ Comando "&${comando}" creado y cargado exitosamente por IA`, m)
 
-    // 🕒 Eliminar luego de 5 minutos
+    // 🧽 Borrarlo después de 5 minutos
     setTimeout(() => {
       delete conn.plugins[comando]
-      console.log(`[IA-PLUGIN] &${comando} eliminado automáticamente`)
+      console.log(`🧼 Comando IA &${comando} eliminado automáticamente`)
     }, 5 * 60 * 1000)
 
   } catch (e) {
     console.error(e)
-    await conn.reply(m.chat, 'Error inesperado al crear comando IA (╥﹏╥)', m)
+    await conn.reply(m.chat, `Ocurrió un error al generar el comando IA:\n${e.message}`, m)
   }
 }
 
 handler.customPrefix = /^&[^\s]+/
-handler.command = new RegExp // se activa con el customPrefix
+handler.command = new RegExp
 handler.register = true
 
 export default handler
