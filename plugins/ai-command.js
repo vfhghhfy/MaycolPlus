@@ -40,7 +40,7 @@ const handler = async (m, { conn, args }) => {
 
 handler.help = ['crearplugin <nombre>']
 handler.tags = ['ai']
-handler.command = /^crearplugin$/i
+handler.command = ['crearplugin']
 handler.register = true
 
 export default handler
