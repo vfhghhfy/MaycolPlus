@@ -2,9 +2,9 @@ import fetch from 'node-fetch'
 
 const handler = async (m, { conn }) => {
   const texto = m.text || ''
-  if (!texto.startsWith('&')) return // Solo comandos con prefijo &
+  if (!texto.startsWith('&')) return // solo comandos con &
 
-  const comando = texto.slice(1).trim().split(/\s+/)[0] // obtiene "hola" de "&hola"
+  const comando = texto.slice(1).trim().split(/\s+/)[0]
   if (!comando) return await conn.reply(m.chat, 'Falta comando luego del &', m)
 
   const prompt = `haz un plugin perfecto con prefix & y perfecto para ${comando} hazlo a tu manera`
@@ -20,40 +20,41 @@ const handler = async (m, { conn }) => {
 
     let code = json.code
 
-    // Limpiar el código para dejarlo con formato estándar
-    code = `
-const handler = async (m, { conn }) => {
-  const texto = m.text || ''
-  if (/${comando}/i.test(texto)) {
-    await conn.reply(m.chat, '${comando.toUpperCase()} activado por IA ✨', m)
-  }
-}
+    // 🧹 Limpiar "export default handler;"
+    code = code.replace(/export\s+default\s+handler\s*;?/gi, '')
 
-handler.help = ['${comando}']
-handler.tags = ['ai']
-handler.command = ['${comando}']
-handler.register = true
+    // ✅ Ejecutar el código para obtener el handler
+    let handlerIA = null
+    const sandbox = {
+      require,
+      handler: null,
+      console,
+      m,
+      conn,
+    }
 
-export default handler;
-    `.trim()
+    const script = new Function('sandbox', `
+      with (sandbox) {
+        ${code}
+        handlerIA = handler
+      }
+    `)
 
-    // Ejecutar dinámicamente el plugin generado (💥 nivel avanzado, eval estilo temporal)
-    const dynamicHandler = new Function('require', 'exports', 'module', code)
-    const exports = {}
-    const module = { exports }
+    script(sandbox)
 
-    dynamicHandler(require, exports, module)
-    const generatedHandler = module.exports.default || module.exports
+    if (typeof sandbox.handler !== 'function') {
+      return await conn.reply(m.chat, 'La IA no devolvió un handler válido 😔', m)
+    }
 
-    // Inyectar el handler a runtime
-    conn.plugins[comando] = generatedHandler
-    await conn.reply(m.chat, `✅ Comando *${comando}* creado y cargado con IA (⁠◍⁠•⁠ᴗ⁠•⁠◍⁠)⁠❤`, m)
+    // 🧠 Registrar el comando en runtime
+    conn.plugins[comando] = sandbox.handler
+    await conn.reply(m.chat, `✅ Comando *${comando}* creado con éxito por IA`, m)
 
-    // Opcional: borrar después de cierto tiempo (ej: 5 minutos)
+    // ⏳ Borrarlo después de 5 minutos
     setTimeout(() => {
       delete conn.plugins[comando]
       console.log(`Plugin &${comando} eliminado automáticamente`)
-    }, 5 * 60 * 1000) // 5 minutos
+    }, 5 * 60 * 1000)
 
   } catch (e) {
     console.error(e)
@@ -62,7 +63,7 @@ export default handler;
 }
 
 handler.customPrefix = /^&[^\s]+/
-handler.command = new RegExp // para que se ejecute por el prefix custom
+handler.command = new RegExp
 handler.register = true
 
-export default handler;
+export default handler
