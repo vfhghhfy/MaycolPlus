@@ -92,7 +92,7 @@ const handler = async (msg, { conn, args }) => {
   await conn.sendMessage(chatId, messageOptions, { quoted: msg })
 }
 
-handler.command = ['recogerachivo']
+handler.command = ['recogerarchivo']
 handler.group = true
 handler.private = false
 
