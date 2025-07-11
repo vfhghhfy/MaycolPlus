@@ -3,7 +3,7 @@
 --> Mejorado por: SoyMaycol*/
 
 import fs from 'fs'
-import { downloadContentFromMessage } from '@whiskeysockets/baileys'
+import { downloadContentFromMessage } from '@soymaycol/maybailyes'
 
 const handler = async (msg, { conn, args }) => {
   const chatId = msg.key.remoteJid
@@ -12,28 +12,33 @@ const handler = async (msg, { conn, args }) => {
     !msg.message?.extendedTextMessage ||
     !msg.message.extendedTextMessage.contextInfo?.quotedMessage
   ) {
-    return conn.sendMessage(
-      chatId,
-      {
-        text: '📛 *Error:* Debes responder a un archivo multimedia (imagen, video, audio, sticker o documento) con una palabra clave para almacenarlo.'
-      },
-      { quoted: msg }
-    )
+    return conn.sendMessage(chatId, {
+      text: `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <3 ✦ 」
+│
+├─ 📛 *Error:*
+├─ Debes responder a un archivo multimedia
+├─ (imagen, video, audio, sticker o documento)
+├─ con una palabra clave para guardarlo.
+│
+╰─✦`
+    }, { quoted: msg })
   }
 
   const saveKey = args.join(' ').trim().toLowerCase()
 
   if (!/[a-zA-Z0-9]/.test(saveKey)) {
-    return conn.sendMessage(
-      chatId,
-      {
-        text: '⚠️ *Advertencia:* La palabra clave debe contener al menos una letra o número. No se permiten solo símbolos o emojis.'
-      },
-      { quoted: msg }
-    )
+    return conn.sendMessage(chatId, {
+      text: `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <3 ✦ 」
+│
+├─ ⚠️ *Advertencia:*
+├─ La palabra clave debe contener
+├─ al menos una letra o número.
+├─ No se permiten solo símbolos o emojis.
+│
+╰─✦`
+    }, { quoted: msg })
   }
 
-  // Verificar o crear el archivo guar.json
   if (!fs.existsSync('./guar.json')) {
     fs.writeFileSync('./guar.json', JSON.stringify({}, null, 2))
   }
@@ -41,13 +46,16 @@ const handler = async (msg, { conn, args }) => {
   let guarData = JSON.parse(fs.readFileSync('./guar.json', 'utf-8'))
 
   if (guarData[saveKey]) {
-    return conn.sendMessage(
-      chatId,
-      {
-        text: `🚫 *Aviso:* Ya existe un archivo guardado con la palabra clave *"${saveKey}"*. Por favor, utiliza otra diferente.`
-      },
-      { quoted: msg }
-    )
+    return conn.sendMessage(chatId, {
+      text: `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <3 ✦ 」
+│
+├─ 🚫 *Aviso:*
+├─ Ya existe un archivo guardado con la palabra:
+├─ *"${saveKey}"*
+├─ Usa otra diferente para evitar conflictos.
+│
+╰─✦`
+    }, { quoted: msg })
   }
 
   const quotedMsg = msg.message.extendedTextMessage.contextInfo.quotedMessage
@@ -74,13 +82,15 @@ const handler = async (msg, { conn, args }) => {
     mediaMessage = quotedMsg.documentMessage
     fileExtension = mediaMessage.mimetype.split('/')[1] || 'bin'
   } else {
-    return conn.sendMessage(
-      chatId,
-      {
-        text: '📎 *Error:* Solo se permite guardar archivos de tipo imagen, video, audio, sticker o documento.'
-      },
-      { quoted: msg }
-    )
+    return conn.sendMessage(chatId, {
+      text: `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <3 ✦ 」
+│
+├─ 📎 *Error:*
+├─ Solo se permiten archivos de tipo:
+├─ imagen, video, audio, sticker o documento.
+│
+╰─✦`
+    }, { quoted: msg })
   }
 
   const mediaStream = await downloadContentFromMessage(mediaMessage, mediaType)
@@ -98,16 +108,18 @@ const handler = async (msg, { conn, args }) => {
 
   fs.writeFileSync('./guar.json', JSON.stringify(guarData, null, 2))
 
-  return conn.sendMessage(
-    chatId,
-    {
-      text: `✅ *Éxito:* El archivo ha sido almacenado correctamente bajo la palabra clave: *"${saveKey}"*.`
-    },
-    { quoted: msg }
-  )
+  return conn.sendMessage(chatId, {
+    text: `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <3 ✦ 」
+│
+├─ ✅ *Éxito:*
+├─ Archivo almacenado bajo la clave:
+├─ *"${saveKey}"*
+│
+╰─✦`
+  }, { quoted: msg })
 }
 
-handler.command = ['g']
+handler.command = ['guardararchivo']
 handler.group = true
 handler.private = true
 
