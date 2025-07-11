@@ -6,7 +6,7 @@ const handler = async (m, { conn, args }) => {
   const comando = args[0]
   if (!comando) return await conn.reply(m.chat, '⚠️ Escribe un nombre para el plugin: *crearplugin saludo*', m)
 
-  const prompt = `haz un plugin perfecto y perfecto para ${comando} hazlo a tu manera y hazlo en ESM no en commonjs`
+  const prompt = `haz un plugin perfecto y perfecto para ${comando} hazlo a tu manera y hazlo en ESM no en commonjs y sea comando para bot de whatsapp`
   const apiURL = `https://nightapi.is-a.dev/api/maycode/models/v3/?message=${encodeURIComponent(prompt)}`
 
   try {
