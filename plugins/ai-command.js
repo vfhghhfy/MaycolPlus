@@ -14,56 +14,52 @@ const handler = async (m, { conn }) => {
     const res = await fetch(apiURL)
     const json = await res.json()
 
-    if (!json || !json.code) {
-      return await conn.reply(m.chat, 'No se pudo generar el plugin UwU', m)
+    if (!json?.code) {
+      return await conn.reply(m.chat, 'La IA no devolvió ningún código 😭', m)
     }
 
     let code = json.code
 
-    // Limpiar "export default handler;"
-    code = code.replace(/export\s+default\s+handler\s*;?/gi, '')
+    // 🧹 Limpiamos código que no sirve en ESM
+    code = code
+      .replace(/(import .*?;)/g, '')            // elimina imports
+      .replace(/(export\s+default\s+handler\s*;?)/g, '') // elimina export default handler
+      .replace(/(require\(.*?\))/g, 'undefined') // evita require
+      .replace(/(module\..*?;)/g, '')            // elimina module.exports
 
-    // Sandbox seguro con require fake
-    const sandbox = {
-      handler: null,
-      require: (name) => {
-        // Evitar errores si la IA pone require('fs') o cosas random
-        console.warn(`⚠️ Se intentó usar require("${name}") pero está bloqueado.`)
-        return {}
-      },
-      console,
+    // 🌟 Creamos variable donde irá el handler generado
+    let handlerIA = null
+
+    // 👀 Evaluamos el código
+    try {
+      eval(`${code}; handlerIA = handler`)
+    } catch (e) {
+      console.error('💥 Error al evaluar código generado:', e)
+      return await conn.reply(m.chat, 'Error al interpretar el código generado 😔', m)
     }
 
-    const script = new Function('sandbox', `
-      with (sandbox) {
-        ${code}
-        if (typeof handler === 'function') handlerIA = handler
-      }
-    `)
-
-    script(sandbox)
-
-    if (typeof sandbox.handler !== 'function') {
-      return await conn.reply(m.chat, 'La IA no devolvió un handler válido 😔', m)
+    if (typeof handlerIA !== 'function') {
+      return await conn.reply(m.chat, 'La IA no devolvió un handler válido UwU', m)
     }
 
-    conn.plugins[comando] = sandbox.handler
-    await conn.reply(m.chat, `✅ Comando *${comando}* generado y activado por IA 💥`, m)
+    // ✅ Registrar handler temporalmente
+    conn.plugins[comando] = handlerIA
+    await conn.reply(m.chat, `✅ Comando *${comando}* creado por IA y activado 🎉`, m)
 
-    // Autodestrucción a los 5 minutos ⏳
+    // 🕒 Eliminar luego de 5 minutos
     setTimeout(() => {
       delete conn.plugins[comando]
-      console.log(`⛔ Plugin &${comando} eliminado automáticamente.`)
+      console.log(`[IA-PLUGIN] &${comando} eliminado automáticamente`)
     }, 5 * 60 * 1000)
 
   } catch (e) {
     console.error(e)
-    await conn.reply(m.chat, '💥 Error ejecutando el plugin IA (ಥ﹏ಥ)', m)
+    await conn.reply(m.chat, 'Error inesperado al crear comando IA (╥﹏╥)', m)
   }
 }
 
 handler.customPrefix = /^&[^\s]+/
-handler.command = new RegExp
+handler.command = new RegExp // se activa con el customPrefix
 handler.register = true
 
 export default handler
