@@ -1,66 +1,46 @@
 import fetch from 'node-fetch'
+import fs from 'fs'
+import path from 'path'
 
-const handler = async (m, { conn }) => {
-  const texto = m.text || ''
-  if (!texto.startsWith('&')) return
+const handler = async (m, { conn, args }) => {
+  const comando = args[0]
+  if (!comando) return await conn.reply(m.chat, '⚠️ Escribe un nombre para el plugin: *crearplugin saludo*', m)
 
-  const comando = texto.slice(1).trim().split(/\s+/)[0]
-  if (!comando) return await conn.reply(m.chat, 'Falta comando luego del &', m)
-
-  const prompt = `haz un plugin perfecto con prefix & y perfecto para ${comando} hazlo a tu manera`
+  const prompt = `haz un plugin perfecto y perfecto para ${comando} hazlo a tu manera`
   const apiURL = `https://nightapi.is-a.dev/api/maycode/models/v3/?message=${encodeURIComponent(prompt)}`
 
   try {
     const res = await fetch(apiURL)
     const json = await res.json()
 
-    if (!json?.code) return await conn.reply(m.chat, '❌ No se generó código válido', m)
+    if (!json?.code) return await conn.reply(m.chat, '❌ No se generó código válido UwU', m)
 
-    // 🌟 Extraer el cuerpo útil del handler
-    const lines = json.code.split('\n').map(l => l.trim())
-    const codeBody = lines.filter(line => !line.startsWith('export') && !line.startsWith('import')).join('\n')
+    // Verificamos qué número usar para el archivo
+    const pluginsDir = path.join(process.cwd(), 'plugins')
+    const files = fs.readdirSync(pluginsDir)
+    const prefix = 'ai-command-'
+    const nums = files
+      .filter(f => f.startsWith(prefix) && f.endsWith('.js'))
+      .map(f => parseInt(f.replace(prefix, '').replace('.js', '')))
+      .filter(n => !isNaN(n))
 
-    // 🧪 Crear una función dinámica sin usar require/module/export
-    const userHandler = {
-      help: [comando],
-      tags: ['ai'],
-      command: [comando],
-      register: true,
-      async handler(m, { conn }) {
-        const texto = m.text || ''
-        if (new RegExp(comando, 'i').test(texto)) {
-          await conn.reply(m.chat, `${comando.toUpperCase()} ejecutado por IA 🤖✨`, m)
-        }
-      }
-    }
+    const nextNumber = (Math.max(...nums, 0) + 1)
+    const filename = `${prefix}${nextNumber}.js`
+    const filepath = path.join(pluginsDir, filename)
 
-    // 💾 Registrar el handler temporal
-    conn.plugins[comando] = {
-      help: userHandler.help,
-      tags: userHandler.tags,
-      command: userHandler.command,
-      register: userHandler.register,
-      async handler(...args) {
-        return userHandler.handler(...args)
-      }
-    }
+    // Guardar el archivo
+    fs.writeFileSync(filepath, json.code)
 
-    await conn.reply(m.chat, `✅ ¡El comando *${comando}* fue creado y está activo por 5 min!`, m)
-
-    // ⏱️ Eliminar después de 5 minutos
-    setTimeout(() => {
-      delete conn.plugins[comando]
-      console.log(`[IA] Comando &${comando} eliminado automáticamente`)
-    }, 5 * 60 * 1000)
-
+    await conn.reply(m.chat, `✅ ¡Plugin creado y guardado como *${filename}*!`, m)
   } catch (e) {
-    console.error('💥 Error inesperado:', e)
-    await conn.reply(m.chat, '💥 Error generando o ejecutando el comando IA', m)
+    console.error('💥 Error:', e)
+    await conn.reply(m.chat, '💥 Error generando o guardando el plugin 😿', m)
   }
 }
 
-handler.customPrefix = /^&[^\s]+/
-handler.command = new RegExp
+handler.help = ['crearplugin <nombre>']
+handler.tags = ['ai']
+handler.command = /^crearplugin$/i
 handler.register = true
 
 export default handler
