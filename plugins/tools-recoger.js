@@ -15,23 +15,27 @@ const handler = async (msg, { conn, args }) => {
   const searchKey = normalizeText(args.join(' '))
 
   if (!searchKey) {
-    return conn.sendMessage(
-      chatId,
-      {
-        text: '⚠️ *Advertencia:* Debes proporcionar una palabra clave válida para recuperar un archivo multimedia.'
-      },
-      { quoted: msg }
-    )
+    return conn.sendMessage(chatId, {
+      text: `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <3 ✦ 」
+│
+├─ ⚠️ *Advertencia:*
+├─ Debes proporcionar una palabra clave válida
+├─ para recuperar un archivo multimedia.
+│
+╰─✦`
+    }, { quoted: msg })
   }
 
   if (!fs.existsSync('./guar.json')) {
-    return conn.sendMessage(
-      chatId,
-      {
-        text: '📂 *Información:* Aún no hay archivos almacenados. Usa el comando `.guardar` para guardar tu primer archivo.'
-      },
-      { quoted: msg }
-    )
+    return conn.sendMessage(chatId, {
+      text: `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <3 ✦ 」
+│
+├─ 📂 *Información:*
+├─ Aún no hay archivos almacenados.
+├─ Usa el comando *.guardar* para guardar uno.
+│
+╰─✦`
+    }, { quoted: msg })
   }
 
   let guarData = JSON.parse(fs.readFileSync('./guar.json', 'utf-8'))
@@ -40,20 +44,16 @@ const handler = async (msg, { conn, args }) => {
   const foundKey = keys.find(key => normalizeText(key) === searchKey)
 
   if (!foundKey) {
-    return conn.sendMessage(
-      chatId,
-      {
-        text: `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+    return conn.sendMessage(chatId, {
+      text: `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <3 ✦ 」
 │
-├─ ERROR 🚫
-│
-├─ 404 : No se encontro el nombre "${searchKey}"
-├─ Intenta guardar tu archivo con #guardararchivo ${searchKey}
+├─ ❌ *ERROR 404*
+├─ No se encontró el nombre: *"${searchKey}"*
+├─ Intenta guardar tu archivo con:
+├─ *#guardararchivo ${searchKey}*
 │
 ╰─✦`
-      },
-      { quoted: msg }
-    )
+    }, { quoted: msg })
   }
 
   const storedMedia = guarData[foundKey]
@@ -78,20 +78,15 @@ const handler = async (msg, { conn, args }) => {
   ) {
     messageOptions.sticker = mediaBuffer
   } else {
-    return conn.sendMessage(
-      chatId,
-      {
-        text: `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+    return conn.sendMessage(chatId, {
+      text: `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <3 ✦ 」
 │
-├─ ERROR 🚫
-│
-├─ ¡Ups! Al parecer el archivo es muy pesado o incompatible
-├─ Intentelo mas Tarde ⏰
+├─ ❌ *ERROR*
+├─ El archivo es muy pesado o incompatible.
+├─ Inténtalo más tarde ⏰
 │
 ╰─✦`
-      },
-      { quoted: msg }
-    )
+    }, { quoted: msg })
   }
 
   await conn.sendMessage(chatId, messageOptions, { quoted: msg })
