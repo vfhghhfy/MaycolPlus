@@ -2,7 +2,7 @@ import fetch from 'node-fetch'
 
 const handler = async (m, { conn }) => {
   const texto = m.text || ''
-  if (!texto.startsWith('&')) return // solo comandos con &
+  if (!texto.startsWith('&')) return
 
   const comando = texto.slice(1).trim().split(/\s+/)[0]
   if (!comando) return await conn.reply(m.chat, 'Falta comando luego del &', m)
@@ -20,23 +20,24 @@ const handler = async (m, { conn }) => {
 
     let code = json.code
 
-    // 🧹 Limpiar "export default handler;"
+    // Limpiar "export default handler;"
     code = code.replace(/export\s+default\s+handler\s*;?/gi, '')
 
-    // ✅ Ejecutar el código para obtener el handler
-    let handlerIA = null
+    // Sandbox seguro con require fake
     const sandbox = {
-      require,
       handler: null,
+      require: (name) => {
+        // Evitar errores si la IA pone require('fs') o cosas random
+        console.warn(`⚠️ Se intentó usar require("${name}") pero está bloqueado.`)
+        return {}
+      },
       console,
-      m,
-      conn,
     }
 
     const script = new Function('sandbox', `
       with (sandbox) {
         ${code}
-        handlerIA = handler
+        if (typeof handler === 'function') handlerIA = handler
       }
     `)
 
@@ -46,19 +47,18 @@ const handler = async (m, { conn }) => {
       return await conn.reply(m.chat, 'La IA no devolvió un handler válido 😔', m)
     }
 
-    // 🧠 Registrar el comando en runtime
     conn.plugins[comando] = sandbox.handler
-    await conn.reply(m.chat, `✅ Comando *${comando}* creado con éxito por IA`, m)
+    await conn.reply(m.chat, `✅ Comando *${comando}* generado y activado por IA 💥`, m)
 
-    // ⏳ Borrarlo después de 5 minutos
+    // Autodestrucción a los 5 minutos ⏳
     setTimeout(() => {
       delete conn.plugins[comando]
-      console.log(`Plugin &${comando} eliminado automáticamente`)
+      console.log(`⛔ Plugin &${comando} eliminado automáticamente.`)
     }, 5 * 60 * 1000)
 
   } catch (e) {
     console.error(e)
-    await conn.reply(m.chat, 'Error generando el comando (ಥ﹏ಥ)', m)
+    await conn.reply(m.chat, '💥 Error ejecutando el plugin IA (ಥ﹏ಥ)', m)
   }
 }
 
