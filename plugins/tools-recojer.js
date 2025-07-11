@@ -1,5 +1,7 @@
-//Pa obtener :D
-//By github.com/Ado-rgb
+/* Codigo De Recojer el Archivo Guardado
+--> Creador: Ado926
+--> Mejorado por: SoyMaycol*/
+
 import fs from 'fs'
 
 const handler = async (msg, { conn, args }) => {
@@ -83,6 +85,6 @@ const handler = async (msg, { conn, args }) => {
 
 handler.command = ['recojer']
 handler.group = true
-handler.private = false
+handler.private = true
 
 export default handler
