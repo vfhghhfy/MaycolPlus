@@ -121,6 +121,5 @@ const handler = async (msg, { conn, args }) => {
 
 handler.command = ['guardararchivo']
 handler.group = true
-handler.private = true
 
 export default handler
