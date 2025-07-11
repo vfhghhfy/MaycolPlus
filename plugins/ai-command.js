@@ -18,48 +18,48 @@ const handler = async (m, { conn }) => {
       return await conn.reply(m.chat, 'La IA no devolvió código válido 😢', m)
     }
 
-    // 🧹 Limpiar código: sin require, sin module, sin export
+    // 🧹 Limpiar código prohibido
     let raw = json.code
-    raw = raw.replace(/require\(.*?\)/g, '// require eliminado')
-             .replace(/module\.exports\s*=\s*.*;/g, '// module.exports eliminado')
-             .replace(/export\s+default\s+handler\s*;?/gi, '')
-             .trim()
+    raw = raw
+      .replace(/require\(.*?\)/g, '// require eliminado')
+      .replace(/module\.exports\s*=\s*.*;/g, '// module.exports eliminado')
+      .replace(/export\s+default\s+handler\s*;?/gi, '')
+      .replace(/\bimport .*?;?/g, '// import eliminado') // por si acaso
 
-    // 🧠 Iniciar handler como variable en un scope local
-    let handlerIA = null
+    // 🧠 Guardamos en globalThis
+    globalThis.__temp_handler__ = undefined
 
-    try {
-      const sandbox = { handler: null }
-
-      const evalCode = `(async () => {
-        let handler = null;
+    const wrapped = `(async () => {
+      try {
         ${raw}
-        return handler;
-      })()`
+        globalThis.__temp_handler__ = handler
+      } catch (e) {
+        globalThis.__temp_handler__ = e
+      }
+    })()`
 
-      handlerIA = await eval(evalCode)
-    } catch (err) {
-      console.error('Error al evaluar código generado:', err)
-      return await conn.reply(m.chat, '⚠️ El código generado tiene errores sintácticos o usa cosas no permitidas.\n\n' + err.message, m)
-    }
+    await eval(wrapped)
+
+    const handlerIA = globalThis.__temp_handler__
 
     if (typeof handlerIA !== 'function') {
-      return await conn.reply(m.chat, 'La IA no devolvió un handler válido :(', m)
+      console.error('Código generado inválido:', handlerIA)
+      return await conn.reply(m.chat, '⚠️ El código generado tiene errores o no devolvió un handler válido', m)
     }
 
-    // 🛠️ Agregar el plugin temporal
+    // ✅ Cargar el comando en runtime
     conn.plugins[comando] = handlerIA
-    await conn.reply(m.chat, `✅ Comando "&${comando}" creado y cargado exitosamente por IA`, m)
+    await conn.reply(m.chat, `✅ Comando "&${comando}" creado por IA y cargado`, m)
 
-    // 🧽 Borrarlo después de 5 minutos
+    // ⏳ Eliminar después de 5 minutos
     setTimeout(() => {
       delete conn.plugins[comando]
-      console.log(`🧼 Comando IA &${comando} eliminado automáticamente`)
+      console.log(`🧹 Comando &${comando} eliminado automáticamente`)
     }, 5 * 60 * 1000)
 
   } catch (e) {
-    console.error(e)
-    await conn.reply(m.chat, `Ocurrió un error al generar el comando IA:\n${e.message}`, m)
+    console.error('Error al generar el comando:', e)
+    await conn.reply(m.chat, `💥 Error inesperado:\n${e.message}`, m)
   }
 }
 
