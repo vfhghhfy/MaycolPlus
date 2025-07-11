@@ -43,7 +43,14 @@ const handler = async (msg, { conn, args }) => {
     return conn.sendMessage(
       chatId,
       {
-        text: `❌ *No encontrado:* No se halló ningún archivo con la palabra clave: *"${searchKey}"*.`
+        text: `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ ERROR 🚫
+│
+├─ 404 : No se encontro el nombre "${searchKey}"
+├─ Intenta guardar tu archivo con #guardararchivo ${searchKey}
+│
+╰─✦`
       },
       { quoted: msg }
     )
@@ -74,7 +81,14 @@ const handler = async (msg, { conn, args }) => {
     return conn.sendMessage(
       chatId,
       {
-        text: '❌ *Error:* Tipo de archivo no compatible. No se puede enviar este archivo.'
+        text: `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ ERROR 🚫
+│
+├─ ¡Ups! Al parecer el archivo es muy pesado o incompatible
+├─ Intentelo mas Tarde ⏰
+│
+╰─✦`
       },
       { quoted: msg }
     )
