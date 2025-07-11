@@ -1,5 +1,7 @@
-//Pa guardar :D
-//By github.com/Ado-rgb
+/* Codigo De Guardar
+--> Creador: Ado926
+--> Mejorado por: SoyMaycol*/
+
 import fs from 'fs'
 import { downloadContentFromMessage } from '@whiskeysockets/baileys'
 
@@ -107,6 +109,6 @@ const handler = async (msg, { conn, args }) => {
 
 handler.command = ['g']
 handler.group = true
-handler.private = false
+handler.private = true
 
 export default handler
