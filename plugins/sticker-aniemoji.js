@@ -1,8 +1,13 @@
-const fs = require("fs");
-const path = require("path");
-const axios = require("axios");
-const Crypto = require("crypto");
-const webp = require("node-webpmux");
+import fs from "fs";
+import path from "path";
+import axios from "axios";
+import crypto from "crypto";
+import { fileURLToPath } from "url";
+import { Image } from "node-webpmux";
+
+// Necesario para __dirname en ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const tempFolder = path.join(__dirname, "../tmp/");
 if (!fs.existsSync(tempFolder)) fs.mkdirSync(tempFolder, { recursive: true });
@@ -51,15 +56,18 @@ const handler = async (msg, { conn, args, text }) => {
       categories: [emoji]
     };
 
-    const stickerBuffer = await writeExifDirect(buffer, metadata);
+    const stickerPath = await writeExifDirect(buffer, metadata);
+    const stickerBuffer = fs.readFileSync(stickerPath);
 
     await conn.sendMessage(msg.key.remoteJid, {
-      sticker: { url: stickerBuffer }
+      sticker: stickerBuffer
     }, { quoted: msg });
 
     await conn.sendMessage(msg.key.remoteJid, {
       react: { text: "✅", key: msg.key }
     });
+
+    fs.unlinkSync(stickerPath); // Limpieza
 
   } catch (err) {
     console.error("❌ Error en aniemoji:", err);
@@ -72,9 +80,6 @@ const handler = async (msg, { conn, args, text }) => {
     });
   }
 };
-
-handler.command = ["aniemoji"];
-module.exports = handler;
 
 /* === FUNCIONES DE EXIF DIRECTO === */
 
@@ -102,7 +107,7 @@ async function writeExifDirect(webpBuffer, metadata) {
   const exif = Buffer.concat([exifAttr, jsonBuff]);
   exif.writeUIntLE(jsonBuff.length, 14, 4);
 
-  const img = new webp.Image();
+  const img = new Image();
   await img.load(tmpIn);
   img.exif = exif;
   await img.save(tmpOut);
@@ -111,11 +116,12 @@ async function writeExifDirect(webpBuffer, metadata) {
 }
 
 function randomFileName(ext) {
-  return `${Crypto.randomBytes(6).readUIntLE(0, 6).toString(36)}.${ext}`;
+  return `${crypto.randomBytes(6).toString("hex")}.${ext}`;
 }
 
+// Propiedades del handler
 handler.command = ['aniemoji'];
-handler.help = ['aniemoji <texto>'];
+handler.help = ['aniemoji <emoji>'];
 handler.tags = ['sticker'];
 handler.register = true;
 
