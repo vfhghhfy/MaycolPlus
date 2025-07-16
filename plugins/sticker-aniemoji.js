@@ -3,11 +3,13 @@ import path from "path";
 import axios from "axios";
 import crypto from "crypto";
 import { fileURLToPath } from "url";
-import { Image } from "node-webpmux";
+import pkg from "node-webpmux";
+
 
 // Necesario para __dirname en ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const { Image } = pkg;
 
 const tempFolder = path.join(__dirname, "../tmp/");
 if (!fs.existsSync(tempFolder)) fs.mkdirSync(tempFolder, { recursive: true });
