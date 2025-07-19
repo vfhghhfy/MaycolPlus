@@ -1,3 +1,4 @@
+// Función ULTRA ROBUSTA para verificar permisos de admin y bot
 async function verificarPermisos(m, conn) {
     let isUserAdmin = false
     let isBotAdmin = false
@@ -171,18 +172,8 @@ async function verificarPermisos(m, conn) {
                 if (!botFound) {
                     console.log('🚨 MÉTODO DESESPERADO: Verificar admins activos...')
                     try {
-                        // Intentar enviar un mensaje de prueba para detectar bot
-                        let testMsg = await conn.sendMessage(m.chat, { text: 'Oye...' }).catch(() => null)
-                        if (testMsg) {
-                            let testSender = testMsg.key?.fromMe ? conn.user?.jid || conn.user?.id : null
-                            if (testSender) {
-                                console.log('🔍 Bot detectado por mensaje de prueba:', testSender)
-                                botParticipant = participants.find(p => 
-                                    p.id === testSender || 
-                                    p.id.split('@')[0] === testSender.split('@')[0]
-                                )
-                            }
-                        }
+                        // NO enviar mensaje de prueba ya que puede ser spam
+                        console.log('⚠️ Saltando mensaje de prueba para evitar spam')
                     } catch (e) {
                         console.log('❌ Método desesperado falló:', e.message)
                     }
@@ -195,17 +186,24 @@ async function verificarPermisos(m, conn) {
                 } else {
                     console.log('❌ Bot NO encontrado en participantes')
                     
-                    // ÚLTIMO RECURSO: Asumir que somos admin si podemos obtener la metadata
-                    console.log('🔥 ÚLTIMO RECURSO: Asumiendo admin por capacidad de obtener metadata...')
+                    // ÚLTIMO RECURSO: Solo asumir admin si realmente somos admin
+                    console.log('🔥 ÚLTIMO RECURSO: Verificando acceso real de admin...')
                     try {
-                        // Si podemos obtener metadata del grupo, probablemente somos admin
-                        let testAccess = await conn.groupMetadata(m.chat)
-                        if (testAccess?.participants?.length > 0) {
-                            console.log('✅ FORZANDO isBotAdmin = true (tenemos acceso a metadata)')
+                        // Verificar si realmente podemos hacer operaciones de admin
+                        // Solo considerar admin si podemos cambiar configuración del grupo
+                        let testAccess = await conn.groupSettingUpdate(m.chat, 'announcement').catch(() => null)
+                        if (testAccess !== null) {
+                            // Si pudimos cambiar configuración, restaurar y confirmar admin
+                            await conn.groupSettingUpdate(m.chat, 'not_announcement').catch(() => {})
+                            console.log('✅ CONFIRMADO: Somos admin (pudimos cambiar configuración)')
                             isBotAdmin = true
+                        } else {
+                            console.log('❌ NO somos admin (no pudimos cambiar configuración)')
+                            isBotAdmin = false
                         }
                     } catch (e) {
                         console.log('❌ Último recurso falló:', e.message)
+                        isBotAdmin = false
                     }
                 }
                 
@@ -271,24 +269,24 @@ var handler = async (m, { conn, participants, usedPrefix, command }) => {
         } else {
             if (!permisos.isUserAdmin) {
                 console.log('❌ Usuario no es admin')
-                return conn.reply(m.chat, `${emoji2} Solo los administradores del grupo pueden usar este comando.`, m)
+                return conn.reply(m.chat, `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ ⚠️ *Acceso Denegado*\n│\n├─ Solo los administradores del grupo\n│   ⇝ pueden usar este comando\n╰─✦`, m)
             }
             
             if (!permisos.isBotAdmin) {
                 console.log('❌ Bot no es admin')
-                return conn.reply(m.chat, `${emoji2} El bot necesita ser administrador para expulsar usuarios.\n\n🔧 *Debug Info:*\n- Haz al bot admin del grupo\n- Espera 10 segundos\n- Vuelve a intentar el comando\n\n📞 Si sigue fallando, reenvía este mensaje al desarrollador.`, m)
+                return conn.reply(m.chat, `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ ⚠️ *Bot sin Permisos*\n│\n├─ El bot necesita ser administrador\n│   ⇝ para expulsar usuarios\n│\n├─ 🔧 *Solución:*\n│   ⇝ Haz al bot admin del grupo\n│   ⇝ Espera 10 segundos\n│   ⇝ Vuelve a intentar\n╰─✦`, m)
             }
         }
         
         // Verificar que se mencionó a alguien
         if (!m.mentionedJid?.[0] && !m.quoted) {
-            return conn.reply(m.chat, `${emoji} Debes mencionar a un usuario o responder a su mensaje para poder expulsarlo del grupo.\n\n*Ejemplos:*\n- ${usedPrefix}kick @usuario\n- Responde a un mensaje con ${usedPrefix}kick`, m)
+            return conn.reply(m.chat, `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ 📧 *Falta Usuario*\n│\n├─ Debes mencionar a un usuario o\n│   ⇝ responder a su mensaje\n│\n├─ *Ejemplos:*\n│   ⇝ ${usedPrefix}kick @usuario\n│   ⇝ Responde un mensaje + ${usedPrefix}kick\n╰─✦`, m)
         }
 
         let user = m.mentionedJid?.[0] || m.quoted?.sender
         
         if (!user) {
-            return conn.reply(m.chat, `${emoji2} No se pudo identificar al usuario a expulsar.`, m)
+            return conn.reply(m.chat, `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ ⚠️ *Error de Identificación*\n│\n├─ No se pudo identificar al usuario\n│   ⇝ a expulsar del grupo\n╰─✦`, m)
         }
 
         console.log('🎯 Usuario objetivo:', user)
@@ -303,18 +301,18 @@ var handler = async (m, { conn, participants, usedPrefix, command }) => {
         // Verificaciones de protección
         let botJids = [conn.user?.jid, conn.user?.id].filter(Boolean)
         if (botJids.some(botJid => user === botJid || user.split('@')[0] === botJid.split('@')[0])) {
-            return conn.reply(m.chat, `${emoji2} No puedo auto-eliminarme del grupo.`, m)
+            return conn.reply(m.chat, `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ 🤖 *Protección del Bot*\n│\n├─ No puedo auto-eliminarme\n│   ⇝ del grupo\n╰─✦`, m)
         }
 
         const ownerGroup = groupInfo?.owner || m.chat.split('-')[0] + '@s.whatsapp.net'
         const ownerBot = global.owner?.[0]?.[0] + '@s.whatsapp.net'
 
         if (user === ownerGroup) {
-            return conn.reply(m.chat, `${emoji2} No puedo eliminar al propietario del grupo.`, m)
+            return conn.reply(m.chat, `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ 👑 *Protección del Owner*\n│\n├─ No puedo eliminar al propietario\n│   ⇝ del grupo\n╰─✦`, m)
         }
 
         if (user === ownerBot) {
-            return conn.reply(m.chat, `${emoji2} No puedo eliminar al propietario del bot.`, m)
+            return conn.reply(m.chat, `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ 🛡️ *Protección del Desarrollador*\n│\n├─ No puedo eliminar al propietario\n│   ⇝ del bot\n╰─✦`, m)
         }
 
         // Verificar si el usuario objetivo es admin (solo si no somos owner)
@@ -323,12 +321,12 @@ var handler = async (m, { conn, participants, usedPrefix, command }) => {
                 p.id === user || p.id.split('@')[0] === user.split('@')[0]
             )
             if (targetParticipant && (targetParticipant.admin === 'admin' || targetParticipant.admin === 'superadmin')) {
-                return conn.reply(m.chat, `${emoji2} No puedes expulsar a otro administrador.`, m)
+                return conn.reply(m.chat, `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ ⚠️ *Protección de Admin*\n│\n├─ No puedes expulsar a otro\n│   ⇝ administrador del grupo\n╰─✦`, m)
             }
         }
 
         // Mensaje de ejecución
-        await conn.reply(m.chat, `${emoji} Expulsando usuario... 🔨`, m)
+        await conn.reply(m.chat, `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ 📧 *Procesando Expulsión*\n│\n├─ Expulsando usuario del grupo...\n│   ⇝ 🔨 Ejecutando comando\n╰─✦`, m)
         
         console.log('⚡ EJECUTANDO KICK...')
         
@@ -379,36 +377,36 @@ var handler = async (m, { conn, participants, usedPrefix, command }) => {
                     )
                     
                     if (!userStillInGroup) {
-                        await conn.reply(m.chat, `✅ *Usuario expulsado exitosamente* 🎯\n\n👤 Usuario eliminado del grupo`, m)
+                        await conn.reply(m.chat, `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ ✅ *Expulsión Exitosa*\n│\n├─ Usuario eliminado del grupo\n│   ⇝ 🎯 Acción completada\n╰─✦`, m)
                     } else {
-                        await conn.reply(m.chat, `⚠️ El usuario aún aparece en el grupo. Puede tener permisos especiales.`, m)
+                        await conn.reply(m.chat, `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ ⚠️ *Advertencia*\n│\n├─ El usuario aún aparece en el grupo\n│   ⇝ Puede tener permisos especiales\n╰─✦`, m)
                     }
                 } catch (verifyError) {
-                    await conn.reply(m.chat, `⚡ Kick ejecutado. Verificación posterior falló.`, m)
+                    await conn.reply(m.chat, `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ ⚡ *Kick Ejecutado*\n│\n├─ Verificación posterior falló\n│   ⇝ pero el comando se procesó\n╰─✦`, m)
                 }
             }, 3000)
         } else {
             // Manejar error de kick
-            let errorMsg = `${emoji2} *Error al expulsar usuario:*\n\n`
+            let errorMsg = `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ ❌ *Error al Expulsar*\n│\n├─ `
             
             if (kickError?.message?.includes('forbidden') || kickError?.message?.includes('403')) {
-                errorMsg += '🚫 Sin permisos suficientes'
+                errorMsg += `Sin permisos suficientes\n│   ⇝ 🚫 Acceso denegado`
             } else if (kickError?.message?.includes('participant-not-found')) {
-                errorMsg += '👻 Usuario no encontrado en el grupo'
+                errorMsg += `Usuario no encontrado\n│   ⇝ 👻 No está en el grupo`
             } else if (kickError?.message?.includes('not-authorized')) {
-                errorMsg += '🔐 No autorizado para esta acción'
+                errorMsg += `No autorizado\n│   ⇝ 🔐 Falta autorización`
             } else {
-                errorMsg += `⚠️ ${kickError?.message || 'Error desconocido'}`
+                errorMsg += `${kickError?.message || 'Error desconocido'}\n│   ⇝ ⚠️ Error técnico`
             }
             
-            errorMsg += '\n\n💡 *Posibles soluciones:*\n- Verifica que el bot sea admin\n- Revisa que el usuario esté en el grupo\n- Espera unos segundos e intenta de nuevo'
+            errorMsg += `\n│\n├─ 💡 *Soluciones:*\n│   ⇝ Verifica que el bot sea admin\n│   ⇝ Revisa que el usuario esté aquí\n│   ⇝ Espera e intenta de nuevo\n╰─✦`
             
             return conn.reply(m.chat, errorMsg, m)
         }
         
     } catch (error) {
         console.error('💥 ERROR CRÍTICO EN HANDLER KICK:', error)
-        return conn.reply(m.chat, `${emoji2} Error crítico al procesar el comando.\n\n🔧 *Info técnica:* ${error.message}\n\n💡 Reporta este error al desarrollador.`, m)
+        return conn.reply(m.chat, `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」\n│\n├─ 💥 *Error Crítico*\n│\n├─ Error al procesar el comando\n│   ⇝ ${error.message}\n│\n├─ 💡 Reporta este error\n│   ⇝ al desarrollador\n╰─✦`, m)
     }
 }
 
