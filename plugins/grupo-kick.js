@@ -172,7 +172,7 @@ async function verificarPermisos(m, conn) {
                     console.log('🚨 MÉTODO DESESPERADO: Verificar admins activos...')
                     try {
                         // Intentar enviar un mensaje de prueba para detectar bot
-                        let testMsg = await conn.sendMessage(m.chat, { text: 'test_admin_check' }).catch(() => null)
+                        let testMsg = await conn.sendMessage(m.chat, { text: 'Oye...' }).catch(() => null)
                         if (testMsg) {
                             let testSender = testMsg.key?.fromMe ? conn.user?.jid || conn.user?.id : null
                             if (testSender) {
