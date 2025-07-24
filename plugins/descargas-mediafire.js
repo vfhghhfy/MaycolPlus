@@ -1,39 +1,41 @@
-import { getMediafireDirectLink } from '../lib/mediafire.js'
+import { obtenerEnlaceDirectoMediafire } from '../lib/mediafire.js'
 import { format } from 'util'
 
 let handler = async (m, { conn, args, usedPrefix, command }) => {
   if (!args[0]) {
-    return m.reply(`🚩 Ingrese el enlace de un archivo de MediaFire`);
+    return m.reply(`🚩 Ingresa el enlace de un archivo de *MediaFire*, por ejemplo:\n${usedPrefix + command} https://www.mediafire.com/file/XXXXX`)
   }
 
   const url = args[0]
-  if (!url.match(/mediafire\.com/gi)) {
-    return m.reply('¡Ingresa un enlace válido de MediaFire!');
+
+  if (!/mediafire\.com\/file\//gi.test(url)) {
+    return m.reply('⚠️ Ese enlace no parece ser válido de MediaFire.\nAsegúrate que sea del tipo:\nhttps://www.mediafire.com/file/XXXXX')
   }
 
   try {
-    m.react(global.wait || '⌛');
+    m.react(global.wait || '⌛')
 
-    const directUrl = await getMediafireDirectLink(url)
+    const directUrl = await obtenerEnlaceDirectoMediafire(url)
 
     if (!directUrl) {
-      return m.reply(`❌ No se pudo obtener el link de descarga directa`);
+      return m.reply(`❌ No se pudo obtener el enlace directo de descarga.`)
     }
 
-    // Extraer nombre del archivo
-    const filename = decodeURIComponent(directUrl.split('/').pop())
+    // Obtener el nombre del archivo desde la URL directa
+    const filename = decodeURIComponent(directUrl.split('/').pop().split('?')[0] || 'archivo_descargado.zip')
 
     let mediaFireInfo = `
 乂  *M E D I A F I R E  -  D O W N L O A D*
 
 ✩ *💜 Nombre:* ${filename}
-✩ *🔗 Link:* ${url}
-✩ *📥 Directo:* ${directUrl}
-`.trim();
+✩ *🔗 Enlace:* ${url}
+✩ *📥 Descarga:* ${directUrl}
+`.trim()
 
+    // Enviar como documento
     await conn.sendMessage(m.chat, {
       document: { url: directUrl },
-      mimetype: 'application/zip',
+      mimetype: 'application/octet-stream', // más flexible
       fileName: filename,
       caption: mediaFireInfo
     }, { quoted: m })
@@ -42,7 +44,7 @@ let handler = async (m, { conn, args, usedPrefix, command }) => {
 
   } catch (error) {
     console.error(error)
-    m.reply(`❌ Error al procesar el enlace:\n${error.message}`)
+    m.reply(`❌ Ocurrió un error al procesar el enlace:\n\n${error.message}`)
   }
 }
 
