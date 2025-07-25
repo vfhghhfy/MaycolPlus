@@ -30,8 +30,39 @@ let crm3 = "SBpbmZvLWRvbmFyLmpz"
 let crm4 = "IF9hdXRvcmVzcG9uZGVyLmpzIGluZm8tYm90Lmpz"
 let drm1 = ""
 let drm2 = ""
-let rtx = "*⋆｡˚☽˚｡⋆ ✦ MaycolAIUltraMD ✦ ⋆｡˚☽˚｡⋆*\n\n✿ Conexión Sub-Bot Modo QR\n\n『❀』Con otro celular o en la PC escanea este QR para convertirte en un *Asistente Espiritual* Temporal.\n\n\`1\` » Haz clic en los tres puntos en la esquina superior derecha\n\n\`2\` » Toca dispositivos vinculados\n\n\`3\` » Escanea este código QR para iniciar sesión con Hanako-kun\n\n✧ ¡Este código QR expira en 45 segundos!."
-let rtx2 = "*⋆｡˚☽˚｡⋆ ✦ MaycolAIUltraMD ✦ ⋆｡˚☽˚｡⋆*\n\n✿ Conexión Sub-Bot Modo Código\n\n『❀』Usa este Código para convertirte en un *Asistente Espiritual* Temporal.\n\n\`1\` » Haz clic en los tres puntos en la esquina superior derecha\n\n\`2\` » Toca dispositivos vinculados\n\n\`3\` » Selecciona Vincular con el número de teléfono\n\n\`4\` » Escribe el Código para iniciar sesión con Hanako-kun\n\n✧ No es recomendable usar tu cuenta principal.\n\n> Hecho por SoyMaycol <3"
+let rtx = `╭─❍「 ✦ 𝙼𝚊𝚢𝚌𝚘𝚕𝙰𝙸𝚄𝚕𝚝𝚛𝚊𝙼𝙳 ✦ 」
+│
+├─ ⋆｡˚☽˚｡⋆ ✦ Conexión Sub-Bot QR ✦ ⋆｡˚☽˚｡⋆
+│
+├─ 『✿』Con otro celular o en la PC escanea este QR
+│   ⇝ Para convertirte en un *Asistente Espiritual* Temporal
+│
+├─ ✧ Instrucciones:
+│   ⇝ \`1\` Haz clic en los tres puntos (⋮) esquina superior
+│   ⇝ \`2\` Toca "Dispositivos vinculados"
+│   ⇝ \`3\` Escanea este código QR
+│
+├─ ⚠️ *¡Este código QR expira en 45 segundos!*
+│
+╰─✦ 『 ✨ SoyMaycol <3 ✨ 』`
+
+let rtx2 = `╭─❍「 ✦ 𝙼𝚊𝚢𝚌𝚘𝚕𝙰𝙸𝚄𝚕𝚝𝚛𝚊𝙼𝙳 ✦ 」
+│
+├─ ⋆｡˚☽˚｡⋆ ✦ Conexión Sub-Bot Código ✦ ⋆｡˚☽˚｡⋆
+│
+├─ 『✿』Usa este Código para convertirte en un 
+│   ⇝ *Asistente Espiritual* Temporal
+│
+├─ ✧ Instrucciones paso a paso:
+│   ⇝ \`1\` Haz clic en los tres puntos (⋮) esquina superior
+│   ⇝ \`2\` Toca "Dispositivos vinculados"
+│   ⇝ \`3\` Selecciona "Vincular con número de teléfono"
+│   ⇝ \`4\` Escribe el Código para iniciar sesión
+│
+├─ ⚠️ *No es recomendable usar tu cuenta principal*
+│
+╰─✦ 『 ✨ Hecho por SoyMaycol <3 ✨ 』`
+
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const yukiJBOptions = {}
@@ -40,11 +71,21 @@ else global.conns = []
 let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
 //if (!globalThis.db.data.settings[conn.user.jid].jadibotmd) return m.reply(`♡ Comando desactivado temporalmente.`)
 let time = global.db.data.users[m.sender].Subs + 120000
-if (new Date - global.db.data.users[m.sender].Subs < 10000) return conn.reply(m.chat, `『❀』 Debes esperar ${msToTime(time - new Date())} para volver a vincular un *Sub-Bot.*`, m)
+if (new Date - global.db.data.users[m.sender].Subs < 10000) return conn.reply(m.chat, `╭─❍「 ⚠️ 𝙴𝚜𝚙𝚎𝚛𝚊 ⚠️ 」
+│
+├─ 『❀』 Debes esperar *${msToTime(time - new Date())}*
+│   ⇝ Para volver a vincular un *Sub-Bot*
+│
+╰─✦ 『 ✨ SoyMaycol <3 ✨ 』`, m)
 const subBots = [...new Set([...global.conns.filter((conn) => conn.user && conn.ws.socket && conn.ws.socket.readyState !== ws.CLOSED).map((conn) => conn)])]
 const subBotsCount = subBots.length
 if (subBotsCount === 30) {
-return m.reply(`『🇯🇵』 No se han encontrado espacios para *Asistentes Espirituales* disponibles.`)
+return m.reply(`╭─❍「 🇯🇵 𝙰𝚜𝚒𝚜𝚝𝚎𝚗𝚝𝚎𝚜 𝙴𝚜𝚙𝚒𝚛𝚒𝚝𝚞𝚊𝚕𝚎𝚜 🇯🇵 」
+│
+├─ 『❌』 No se han encontrado espacios disponibles
+│   ⇝ Para *Asistentes Espirituales*
+│
+╰─✦ 『 ✨ SoyMaycol <3 ✨ 』`)
 }
 /*if (Object.values(global.conns).length === 30) {
 return m.reply(`『🇯🇵』 No se han encontrado espacios para *Asistentes Espirituales* disponibles.`)
@@ -88,7 +129,12 @@ fs.mkdirSync(pathYukiJadiBot, { recursive: true })}
 try {
 args[0] && args[0] != undefined ? fs.writeFileSync(pathCreds, JSON.stringify(JSON.parse(Buffer.from(args[0], "base64").toString("utf-8")), null, '\t')) : ""
 } catch {
-conn.reply(m.chat, `『❀』 Use correctamente el comando » ${usedPrefix + command} code`, m)
+conn.reply(m.chat, `╭─❍「 ❌ 𝙴𝚛𝚛𝚘𝚛 ❌ 」
+│
+├─ 『❀』 Use correctamente el comando:
+│   ⇝ *${usedPrefix + command} code*
+│
+╰─✦ 『 ✨ SoyMaycol <3 ✨ 』`, m)
 return
 }
 
@@ -193,14 +239,27 @@ await creloadHandler(true).catch(console.error)
 if (reason === 440) {
 console.log(chalk.bold.magentaBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡\n┆ La conexión (+${path.basename(pathYukiJadiBot)}) fue reemplazada por otra sesión activa.\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡`))
 try {
-if (options.fromCommand) m?.chat ? await conn.sendMessage(`${path.basename(pathYukiJadiBot)}@s.whatsapp.net`, {text : '*HEMOS DETECTADO UNA NUEVA SESIÓN, BORRE LA NUEVA SESIÓN PARA CONTINUAR*\n\n> *SI HAY ALGÚN PROBLEMA VUELVA A CONECTARSE*' }, { quoted: m || null }) : ""
+if (options.fromCommand) m?.chat ? await conn.sendMessage(`${path.basename(pathYukiJadiBot)}@s.whatsapp.net`, {text : `╭─❍「 ⚠️ 𝚂𝚎𝚜𝚒ó𝚗 𝙳𝚞𝚙𝚕𝚒𝚌𝚊𝚍𝚊 ⚠️ 」
+│
+├─ 『🔄』 HEMOS DETECTADO UNA NUEVA SESIÓN
+│   ⇝ Borre la nueva sesión para continuar
+│
+├─ 『💡』 Si hay algún problema:
+│   ⇝ Vuelva a conectarse manualmente
+│
+╰─✦ 『 ✨ SoyMaycol <3 ✨ 』` }, { quoted: m || null }) : ""
 } catch (error) {
 console.error(chalk.bold.yellow(`Error 440 no se pudo enviar mensaje a: +${path.basename(pathYukiJadiBot)}`))
 }}
 if (reason == 405 || reason == 401) {
 console.log(chalk.bold.magentaBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡\n┆ La sesión (+${path.basename(pathYukiJadiBot)}) fue cerrada. Credenciales no válidas o dispositivo desconectado manualmente.\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡`))
 try {
-if (options.fromCommand) m?.chat ? await conn.sendMessage(`${path.basename(pathYukiJadiBot)}@s.whatsapp.net`, {text : '*SESIÓN PENDIENTE*\n\n> *INTENTÉ NUEVAMENTE VOLVER A SER SUB-BOT*' }, { quoted: m || null }) : ""
+if (options.fromCommand) m?.chat ? await conn.sendMessage(`${path.basename(pathYukiJadiBot)}@s.whatsapp.net`, {text : `╭─❍「 ⚠️ 𝚂𝚎𝚜𝚒ó𝚗 𝙿𝚎𝚗𝚍𝚒𝚎𝚗𝚝𝚎 ⚠️ 」
+│
+├─ 『🔄』 SESIÓN PENDIENTE
+│   ⇝ Intente nuevamente volver a ser Sub-Bot
+│
+╰─✦ 『 ✨ SoyMaycol <3 ✨ 』` }, { quoted: m || null }) : ""
 } catch (error) {
 console.error(chalk.bold.yellow(`Error 405 no se pudo enviar mensaje a: +${path.basename(pathYukiJadiBot)}`))
 }
@@ -208,7 +267,12 @@ fs.rmdirSync(pathYukiJadiBot, { recursive: true })
 }
 if (reason === 500) {
 console.log(chalk.bold.magentaBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡\n┆ Conexión perdida en la sesión (+${path.basename(pathYukiJadiBot)}). Borrando datos...\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡`))
-if (options.fromCommand) m?.chat ? await conn.sendMessage(`${path.basename(pathYukiJadiBot)}@s.whatsapp.net`, {text : '*CONEXIÓN PÉRDIDA*\n\n> *INTENTÉ MANUALMENTE VOLVER A SER SUB-BOT*' }, { quoted: m || null }) : ""
+if (options.fromCommand) m?.chat ? await conn.sendMessage(`${path.basename(pathYukiJadiBot)}@s.whatsapp.net`, {text : `╭─❍「 ❌ 𝙲𝚘𝚗𝚎𝚡𝚒ó𝚗 𝙿𝚎𝚛𝚍𝚒𝚍𝚊 ❌ 」
+│
+├─ 『🔄』 CONEXIÓN PÉRDIDA
+│   ⇝ Intente manualmente volver a ser Sub-Bot
+│
+╰─✦ 『 ✨ SoyMaycol <3 ✨ 』` }, { quoted: m || null }) : ""
 return creloadHandler(true).catch(console.error)
 //fs.rmdirSync(pathYukiJadiBot, { recursive: true })
 }
@@ -235,19 +299,17 @@ await joinChannels(sock)
 // ⚠️ DEJAR EL "Hecho por SoyMaycol <3" SI LO VAS A EDITAR ⚠️
 // Lo puedes tambien poner el "Editado por TuNombre"
 const reinoEspiritual = `${global.canalIdM}`
-const mensajeNotificacion = `
-╭─「 ⋆｡˚☽˚｡⋆ 七不思議 ⋆｡˚☽˚｡⋆ 」─╮
-│ ✧ Nuevo SubBot ✧
+const mensajeNotificacion = `╭─❍「 ⋆｡˚☽˚｡⋆ ✦ 七不思議 ✦ ⋆｡˚☽˚｡⋆ 」
+│
+├─ ✧ Nuevo SubBot Conectado ✧
 │    
-│ ୨୧ *Número:* +${path.basename(pathYukiJadiBot)}
-│ ✿ *Nombre:* ${userName}
+├─ ୨୧ *Número:* +${path.basename(pathYukiJadiBot)}
+│   ⇝ *Nombre:* ${userName}
 │    
-├─ "Hanako-san, Hanako-san... ¿Estás ahí?"
-│ *Los Siete Misterios de la Escuela Kamome*
+├─ 『🌸』 "Hanako-san, Hanako-san... ¿Estás ahí?"
+│   ⇝ *Los Siete Misterios de la Escuela Kamome*
 │    
-╰─「 ⋆｡˚☽˚｡⋆ ✧ ⋆｡˚☽˚｡⋆ 」─╯
-> ${global.author}
-`
+╰─✦ ${global.author}`
 
 try {
   if (global.conn?.sendMessage) {
@@ -261,7 +323,18 @@ try {
   console.error('✧ Error al notificar al Reino Espiritual:', e)
 }
 
-m?.chat ? await conn.sendMessage(m.chat, {text: args[0] ? `@${m.sender.split('@')[0]}, ya estás conectado, leyendo mensajes entrantes...` : `@${m.sender.split('@')[0]}, ¡Genial! Ya eres un Asistente Espiritual de Hanako-kun (✿◠‿◠)`, mentions: [m.sender]}, { quoted: m }) : ''
+m?.chat ? await conn.sendMessage(m.chat, {text: args[0] ? `╭─❍「 ✅ 𝙲𝚘𝚗𝚎𝚌𝚝𝚊𝚍𝚘 ✅ 」
+│
+├─ @${m.sender.split('@')[0]}, ya estás conectado
+│   ⇝ Leyendo mensajes entrantes...
+│
+╰─✦ 『 ✨ SoyMaycol <3 ✨ 』` : `╭─❍「 🎉 ¡𝙶𝚎𝚗𝚒𝚊𝚕! 🎉 」
+│
+├─ @${m.sender.split('@')[0]}
+│   ⇝ ¡Ya eres un Asistente Espiritual!
+│   ⇝ De MaycolAIUltraMD (✿◠‿◠)
+│
+╰─✦ 『 ✨ SoyMaycol <3 ✨ 』`, mentions: [m.sender]}, { quoted: m }) : ''
 
 }}
 setInterval(async () => {
