@@ -38,7 +38,5 @@ return
 
 handler.command = ['advertir', 'advertencia', 'warn', 'warning'];
 handler.group = true;
-handler.admin = true;
-handler.botAdmin = true;
 
 export default handler;
