@@ -10,6 +10,5 @@ handler.help = ['setdespedida'];
 handler.tags = ['tools'];
 handler.command = ['setbye'];
 handler.owner = false;
-handler.admin = true;
 
 export default handler;
