@@ -28,7 +28,5 @@ handler.help = ['groupdesc <texto>'];
 handler.tags = ['grupo'];
 handler.command = ['gpdesc', 'groupdesc'];
 handler.group = true;
-handler.admin = true;
-handler.botAdmin = true;
 
 export default handler;
