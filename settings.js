@@ -42,7 +42,7 @@ global.personaje = 'Hanako Kun'
 global.sessions = './MayBots/Principal'
 global.jadi = 'MayBots'
 global.yukiJadibts = true
-global.staticcode = "MAYCOLAI";
+global.staticcode = "MAYCOLXD";
 
 // ╭── ✦ Personalización Visual ✦ ──⊷
 global.packname = '𝕄𝕒𝕪𝕔𝕠𝕝𝔸𝕀𝕌𝕝𝕥𝕣𝕒-𝕄𝔻'
