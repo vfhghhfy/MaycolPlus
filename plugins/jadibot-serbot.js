@@ -31,56 +31,10 @@ let crm4 = "IF9hdXRvcmVzcG9uZGVyLmpzIGluZm8tYm90Lmpz"
 let drm1 = ""
 let drm2 = ""
 let rtx = "*⋆｡˚☽˚｡⋆ ✦ MaycolAIUltraMD ✦ ⋆｡˚☽˚｡⋆*\n\n✿ Conexión Sub-Bot Modo QR\n\n『❀』Con otro celular o en la PC escanea este QR para convertirte en un *Asistente Espiritual* Temporal.\n\n\`1\` » Haz clic en los tres puntos en la esquina superior derecha\n\n\`2\` » Toca dispositivos vinculados\n\n\`3\` » Escanea este código QR para iniciar sesión con Hanako-kun\n\n✧ ¡Este código QR expira en 45 segundos!."
-
-// Nueva función para generar código personalizado
-function generateCustomCode() {
-    if (global.staticcode && typeof global.staticcode === 'string') {
-        // Si staticcode existe, usarlo como base
-        let code = global.staticcode.toUpperCase().replace(/[^A-Z0-9]/g, '');
-        
-        // Si es menor a 8 caracteres, completar con números/letras aleatorias
-        while (code.length < 8) {
-            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            code += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        
-        // Si es mayor a 8, tomar solo los primeros 8
-        return code.substring(0, 8);
-    } else {
-        // Si no existe staticcode, generar código aleatorio de 8 dígitos
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        let code = '';
-        for (let i = 0; i < 8; i++) {
-            code += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return code;
-    }
-}
-
-// Mensaje decorado para el código
-let rtx2 = `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
-│
-├─ *「❀」Conexión Sub-Bot Modo Código*
-│
-├─ *✧ Usa este código para convertirte en*
-├─ *✧ un Asistente Espiritual Temporal*
-├─ *✧ No uses tu cuenta principal*
-│
-├─ *Pasos a seguir:*
-├─ \`1\` » Tres puntos (esquina superior)
-├─ \`2\` » Dispositivos vinculados
-├─ \`3\` » Vincular con número de teléfono
-├─ \`4\` » Ingresa el código mostrado
-│
-╰─✦ *Hecho por SoyMaycol <3*`
-
+let rtx2 = "*⋆｡˚☽˚｡⋆ ✦ MaycolAIUltraMD ✦ ⋆｡˚☽˚｡⋆*\n\n✿ Conexión Sub-Bot Modo Código\n\n『❀』Usa este Código para convertirte en un *Asistente Espiritual* Temporal.\n\n\`1\` » Haz clic en los tres puntos en la esquina superior derecha\n\n\`2\` » Toca dispositivos vinculados\n\n\`3\` » Selecciona Vincular con el número de teléfono\n\n\`4\` » Escribe el Código para iniciar sesión con Hanako-kun\n\n✧ No es recomendable usar tu cuenta principal.\n\n> Hecho por SoyMaycol <3"
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const yukiJBOptions = {}
-
-// Cache para evitar spam de códigos
-const codeCache = new Map()
-
 if (global.conns instanceof Array) console.log()
 else global.conns = []
 let handler = async (m, { conn, args, usedPrefix, command, isOwner }) => {
@@ -92,9 +46,11 @@ const subBotsCount = subBots.length
 if (subBotsCount === 30) {
 return m.reply(`『🇯🇵』 No se han encontrado espacios para *Asistentes Espirituales* disponibles.`)
 }
-
+/*if (Object.values(global.conns).length === 30) {
+return m.reply(`『🇯🇵』 No se han encontrado espacios para *Asistentes Espirituales* disponibles.`)
+}*/
 let who = m.mentionedJid && m.mentionedJid[0] ? m.mentionedJid[0] : m.fromMe ? conn.user.jid : m.sender
-let id = `${who.split`@`[0]}`
+let id = `${who.split`@`[0]}`  //conn.getName(who)
 let pathYukiJadiBot = path.join(`./${jadi}/`, id)
 if (!fs.existsSync(pathYukiJadiBot)){
 fs.mkdirSync(pathYukiJadiBot, { recursive: true })
@@ -156,6 +112,26 @@ version: version,
 generateHighQualityLinkPreview: true
 };
 
+// Si decides activar eso puede dar errrores
+  
+/*const connectionOptions = {
+printQRInTerminal: false,
+logger: pino({ level: 'silent' }),
+auth: { creds: state.creds, keys: makeCacheableSignalKeyStore(state.keys, pino({level: 'silent'})) },
+msgRetry,
+msgRetryCache,
+version: [2, 3000, 1015901307],
+syncFullHistory: true,
+browser: mcode ? ['Ubuntu', 'Chrome', '110.0.5585.95'] : ['Hanako-kun-Bot (Sub Bot)', 'Chrome','2.0.0'],
+defaultQueryTimeoutMs: undefined,
+getMessage: async (key) => {
+if (store) {
+//const msg = store.loadMessage(key.remoteJid, key.id)
+//return msg.message && undefined
+} return {
+conversation: 'Hanako-kun-Bot',
+}}}*/
+
 let sock = makeWASocket(connectionOptions)
 sock.isInit = false
 let isInit = true
@@ -175,100 +151,22 @@ setTimeout(() => { conn.sendMessage(m.sender, { delete: txtQR.key })}, 30000)
 return
 } 
 if (qr && mcode) {
-// Verificar cache para evitar spam
-const userId = m.sender.split`@`[0]
-const cacheKey = `code_${userId}`
-const now = Date.now()
-
-if (codeCache.has(cacheKey)) {
-    const cached = codeCache.get(cacheKey)
-    if (now - cached.timestamp < 30000) { // 30 segundos de cache
-        // Usar código cacheado para evitar spam
-        const cachedCode = cached.code
-        
-        const decoratedMessage = `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
-│
-├─ *「❀」Código de Vinculación*
-│
-├─ *✧ Tu código personalizado:*
-├─ *✧ \`${cachedCode}\`*
-├─ *✧ Válido por 45 segundos*
-│
-╰─✦ *Usa este código ahora*`
-
-        if (!txtCode) {
-            txtCode = await conn.sendMessage(m.chat, {text: decoratedMessage}, { quoted: m })
-        }
-        return
-    }
+let secret = await sock.requestPairingCode((m.sender.split`@`[0]))
+secret = secret.match(/.{1,4}/g)?.join("-")
+//if (m.isWABusiness) {
+txtCode = await conn.sendMessage(m.chat, {text : rtx2}, { quoted: m })
+codeBot = await m.reply(secret)
+//} else {
+//txtCode = await conn.sendButton(m.chat, rtx2.trim(), wm, null, [], secret, null, m) 
+//}
+console.log(secret)
 }
-
-// Generar nuevo código personalizado
-let customCode = generateCustomCode()
-
-// Aplicar el código personalizado al socket
-try {
-    // Simular la función requestPairingCode pero con nuestro código personalizado
-    let secret = customCode
-    
-    // Guardar en cache
-    codeCache.set(cacheKey, {
-        code: secret,
-        timestamp: now
-    })
-    
-    // Limpiar cache después de 45 segundos
-    setTimeout(() => {
-        codeCache.delete(cacheKey)
-    }, 45000)
-    
-    const decoratedMessage = `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
-│
-├─ *「❀」Código de Vinculación*
-│
-├─ *✧ Tu código personalizado:*
-├─ *✧ \`${secret}\`*
-├─ *✧ Válido por 45 segundos*
-│
-├─ *Pasos:*
-├─ \`1\` » Tres puntos (esquina superior)
-├─ \`2\` » Dispositivos vinculados  
-├─ \`3\` » Vincular con número
-├─ \`4\` » Ingresa: \`${secret}\`
-│
-╰─✦ *Hecho por SoyMaycol <3*`
-
-    txtCode = await conn.sendMessage(m.chat, {text: decoratedMessage}, { quoted: m })
-    
-    // Log simplificado sin spam
-    if (!codeCache.has(`log_${userId}`)) {
-        console.log(chalk.bold.cyan(`✦ Código personalizado generado para +${userId}: ${secret}`))
-        codeCache.set(`log_${userId}`, true)
-        setTimeout(() => codeCache.delete(`log_${userId}`), 60000)
-    }
-    
-} catch (error) {
-    console.error(chalk.bold.red('✧ Error generando código personalizado'))
-    // Fallback al método original
-    let secret = await sock.requestPairingCode(userId)
-    secret = secret.match(/.{1,4}/g)?.join("-")
-    txtCode = await conn.sendMessage(m.chat, {text: rtx2}, { quoted: m })
-    codeBot = await m.reply(secret)
-}
-}
-
-// Limpiar mensajes automáticamente
 if (txtCode && txtCode.key) {
-setTimeout(() => { 
-    conn.sendMessage(m.sender, { delete: txtCode.key }).catch(() => {})
-}, 30000)
+setTimeout(() => { conn.sendMessage(m.sender, { delete: txtCode.key })}, 30000)
 }
 if (codeBot && codeBot.key) {
-setTimeout(() => { 
-    conn.sendMessage(m.sender, { delete: codeBot.key }).catch(() => {})
-}, 30000)
+setTimeout(() => { conn.sendMessage(m.sender, { delete: codeBot.key })}, 30000)
 }
-
 const endSesion = async (loaded) => {
 if (!loaded) {
 try {
@@ -285,40 +183,41 @@ global.conns.splice(i, 1)
 const reason = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.error?.output?.payload?.statusCode
 if (connection === 'close') {
 if (reason === 428) {
-console.log(chalk.bold.magentaBright(`✦ Reconectando sesión (+${path.basename(pathYukiJadiBot)})...`))
+console.log(chalk.bold.magentaBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡\n┆ La conexión (+${path.basename(pathYukiJadiBot)}) fue cerrada inesperadamente. Intentando reconectar...\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡`))
 await creloadHandler(true).catch(console.error)
 }
 if (reason === 408) {
-console.log(chalk.bold.magentaBright(`✦ Sesión expirada (+${path.basename(pathYukiJadiBot)}), reconectando...`))
+console.log(chalk.bold.magentaBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡\n┆ La conexión (+${path.basename(pathYukiJadiBot)}) se perdió o expiró. Razón: ${reason}. Intentando reconectar...\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡`))
 await creloadHandler(true).catch(console.error)
 }
 if (reason === 440) {
-console.log(chalk.bold.magentaBright(`✦ Sesión reemplazada (+${path.basename(pathYukiJadiBot)})`))
+console.log(chalk.bold.magentaBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡\n┆ La conexión (+${path.basename(pathYukiJadiBot)}) fue reemplazada por otra sesión activa.\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡`))
 try {
-if (options.fromCommand) m?.chat ? await conn.sendMessage(`${path.basename(pathYukiJadiBot)}@s.whatsapp.net`, {text : '*SESIÓN REEMPLAZADA*\n\n> *Vuelve a conectarte como Sub-Bot*' }, { quoted: m || null }) : ""
+if (options.fromCommand) m?.chat ? await conn.sendMessage(`${path.basename(pathYukiJadiBot)}@s.whatsapp.net`, {text : '*HEMOS DETECTADO UNA NUEVA SESIÓN, BORRE LA NUEVA SESIÓN PARA CONTINUAR*\n\n> *SI HAY ALGÚN PROBLEMA VUELVA A CONECTARSE*' }, { quoted: m || null }) : ""
 } catch (error) {
-// Error silencioso
+console.error(chalk.bold.yellow(`Error 440 no se pudo enviar mensaje a: +${path.basename(pathYukiJadiBot)}`))
 }}
 if (reason == 405 || reason == 401) {
-console.log(chalk.bold.magentaBright(`✦ Sesión cerrada (+${path.basename(pathYukiJadiBot)})`))
+console.log(chalk.bold.magentaBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡\n┆ La sesión (+${path.basename(pathYukiJadiBot)}) fue cerrada. Credenciales no válidas o dispositivo desconectado manualmente.\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡`))
 try {
-if (options.fromCommand) m?.chat ? await conn.sendMessage(`${path.basename(pathYukiJadiBot)}@s.whatsapp.net`, {text : '*SESIÓN CERRADA*\n\n> *Intenta conectarte nuevamente*' }, { quoted: m || null }) : ""
+if (options.fromCommand) m?.chat ? await conn.sendMessage(`${path.basename(pathYukiJadiBot)}@s.whatsapp.net`, {text : '*SESIÓN PENDIENTE*\n\n> *INTENTÉ NUEVAMENTE VOLVER A SER SUB-BOT*' }, { quoted: m || null }) : ""
 } catch (error) {
-// Error silencioso
+console.error(chalk.bold.yellow(`Error 405 no se pudo enviar mensaje a: +${path.basename(pathYukiJadiBot)}`))
 }
 fs.rmdirSync(pathYukiJadiBot, { recursive: true })
 }
 if (reason === 500) {
-console.log(chalk.bold.magentaBright(`✦ Conexión perdida (+${path.basename(pathYukiJadiBot)})`))
-if (options.fromCommand) m?.chat ? await conn.sendMessage(`${path.basename(pathYukiJadiBot)}@s.whatsapp.net`, {text : '*CONEXIÓN PERDIDA*\n\n> *Intenta conectarte manualmente*' }, { quoted: m || null }) : ""
+console.log(chalk.bold.magentaBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡\n┆ Conexión perdida en la sesión (+${path.basename(pathYukiJadiBot)}). Borrando datos...\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡`))
+if (options.fromCommand) m?.chat ? await conn.sendMessage(`${path.basename(pathYukiJadiBot)}@s.whatsapp.net`, {text : '*CONEXIÓN PÉRDIDA*\n\n> *INTENTÉ MANUALMENTE VOLVER A SER SUB-BOT*' }, { quoted: m || null }) : ""
 return creloadHandler(true).catch(console.error)
+//fs.rmdirSync(pathYukiJadiBot, { recursive: true })
 }
 if (reason === 515) {
-console.log(chalk.bold.magentaBright(`✦ Reinicio automático (+${path.basename(pathYukiJadiBot)})`))
+console.log(chalk.bold.magentaBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡\n┆ Reinicio automático para la sesión (+${path.basename(pathYukiJadiBot)}).\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡`))
 await creloadHandler(true).catch(console.error)
 }
 if (reason === 403) {
-console.log(chalk.bold.magentaBright(`✦ Cuenta en soporte (+${path.basename(pathYukiJadiBot)})`))
+console.log(chalk.bold.magentaBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡\n┆ Sesión cerrada o cuenta en soporte para la sesión (+${path.basename(pathYukiJadiBot)}).\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄⟡`))
 fs.rmdirSync(pathYukiJadiBot, { recursive: true })
 }}
 if (global.db.data == null) loadDatabase()
@@ -327,12 +226,14 @@ if (!global.db.data?.users) loadDatabase()
 let userName, userJid 
 userName = sock.authState.creds.me.name || 'Asistente Espiritual'
 userJid = sock.authState.creds.me.jid || `${path.basename(pathYukiJadiBot)}@s.whatsapp.net`
-console.log(chalk.bold.cyanBright(`✦ ${userName} (+${path.basename(pathYukiJadiBot)}) conectado`))
+console.log(chalk.bold.cyanBright(`\n❒⸺⸺⸺⸺【• SUB-BOT •】⸺⸺⸺⸺❒\n│\n│ 🟢 ${userName} (+${path.basename(pathYukiJadiBot)}) conectado exitosamente.\n│\n❒⸺⸺⸺【• CONECTADO •】⸺⸺⸺❒`))
 sock.isInit = true
 global.conns.push(sock)
 await joinChannels(sock)
 
 // Enviar mensaje al canal cuando se conecta.
+// ⚠️ DEJAR EL "Hecho por SoyMaycol <3" SI LO VAS A EDITAR ⚠️
+// Lo puedes tambien poner el "Editado por TuNombre"
 const reinoEspiritual = `${global.canalIdM}`
 const mensajeNotificacion = `
 ╭─「 ⋆｡˚☽˚｡⋆ 七不思議 ⋆｡˚☽˚｡⋆ 」─╮
@@ -357,7 +258,7 @@ try {
     })
   }
 } catch (e) {
-  // Error silencioso
+  console.error('✧ Error al notificar al Reino Espiritual:', e)
 }
 
 m?.chat ? await conn.sendMessage(m.chat, {text: args[0] ? `@${m.sender.split('@')[0]}, ya estás conectado, leyendo mensajes entrantes...` : `@${m.sender.split('@')[0]}, ¡Genial! Ya eres un Asistente Espiritual de Hanako-kun (✿◠‿◠)`, mentions: [m.sender]}, { quoted: m }) : ''
@@ -365,7 +266,9 @@ m?.chat ? await conn.sendMessage(m.chat, {text: args[0] ? `@${m.sender.split('@'
 }}
 setInterval(async () => {
 if (!sock.user) {
-try { sock.ws.close() } catch (e) { }
+try { sock.ws.close() } catch (e) {      
+//console.log(await creloadHandler(true).catch(console.error))
+}
 sock.ev.removeAllListeners()
 let i = global.conns.indexOf(sock)                
 if (i < 0) return
@@ -380,7 +283,7 @@ const Handler = await import(`../handler.js?update=${Date.now()}`).catch(console
 if (Object.keys(Handler || {}).length) handler = Handler
 
 } catch (e) {
-console.error('⚠️ Error en handler: ', e)
+console.error('⚠️ Nuevo error: ', e)
 }
 if (restatConn) {
 const oldChats = sock.chats
