@@ -10,6 +10,5 @@ handler.help = ['setwelcome'];
 handler.tags = ['tools'];
 handler.command = ['setwelcome'];
 handler.owner = false;
-handler.admin = true;
 
 export default handler;
