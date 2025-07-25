@@ -34,7 +34,6 @@ const isEmoji = (text) => {
 handler.help = ['setemoji *<emoji>*'];
 handler.tags = ['group'];
 handler.command = ['setemoji', 'setemo'];
-handler.admin = true;
 handler.group = true;
 
 export default handler;
