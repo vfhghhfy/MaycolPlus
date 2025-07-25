@@ -13,8 +13,5 @@ handler.help = ['delete']
 handler.tags = ['grupo']
 handler.command = ['del','delete']
 handler.group = false
-handler.admin = true
-handler.botAdmin = true
-handler.mantenimiento = true
 
 export default handler
