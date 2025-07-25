@@ -15,6 +15,5 @@ handler.help = ['gruponame <text>'];
 handler.tags = ['grupo'];
 handler.command = ['gpname', 'groupname']
 handler.group = true;
-handler.admin = true;
 
 export default handler;
