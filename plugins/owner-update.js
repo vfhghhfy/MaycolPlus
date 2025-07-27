@@ -12,9 +12,21 @@ let handler = async (m, { conn }) => {
     }
 
     if (stdout.includes('Already up to date.')) {
-      conn.reply(m.chat, `${emoji4} El bot ya está actualizado.`, m);
+      conn.reply(m.chat, `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ [${emoji4}] El bot ya esta Actualizado
+│
+├─ Espera que el creador haga una Actualización...
+│   ⇝ *${global.yahecho}*
+╰─✦`, m);
     } else {
-      conn.reply(m.chat, `${emoji} Actualización realizada con éxito.\n\n${stdout}`, m);
+      conn.reply(m.chat, `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ [${emoji}] Actualización realizada con éxito.
+│
+├─ Los archivos del bot se Actualizaron Correctamente...
+│   ⇝ *${stdout}*
+╰─✦`, m);
     }
   });
 };
