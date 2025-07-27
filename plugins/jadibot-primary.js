@@ -16,6 +16,5 @@ let handler = async (m, { conn, text }) => {
 handler.help = ['setprimary @bot']
 handler.tags = ['owner']
 handler.command = ['setprimary']
-handler.admin = true
 
 export default handler
