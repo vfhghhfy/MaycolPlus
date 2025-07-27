@@ -81,11 +81,11 @@ global.video2 = [
 global.icono = 'https://files.catbox.moe/wnx3j7.jpeg'
 
 // ╭── ✦ Enlaces Oficiales ✦ ──⊷
-global.gp1 = 'https://chat.whatsapp.comEprzCjr7XFyAIFr9OfBh2o'
+global.gp1 = 'https://chat.whatsapp.com/JaW7xS1dq7F9a3JWM0S85Y?mode=ac_t'
 global.comunidad1 = 'https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R'
 global.channel = global.comunidad1
 global.channel2 = global.comunidad1
-global.md = 'https://github.com/SoySapo6/MaycolAI'
+global.md = 'https://github.com/SoySapo6/MaycolAIUltraMD'
 global.correo = 'karatekidamericatv@gmail.com'
 global.cn = global.comunidad1
 global.owner_ngl = 'soymaycoldev'
