@@ -8,16 +8,6 @@ let info = `
 conn.fakeReply(m.chat, info, '0@s.whatsapp.net', '😈 *SUBS YT ᴹᴿ᭄ King Of Bear ×፝֟͜× BOT* 😈', 'status@broadcast')
 }
 handler.command = /^(tumbar)$/i
-handler.owner = true
-handler.mods = true
-handler.premium = true
-handler.group = true
-handler.private = true
-
-handler.admin = true
-handler.botAdmin = true
-
-handler.fail = null
 
 export default handler 
  
