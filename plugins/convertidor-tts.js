@@ -1,8 +1,11 @@
-import gtts from 'node-gtts';
-import {readFileSync, unlinkSync} from 'fs';
-import {join} from 'path';
+import { writeFileSync, unlinkSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
+import fetch from 'node-fetch';
+
 const defaultLang = 'it';
-const handler = async (m, {conn, args, usedPrefix, command}) => {
+
+const handler = async (m, { conn, args }) => {
   let lang = args[0];
   let text = args.slice(1).join(' ');
   if ((args[0] || '').length !== 2) {
@@ -10,37 +13,31 @@ const handler = async (m, {conn, args, usedPrefix, command}) => {
     text = args.join(' ');
   }
   if (!text && m.quoted?.text) text = m.quoted.text;
-  let res;
+  if (!text) throw `❌ Por favor, ingresá un texto para convertir a audio~`;
+
   try {
-    res = await tts(text, lang);
+    const audioBuffer = await tts(text); // No necesita lang según tu API
+    const filename = join(tmpdir(), `tts_${Date.now()}.mp3`);
+    writeFileSync(filename, audioBuffer);
+    await conn.sendFile(m.chat, filename, 'tts.mp3', null, m, true);
+    unlinkSync(filename);
   } catch (e) {
-    m.reply(e + '');
-    text = args.join(' ');
-    if (!text) throw `${emoji} Por favor, ingresé una frase.`;
-    res = await tts(text, defaultLang);
-  } finally {
-    if (res) conn.sendFile(m.chat, res, 'tts.opus', null, m, true);
+    console.error(e);
+    m.reply('⚠️ Hubo un error al generar el audio: ' + e.message);
   }
 };
-handler.help = ['tts <lang> <teks>'];
+
+handler.help = ['tts <lang?> <texto>'];
 handler.tags = ['transformador'];
-handler.register = true
+handler.register = true;
 handler.command = ['tts'];
 
 export default handler;
 
-function tts(text, lang = 'es') {
-  console.log(lang, text);
-  return new Promise((resolve, reject) => {
-    try {
-      const tts = gtts(lang);
-      const filePath = join(global.__dirname(import.meta.url), '../tmp', (1 * new Date) + '.wav');
-      tts.save(filePath, text, () => {
-        resolve(readFileSync(filePath));
-        unlinkSync(filePath);
-      });
-    } catch (e) {
-      reject(e);
-    }
-  });
+// 🗣️ Esta función hace la petición a tu API de TTS
+async function tts(text) {
+  const url = `http://nightapi.duckdns.org:3084/api/tts?text=${encodeURIComponent(text)}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Error al generar TTS: ${res.statusText}`);
+  return await res.buffer();
 }
