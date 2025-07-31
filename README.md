@@ -47,58 +47,6 @@
 
 ---
 
-# Instalacion por Render ₊˚⊹
-> Repositorio que debes poner:
-https://github.com/SoySapo6/MaycolAIUltraMD.git
-
-<p align="center">
-  <img src="https://files.catbox.moe/xnojvs.png" width="500">
-</p>
-
-<details>
- <summary><b>Comandos 👨‍💻 </b></summary>
-
-Build Command:
-```
-yarn install && npm install && npm update
-```
-
-Start Command & Run Command:
-```
-node server-render.js
-```
-
-> Luego ve a la url que te dio render y añadele:
-```
-/auth/s
-```
-ejemplo:
-```
-https://miweb.onrender.com/auth/s
-```
-> y no entiendes es porque estas tonto jsjsjs
-
-luego cuando te pida tu numero en ves de s pon tu numero de celular. 
-> Ejemplo:
-```
-https://miweb.onrender.com/auth/51921826391
-```
-   
-</details>
-
----
-# Instalacion Koyeb
-
-[![Deploy to Koyeb](https://www.koyeb.com/static/images/deploy/button.svg)](https://app.koyeb.com/deploy?name=maycolaiultramd&repository=SoySapo6%2FMaycolAIUltraMD&branch=main&build_command=npm+install+--force+%26%26+npm+update&run_command=node+server-render.js&instance_type=free&regions=was&instances_min=0&autoscaling_sleep_idle_delay=300)
-
----
-### Instalacion por SYAHosting 🌐
-
-```
-git clone https://github.com/SoySapo6/MaycolAIUltraMD && cd MaycolAIUltraMD && npm install yarn -g && npx yarn install && npm install && npm update && mkdir temp && node --max-old-space-size=146 index.js
-```
----
-
 ### **`🌸 Click en la imagen para descargar termux 🌸`**
 <a
 href="https://www.mediafire.com/file/llugt4zgj7g3n3u/com.termux_1020.apk/file"><img src="https://files.catbox.moe/ayy4am.gif" height="125px"></a> 
@@ -217,8 +165,7 @@ Integrado con NightAPI
 
 ---
 
-> PROHIBIDO QUITAR CREDITOS.
-> PROHIBIDO QUITAR ESTE FRAGMENTO
+<!--- PROHIBIDO QUITAR CREDITOS --->
 
 ### **`🌈 Desarrollador Original`**
 <a
@@ -229,3 +176,5 @@ href="https://ko-fi.com/soymaycol"><img src="https://github.com/SoySapo6.png" wi
   <br>
   <i>Proyecto desarrollado individualmente con ❤️</i>
 </p>
+
+<!--- Licencia MIT - No borrar creditos -->
