@@ -83,7 +83,7 @@ npm update
 ```
 
 ```bash
-mkdir temp && npm start
+npm start
 ```
 
 > Si aparece (Y/I/N/O/D/Z) [default=N] ? usa la letra "y" + "ENTER" para continuar con la instalación
