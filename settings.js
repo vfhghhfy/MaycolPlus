@@ -17,7 +17,7 @@ import moment from 'moment-timezone'
 global.botNumber = '' // Ejemplo: 51921826291
 
 // ╭── ✦ Propietario y Staff ✦ ──⊷
-global.owner = ['51921826291']
+global.owner = ['51921826291', '180650938249287']
 global.mods = []
 global.suittag = []
 global.prems = []
