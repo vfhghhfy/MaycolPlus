@@ -81,7 +81,7 @@ global.video2 = [
 global.icono = 'https://files.catbox.moe/wnx3j7.jpeg'
 
 // ╭── ✦ Enlaces Oficiales ✦ ──⊷
-global.gp1 = 'https://chat.whatsapp.com/JaW7xS1dq7F9a3JWM0S85Y?mode=ac_t'
+global.gp1 = 'https://chat.whatsapp.com/JNQMGcG9jl00jYBM1iV8Jn'
 global.comunidad1 = 'https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R'
 global.channel = global.comunidad1
 global.channel2 = global.comunidad1
