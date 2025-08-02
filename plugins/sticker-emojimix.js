@@ -3,15 +3,11 @@ import fetch from 'node-fetch'
 import { sticker } from '../lib/sticker.js'
 import fs from "fs"
 
-const fetchJson = (url, options) => new Promise(async (resolve, reject) => {
+const fetchJson = (url, options) => new Promise((resolve, reject) => {
     fetch(url, options)
     .then(response => response.json())
-    .then(json => {
-        resolve(json)
-    })
-    .catch((err) => {
-        reject(err)
-    })
+    .then(json => resolve(json))
+    .catch(reject)
 })
 
 let handler = async (m, { conn, text, args, usedPrefix, command }) => {
@@ -25,15 +21,20 @@ let handler = async (m, { conn, text, args, usedPrefix, command }) => {
         let packstickers = global.db.data.users[userId] || {}
         let texto1 = packstickers.text1 || global.packsticker
         let texto2 = packstickers.text2 || global.packsticker2
-        
-        let stiker = await sticker(false, res.url, texto1, texto2)
+
+        // 🔥 Aquí descargamos el PNG como buffer
+        let response = await fetch(res.url)
+        let buffer = await response.buffer()
+
+        // ⬇️ Pasamos el buffer al generador de sticker
+        let stiker = await sticker(buffer, false, texto1, texto2)
         conn.sendFile(m.chat, stiker, null, { asSticker: true }, m)
     }
 }
 
 handler.help = ['emojimix *<emoji+emoji>*']
 handler.tags = ['sticker']
-handler.command = ['emojimix'] 
-handler.register = true 
+handler.command = ['emojimix']
+handler.register = true
 
 export default handler;
