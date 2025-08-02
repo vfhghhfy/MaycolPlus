@@ -7,8 +7,6 @@
 
 >  Este bot es gratuito asi que el creador no se hace responsable se los errores de tu fork
 
-> El numero del Creador (SoyMaycol) ha sido baneando (⁠╥⁠﹏⁠╥⁠)
-
 ---
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/I2I11GKDL4)
