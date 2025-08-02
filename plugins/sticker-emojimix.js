@@ -18,7 +18,7 @@ let handler = async (m, { conn, text, args, usedPrefix, command }) => {
     if (!args[0]) return m.reply(`📌 Ejemplo: *${usedPrefix + command}* 😎+🤑`)
     
     let [emoji, emoji2] = text.split`+`
-    let anu = await fetchJson(`https://nightapi-6hbx.onrender.com/api/emojimix?emoji1=${encodeURIComponent(emoji)}&emoji2=${encodeURIComponent(emoji2)}`)
+    let anu = await fetchJson(`https://nightapi.is-a.dev/api/emojimix?emoji1=${encodeURIComponent(emoji)}&emoji2=${encodeURIComponent(emoji2)}`)
 
     for (let res of anu.results) {
         let userId = m.sender
