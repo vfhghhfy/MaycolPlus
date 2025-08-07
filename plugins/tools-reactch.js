@@ -21,10 +21,21 @@ const handler = async (m, { conn, text }) => {
   const emoji = msg.split('').map(c => c === ' ' ? '―' : (font2[c] || c)).join('')
 
   try {
-    const [, , , , channelId, messageId] = link.split('/')
+    const [, , , , channelId] = link.split('/')
+
     const res = await conn.newsletterMetadata("invite", channelId)
-    await conn.newsletterReactMessage(res.id, messageId, emoji)
-    m.reply(`✅ Reacción enviada como: *${emoji}*\nCanal: *${res.name}*`)
+
+    // Obtener el mensaje MÁS RECIENTE del canal (último que se publicó)
+    const messages = await conn.getNewsletterMessages(res.id, { count: 1 })
+    const lastMessage = messages?.[0]
+
+    if (!lastMessage) {
+      return m.reply("❌ No se encontró ningún mensaje en el canal.")
+    }
+
+    await conn.newsletterReactMessage(res.id, lastMessage.key.id, emoji)
+
+    m.reply(`✅ Reacción enviada como: *${emoji}*\nCanal: *${res.name}*\nMensaje: *${lastMessage.message?.extendedTextMessage?.text || 'sin texto visible'}*`)
   } catch (e) {
     console.error(e)
     m.reply("❌ Error\nNo se pudo reaccionar. Revisa el enlace o tu conexión.")
@@ -33,6 +44,6 @@ const handler = async (m, { conn, text }) => {
 
 handler.command = ['reactch', 'rch']
 handler.tags = ['tools']
-handler.help = ['reactch <link>|<texto>']
+handler.help = ['reactch <link canal>|<texto>']
 
 export default handler
