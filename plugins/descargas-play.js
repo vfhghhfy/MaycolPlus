@@ -100,7 +100,7 @@ const downloadAudio = async (conn, m, url, title) => {
   try {
     const cleanTitle = cleanName(title) + ".mp3";
     await conn.sendMessage(m.chat, {
-      audio: { url: `http://nightapi.duckdns.org:3084/api/ytaudio?url=${encodeURIComponent(url)}` },
+      audio: { url: `http://173.208.200.227:3084/api/ytaudio?url=${encodeURIComponent(url)}` },
       mimetype: "audio/mpeg",
       fileName: cleanTitle,
     }, { quoted: m });
