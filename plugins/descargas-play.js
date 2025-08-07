@@ -32,7 +32,7 @@ const handler = async (m, { conn, text, command }) => {
     const isDirectDownload = ["play", "playaudio", "ytmp3", "play2", "playvid", "ytv", "ytmp4"].includes(command);
 
     if (isDirectDownload) {
-      await m.reply(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚌𝚘𝚕 <3 ✦ 」
+      await m.reply(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <3 ✦ 」
 │
 ├─ 「❀」${title}
 │
@@ -55,7 +55,7 @@ const handler = async (m, { conn, text, command }) => {
         { buttonId: `.ytmp4 ${url}`, buttonText: { displayText: "♣ Descargar Video ♣" }, type: 1 },
       ];
 
-      const processingMessage = `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚌𝚘𝚕 <3 ✦ 」
+      const processingMessage = `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <3 ✦ 」
 │
 ├─ 「❀」${title}
 │
@@ -87,7 +87,7 @@ const handler = async (m, { conn, text, command }) => {
     }
   } catch (error) {
     console.error("❌ Error general:", error);
-    await m.reply(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚌𝚘𝚕 <3 ✦ 」
+    await m.reply(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <3 ✦ 」
 │
 ├─ El hechizo falló
 ├─ Error: ${error.message}
