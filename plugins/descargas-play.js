@@ -116,7 +116,7 @@ const downloadVideo = async (conn, m, url, title) => {
   try {
     const cleanTitle = cleanName(title) + ".mp4";
     await conn.sendMessage(m.chat, {
-      video: { url: `http://nightapi.duckdns.org:3084/api/ytvideo?url=${encodeURIComponent(url)}` },
+      video: { url: `http://173.208.200.227:3084/api/ytvideo?url=${encodeURIComponent(url)}` },
       mimetype: "video/mp4",
       fileName: cleanTitle,
     }, { quoted: m });
