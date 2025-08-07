@@ -34,6 +34,5 @@ const handler = async (m, { conn, text }) => {
 handler.command = ['reactch', 'rch']
 handler.tags = ['tools']
 handler.help = ['reactch <link>|<texto>']
-handler.owner = true
 
 export default handler
