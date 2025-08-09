@@ -8,7 +8,7 @@ let handler = async (m, { conn, text, usedPrefix, command }) => {
   try {
     await m.react('🎴');
 
-    const adonixApi = `https://theadonix-api.vercel.app/api/tiktok?url=${encodeURIComponent(text)}`;
+    const adonixApi = `https://myapiadonix.vercel.app/api/tiktok?url=${encodeURIComponent(text)}`;
     const statsRes = await fetch(adonixApi);
     const statsData = await statsRes.json();
 
