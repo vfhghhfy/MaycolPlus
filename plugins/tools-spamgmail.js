@@ -1,29 +1,23 @@
-let axios = require("axios");
-let handler = async(m, { conn, text }) => {
-    let [email, pesan] = text.split `|`
+import axios from "axios";
 
-    if (!email) return conn.reply(m.chat, 'Silahkan masukan nama email yang akan dispam', m)
-    if (!pesan) return conn.reply(m.chat, 'Silahkan masukan pesan yang akan dispam', m)
+const handler = async (m, { conn, text }) => {
+  let [email, mensaje] = text.split('|');
 
-    axios.get(`https://videfikri.com/api/spamemail/?email=${email}&subjek=SPAM%20GMAIL%20BOT&pesan=${pesan}`).then ((res) => {
-         let hasil = `${res.data.result.log_lengkap}`
+  if (!email) return conn.reply(m.chat, 'Por favor ingresa el email al que quieres enviar spam', m);
+  if (!mensaje) return conn.reply(m.chat, 'Por favor ingresa el mensaje que quieres enviar', m);
 
-    conn.reply(m.chat, hasil, m)
-    })
-}
-handler.help = ['spamgmail'].map(v => v + ' <@email|pesan>')
-handler.tags = ['tools']
-handler.command = /^(spamgmail)$/i
-handler.owner = false
-handler.mods = false
-handler.premium = false
-handler.group = false
-handler.private = false
+  try {
+    const res = await axios.get(`https://videfikri.com/api/spamemail/?email=${email}&subjek=SPAM%20GMAIL%20BOT&pesan=${mensaje}`);
+    let resultado = `${res.data.result.log_lengkap}`;
+    conn.reply(m.chat, resultado, m);
+  } catch (error) {
+    conn.reply(m.chat, 'Error al enviar el spam, intenta más tarde.', m);
+  }
+};
 
-handler.admin = false
-handler.botAdmin = false
+handler.help = ['spamgmail <@email|mensaje>'];
+handler.tags = ['tools'];
+handler.command = /^(spamgmail)$/i;
+handler.limit = true;
 
-handler.fail = null
-handler.limit = true
-
-module.exports = handler
+export default handler;
