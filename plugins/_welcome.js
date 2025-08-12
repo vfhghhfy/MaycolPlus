@@ -1,4 +1,4 @@
-import { WAMessageStubType } from '@soymaycol/maybaileys'
+import { WAMessageStubType } from '@soymaycol/maybailyes'
 import fetch from 'node-fetch'
 
 export async function before(m, { conn, participants, groupMetadata }) {
