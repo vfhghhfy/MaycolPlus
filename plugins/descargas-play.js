@@ -18,7 +18,6 @@ const handler = async (m, { conn, text, command }) => {
   await m.react("🕛");
 
   try {
-    // Buscar con yt-search
     const res = await yts(text);
     if (!res || !res.videos || res.videos.length === 0) {
       return m.reply("❌ No se encontraron resultados para tu búsqueda.");
@@ -52,7 +51,6 @@ const handler = async (m, { conn, text, command }) => {
         await downloadVideo(conn, m, url, title);
       }
     } else {
-      // Mostrar botones
       const buttons = [
         { buttonId: `.ytmp3 ${url}`, buttonText: { displayText: "♪ Descargar Audio ♪" }, type: 1 },
         { buttonId: `.ytmp4 ${url}`, buttonText: { displayText: "♣ Descargar Video ♣" }, type: 1 },
