@@ -1,3 +1,6 @@
+/* Creditos a SoyMaycol | MaycolAIUltraMD
+Github: SoySapo6 | MIT License - No quitar creditos */
+
 import yts from "yt-search";
 
 const limit = 100;
