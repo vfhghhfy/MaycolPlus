@@ -7,6 +7,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
   try {
     // Consulta a WhatsApp con el LID para obtener el JID real
     const data = await conn.onWhatsApp(lid + '@lid');
+    console.log(data);
 
     if (data?.[0]?.jid) {
       const numeroReal = data[0].jid.replace(/@.+/, '');
