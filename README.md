@@ -154,15 +154,6 @@ Integrado con NightAPI
 
 </details>
 
-<details>
-<summary><b>💻 Funciones</b></summary>
-
-<p align="center">
-  <img src="https://files.catbox.moe/mtqu28.png" width="500">
-</p>
-
-</details>
-
 ---
 
 <!--- PROHIBIDO QUITAR CREDITOS --->
