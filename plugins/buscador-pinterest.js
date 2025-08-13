@@ -1,10 +1,19 @@
 /*
 • @David-Chian
 - https://github.com/David-Chian
+• @SoyMaycol
+- https://github.com/SoySapo6
 */
 
 import fetch from 'node-fetch';
 import baileys from '@soymaycol/maybailyes';
+
+async function downloadImage(url) {
+    const res = await fetch(url, { redirect: 'follow' });
+    if (!res.ok) throw new Error(`Error descargando imagen: ${res.status}`);
+    const buffer = await res.arrayBuffer();
+    return Buffer.from(buffer);
+}
 
 async function sendAlbumMessage(jid, medias, options = {}) {
     if (typeof jid !== "string") throw new TypeError(`jid must be string, received: ${jid}`);
@@ -67,13 +76,25 @@ const pinterest = async (m, { conn, text, usedPrefix, command }) => {
             return conn.reply(m.chat, '✧ No se encontraron suficientes imágenes para un álbum.', m);
         }
 
-        const images = data.slice(0, 10).map(img => ({ type: "image", data: { url: img.image_large_url } }));
+        // Descargamos las imágenes siguiendo redirecciones
+        const images = [];
+        for (let img of data.slice(0, 10)) {
+            const url = img.image_large_url || img.image_small_url;
+            if (!url) continue;
+            const buffer = await downloadImage(url);
+            images.push({ type: "image", data: buffer });
+        }
+
+        if (images.length < 2) {
+            return conn.reply(m.chat, '✧ No se pudieron obtener suficientes imágenes válidas.', m);
+        }
 
         const caption = `❀ *Resultados de búsqueda para:* ${text}`;
         await sendAlbumMessage(m.chat, images, { caption, quoted: m });
 
         await m.react('✅');
     } catch (error) {
+        console.error(error);
         await m.react('❌');
         conn.reply(m.chat, '⚠︎ Hubo un error al obtener las imágenes de Pinterest.', m);
     }
