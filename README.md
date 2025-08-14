@@ -133,8 +133,6 @@ npm start
 </details>
 
 ---
-
----
 # 🖥️ Akirax
 > Hosting seguro y rápido
 
@@ -153,6 +151,7 @@ npm start
 </details>
 
 ---
+
 # 🌃 NightAPI 🌌
 Integrado con NightAPI
 
