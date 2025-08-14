@@ -133,6 +133,26 @@ npm start
 </details>
 
 ---
+
+---
+# 🖥️ Akirax
+> Hosting seguro y rápido
+
+
+<p align="center">
+  <img src="https://files.catbox.moe/bhglmo.jpg" width="500">
+</p>
+
+<details>
+ <summary><b>🔥 Enlaces Oficiales </b></summary>
+
+ * Home  [`¡Click aquí!`](https://home.akirax.net/)
+
+ * Console [`¡Click aquí!`](https://console.akirax.net/)
+   
+</details>
+
+---
 # 🌃 NightAPI 🌌
 Integrado con NightAPI
 
