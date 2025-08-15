@@ -54,6 +54,16 @@ href="https://www.mediafire.com/file/llugt4zgj7g3n3u/com.termux_1020.apk/file"><
 ### **`📲 Instalación por termux`**
 
 <details>
+<summary><b>📺 Tutorial en Video</b></summary>
+
+[![Ver en YouTube](https://img.youtube.com/vi/gTRfzTjyA4k/0.jpg)](https://youtu.be/gTRfzTjyA4k)
+
+Este video explica de forma rápida e ilustrativa cómo instalar el bot.  
+Gracias Neufra por el Tuto :)
+
+</details>
+ 
+<details>
  <summary><b>📝 Click para ver los Comandos </b></summary>
 
 ### **💮 Instalación manual por termux**
@@ -103,7 +113,9 @@ npm start
    ```bash
     npm start
    ```
+
 ---
+
 ### **⭐ Volverte owner del Bot**
 
 > Si deseas agregar tu número como owner del bot:
