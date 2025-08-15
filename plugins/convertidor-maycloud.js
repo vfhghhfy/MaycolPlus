@@ -21,6 +21,7 @@ let handler = async (m, { conn }) => {
     msg += `📁 *Archivo*: ${result.filename}\n`;
     msg += `🧠 *Tamaño*: ${formatBytes(result.size)}\n`;
     msg += `🌸 *Tipo*: ${result.mimetype}\n\n`;
+    msg += `🕐 *Tiempo*: Temporal\n\n`;
     msg += `╰(*´︶\`*)╯♡  *Subido con amor por ${personaje}~*`;
 
     await conn.sendFile(m.chat, media, result.filename, msg, m);
