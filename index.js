@@ -215,8 +215,6 @@ if (!savedPort) {
             console.log(chalk.bold.red('❌ Error al procesar el puerto'))
         }
     } while (!validPort)
-} else {
-    global.decoratedLog('SERVIDOR', `Usando puerto guardado: ${PORT}`, 'info')
 }
 
 // Inicializar servidor Express
@@ -283,11 +281,7 @@ app.get('/api/status', (req, res) => {
 })
 
 // Iniciar servidor
-server.listen(PORT, () => {
-    global.decoratedLog('SERVIDOR', `Servidor web iniciado en puerto ${PORT}`, 'success')
-    global.decoratedLog('SERVIDOR', `Panel disponible en: http://localhost:${PORT}`, 'info')
-    global.decoratedLog('SERVIDOR', `API Status: http://localhost:${PORT}/api/status`, 'info')
-})
+server.listen(PORT)
 
 let opcion
 if (methodCodeQR) {
