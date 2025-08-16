@@ -106,7 +106,6 @@ function savePortConfig(port) {
             mkdirSync(configDir, { recursive: true })
         }
         writeFileSync(configFile, JSON.stringify({ port: parseInt(port) }, null, 2))
-        global.decoratedLog('CONFIG', `Puerto ${port} guardado exitosamente`, 'success')
     } catch (error) {
         global.decoratedLog('CONFIG', 'Error al guardar configuración de puerto', 'error')
     }
@@ -189,9 +188,7 @@ const carpeta = path.join('./tmp')
 if (!fs.existsSync(carpeta)) {
     fs.mkdirSync(carpeta, { recursive: true })
     global.decoratedLog('SISTEMA', 'Carpeta tmp creada exitosamente', 'success')
-} else {
-    global.decoratedLog('SISTEMA', 'Carpeta tmp verificada correctamente', 'info')
-}
+      } 
 
 const question = (texto) => new Promise((resolver) => rl.question(texto, resolver))
 
@@ -207,7 +204,6 @@ if (!savedPort) {
             if (portNum && portNum > 0 && portNum <= 65535) {
                 validPort = true
                 savePortConfig(PORT)
-                global.decoratedLog('SERVIDOR', `Puerto ${PORT} configurado correctamente`, 'success')
             } else {
                 console.log(chalk.bold.red('❌ Puerto inválido. Debe ser un número entre 1 y 65535'))
             }
