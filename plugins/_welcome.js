@@ -1,7 +1,7 @@
 import { WAMessageStubType } from '@soymaycol/maybailyes'
 import fetch from 'node-fetch'
-const redes = 'GitHub: SoySapo6';
-const dev = 'SoyMaycol';
+const redes = `GitHub: ${global.github}`
+const dev = global.dev
 
 export async function before(m, { conn, participants, groupMetadata }) {
   if (!m.messageStubType || !m.isGroup) return !0;
