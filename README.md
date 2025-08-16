@@ -96,7 +96,12 @@ npm update
 npm start
 ```
 
+> Luego sigue las indicaciones que te aparece
+
 > Si aparece (Y/I/N/O/D/Z) [default=N] ? usa la letra "y" + "ENTER" para continuar con la instalación
+
+> [!IMPORTANT]
+> **Si estas en un server no se vera algunos logs. Se te recomienda escribir 8080 primero (para el puerto de la web) y luego ya veras para hacerte code o usar QR**
 
 ### **🔮 Activar en caso de detenerse en termux**
 
