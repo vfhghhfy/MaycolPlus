@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MaycolAIUltraMD Dashboard</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="menu.css">
 </head>
 <body>
     <div class="container">
@@ -14,9 +15,17 @@
                 <div class="pulse"></div>
                 <span id="statusText">Conectando...</span>
             </div>
+            
+            <!-- Botón hamburguesa -->
+            <div class="menu-toggle" id="menuToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
         </header>
 
-        <nav class="nav-buttons">
+        <!-- Menú lateral -->
+        <nav class="side-menu" id="sideMenu">
             <button class="nav-btn active" data-section="system">Sistema</button>
             <button class="nav-btn" data-section="bot">Bot</button>
             <button class="nav-btn" data-section="database">Base de Datos</button>
@@ -182,5 +191,6 @@
     </div>
 
     <script src="script.js"></script>
+    <script src="menu.js"></script>
 </body>
 </html>
