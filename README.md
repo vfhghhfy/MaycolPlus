@@ -210,3 +210,4 @@ href="https://ko-fi.com/soymaycol"><img src="https://github.com/SoySapo6.png" wi
 </p>
 
 <!--- Licencia MIT - No borrar creditos -->
+<!--- Creditos al bot base: https://github.com/The-King-Destroy/Yuki_Suou-Bot -->
