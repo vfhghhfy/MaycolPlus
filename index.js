@@ -145,7 +145,7 @@ let PORT = savedPort || process.env.PORT || process.env.SERVER_PORT || 3000
 
 // Inicialización optimizada
 const initializeBot = async () => {
-    console.log(chalk.bold.redBright(`\n♥ Iniciando MaycolAIUltraMD Optimizado ☆\n`))
+    console.log(chalk.bold.redBright(`\n♥ Iniciando MaycolAIUltraMD ☆\n`))
     
     let { say } = cfonts
     
