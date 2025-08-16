@@ -3,9 +3,7 @@
  <img src= "https://files.catbox.moe/8iqvp8.gif">
     </p>
 
-> Bot basado en @soymaycol/maybailyes
-
->  Este bot es gratuito asi que el creador no se hace responsable se los errores de tu fork
+> Mas de +500 comandos y bueno para tu grupo, ademas que tiene una web integrada
 
 ---
 
