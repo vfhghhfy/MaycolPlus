@@ -102,7 +102,7 @@ npm start
 
 | ⚠️ IMPORTANTE |
 |---------------|
-| Si estás en un server no se verán algunos logs. Se recomienda escribir `8080` primero (para el puerto de la web) y luego ya veras los logs y podras usar code o QR para vincular. |
+| Si estás en un server no se verán algunos logs. Se recomienda escribir el puerto de tu server o tambien `8080` (para el puerto de la web) y luego ya veras los logs y podras usar code o QR para vincular. |
 
 ### **🔮 Activar en caso de detenerse en termux**
 
