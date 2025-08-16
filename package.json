@@ -41,7 +41,7 @@
     "@soymaycol/maytube": "^2.0.1",
     "@vitalets/google-translate-api": "^8.0.0",
     "@xct007/frieren-scraper": "^0.0.2",
-    "@StarlightsTeam/Scraper": "*",
+    "@StarlightsTeam/Scraper": "github:StarlightsTeam/StarlightsTeam-Scraper",
     "acrcloud": "^1.4.0",
     "api-dylux": "^1.7.2",
     "aptoide-scraper": "github:SoySapo6/MayAptoide",
