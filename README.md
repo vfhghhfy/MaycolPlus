@@ -1,7 +1,6 @@
-<h1 align="center">⊹˚₊ MaycolAIUltraMD ₊˚⊹</h1>
+<h2 align="center">𝕄𝕒𝕪𝕔𝕠𝕝𝔸𝕀𝐔𝐥𝐭𝐫𝐚-𝐌𝐃</h1>
 
- <img src= "https://files.catbox.moe/8iqvp8.gif">
-    </p>
+ ![Hanako](/src/hanako.gif)
 
 > Mas de +500 comandos y bueno para tu grupo, ademas que tiene una web integrada
 
