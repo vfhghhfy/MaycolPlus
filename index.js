@@ -42,6 +42,26 @@ import NodeCache from 'node-cache'
 const {CONNECTING} = ws
 const {chain} = lodash
 
+// ╭─────────────────────⊷
+// │ DEFINIR FUNCIONES GLOBALES PRIMERO
+// ╰─────────────────────⊷
+
+// Definir las funciones globales antes de usarlas
+global.__filename = function filename(pathURL = import.meta.url, rmPrefix = platform !== 'win32') {
+    return rmPrefix ? /file:\/\/\//.test(pathURL) ? fileURLToPath(pathURL) : pathURL : pathToFileURL(pathURL).toString();
+};
+
+global.__dirname = function dirname(pathURL) {
+    return path.dirname(global.__filename(pathURL, true))
+};
+
+global.__require = function require(dir = import.meta.url) {
+    return createRequire(dir)
+}
+
+// Ahora sí podemos usar __dirname
+const __dirname = global.__dirname(import.meta.url)
+
 // Archivo para guardar la configuración del puerto
 const configFile = './src/config/port.json'
 
@@ -58,7 +78,7 @@ global.decoratedLog = (title, message, type = 'info') => {
     const color = colors[type] || colors.info
     
     console.log(color(`
-╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+╭─⊷〖 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 〗
 │
 ├─ ${message}
 │
@@ -96,8 +116,6 @@ function savePortConfig(port) {
 let savedPort = loadPortConfig()
 let PORT = savedPort || process.env.PORT || process.env.SERVER_PORT
 
-const __dirname = global.__dirname(import.meta.url)
-
 let { say } = cfonts
 
 console.log(chalk.bold.redBright(`\n♥ Iniciando MaycolAIUltraMD ☆\n`))
@@ -117,14 +135,6 @@ say(`Hecho por ${global.nameqr}`, {
 protoType()
 serialize()
 
-global.__filename = function filename(pathURL = import.meta.url, rmPrefix = platform !== 'win32') {
-return rmPrefix ? /file:\/\/\//.test(pathURL) ? fileURLToPath(pathURL) : pathURL : pathToFileURL(pathURL).toString();
-}; global.__dirname = function dirname(pathURL) {
-return path.dirname(global.__filename(pathURL, true))
-}; global.__require = function require(dir = import.meta.url) {
-return createRequire(dir)
-}
-
 global.API = (name, path = '/', query = {}, apikeyqueryname) => (name in global.APIs ? global.APIs[name] : name) + path + (query || apikeyqueryname ? '?' + new URLSearchParams(Object.entries({...query, ...(apikeyqueryname ? {[apikeyqueryname]: global.APIKeys[name in global.APIs ? global.APIs[name] : name]} : {})})) : '');
 
 global.timestamp = {start: new Date}
@@ -132,7 +142,7 @@ global.timestamp = {start: new Date}
 global.opts = new Object(yargs(process.argv.slice(2)).exitProcess(false).parse())
 global.prefix = new RegExp('^[#/!.]')
 
-global.db = new Low(/https?:\/\//.test(opts['db'] || '') ? new cloudDBAdapter(opts['db']) : new JSONFile('./src/database/database.json'))
+global.db = new Low(/https?:\/\//.test(global.opts['db'] || '') ? new cloudDBAdapter(global.opts['db']) : new JSONFile('./src/database/database.json'))
 
 global.DATABASE = global.db 
 global.loadDatabase = async function loadDatabase() {
@@ -283,13 +293,13 @@ let opcion
 if (methodCodeQR) {
 opcion = '1'
 }
-if (!methodCodeQR && !methodCode && !fs.existsSync(`./${sessions}/creds.json`)) {
+if (!methodCodeQR && !methodCode && !fs.existsSync(`./${global.sessions}/creds.json`)) {
 do {
 opcion = await question(colores('⌨ Seleccione una opción:\n') + opcionQR('1. Con código QR\n') + opcionTexto('2. Con código de texto de 8 dígitos\n--> '))
 
 if (!/^[1-2]$/.test(opcion)) {
 global.decoratedLog('INPUT', 'Solo se permiten números 1 o 2', 'warning')
-}} while (opcion !== '1' && opcion !== '2' || fs.existsSync(`./${sessions}/creds.json`))
+}} while (opcion !== '1' && opcion !== '2' || fs.existsSync(`./${global.sessions}/creds.json`))
 } 
 
 // Silenciar logs innecesarios
@@ -300,7 +310,7 @@ const connectionOptions = {
 logger: pino({ level: 'silent' }),
 printQRInTerminal: opcion == '1' ? true : methodCodeQR ? true : false,
 mobile: MethodMobile, 
-browser: opcion == '1' ? [`${nameqr}`, 'Edge', '20.0.04'] : methodCodeQR ? [`${nameqr}`, 'Edge', '20.0.04'] : ['Ubuntu', 'Edge', '110.0.1587.56'],
+browser: opcion == '1' ? [`${global.nameqr}`, 'Edge', '20.0.04'] : methodCodeQR ? [`${global.nameqr}`, 'Edge', '20.0.04'] : ['Ubuntu', 'Edge', '110.0.1587.56'],
 auth: {
 creds: state.creds,
 keys: makeCacheableSignalKeyStore(state.keys, Pino({ level: "fatal" }).child({ level: "fatal" })),
@@ -320,16 +330,16 @@ version,
 
 global.conn = makeWASocket(connectionOptions);
 
-if (!fs.existsSync(`./${sessions}/creds.json`)) {
+if (!fs.existsSync(`./${global.sessions}/creds.json`)) {
 if (opcion === '2' || methodCode) {
 opcion = '2'
-if (!conn.authState.creds.registered) {
+if (!global.conn.authState.creds.registered) {
 let addNumber
 if (!!phoneNumber) {
 addNumber = phoneNumber.replace(/[^0-9]/g, '')
 } else {
 do {
-phoneNumber = await question(chalk.bgBlack(chalk.bold.greenBright(`✦ Por favor, Ingrese el número de WhatsApp.\n${chalk.bold.yellowBright(`✠ Ejemplo: 57321×××××××`)}\n${chalk.bold.magentaBright('---> ')}`)))
+phoneNumber = await question(chalk.bgBlack(chalk.bold.greenBright(`✦ Por favor, Ingrese el número de WhatsApp.\n${chalk.bold.yellowBright(`✌ Ejemplo: 57321×××××××`)}\n${chalk.bold.magentaBright('---> ')}`)))
 phoneNumber = phoneNumber.replace(/\D/g,'')
 if (!phoneNumber.startsWith('+')) {
 phoneNumber = `+${phoneNumber}`
@@ -338,29 +348,29 @@ phoneNumber = `+${phoneNumber}`
 rl.close()
 addNumber = phoneNumber.replace(/\D/g, '')
 setTimeout(async () => {
-let codeBot = await conn.requestPairingCode(addNumber)
+let codeBot = await global.conn.requestPairingCode(addNumber)
 codeBot = codeBot?.match(/.{1,4}/g)?.join("-") || codeBot
 global.decoratedLog('CONEXIÓN', `Código de vinculación: ${codeBot}`, 'magic')
 }, 3000)
 }}}
 }
 
-conn.isInit = false;
-conn.well = false;
+global.conn.isInit = false;
+global.conn.well = false;
 
-if (!opts['test']) {
+if (!global.opts['test']) {
 if (global.db) setInterval(async () => {
 if (global.db.data) await global.db.write()
-if (opts['autocleartmp'] && (global.support || {}).find) (tmp = [os.tmpdir(), 'tmp', `${jadi}`], tmp.forEach((filename) => cp.spawn('find', [filename, '-amin', '3', '-type', 'f', '-delete'])));
+if (global.opts['autocleartmp'] && (global.support || {}).find) (tmp = [os.tmpdir(), 'tmp', `${global.jadi}`], tmp.forEach((filename) => spawn('find', [filename, '-amin', '3', '-type', 'f', '-delete'])));
 }, 30 * 1000);
 }
 
 async function connectionUpdate(update) {
 const {connection, lastDisconnect, isNewLogin} = update;
 global.stopped = connection;
-if (isNewLogin) conn.isInit = true;
+if (isNewLogin) global.conn.isInit = true;
 const code = lastDisconnect?.error?.output?.statusCode || lastDisconnect?.error?.output?.payload?.statusCode;
-if (code && code !== DisconnectReason.loggedOut && conn?.ws.socket == null) {
+if (code && code !== DisconnectReason.loggedOut && global.conn?.ws.socket == null) {
 await global.reloadHandler(true).catch(console.error);
 global.timestamp.connect = new Date;
 }
@@ -418,38 +428,38 @@ const oldChats = global.conn.chats
 try {
 global.conn.ws.close()
 } catch { }
-conn.ev.removeAllListeners()
+global.conn.ev.removeAllListeners()
 global.conn = makeWASocket(connectionOptions, {chats: oldChats})
 isInit = true
 }
 if (!isInit) {
-conn.ev.off('messages.upsert', conn.handler)
-conn.ev.off('connection.update', conn.connectionUpdate)
-conn.ev.off('creds.update', conn.credsUpdate)
+global.conn.ev.off('messages.upsert', global.conn.handler)
+global.conn.ev.off('connection.update', global.conn.connectionUpdate)
+global.conn.ev.off('creds.update', global.conn.credsUpdate)
 }
 
-conn.handler = handler.handler.bind(global.conn)
-conn.connectionUpdate = connectionUpdate.bind(global.conn)
-conn.credsUpdate = saveCreds.bind(global.conn, true)
+global.conn.handler = handler.handler.bind(global.conn)
+global.conn.connectionUpdate = connectionUpdate.bind(global.conn)
+global.conn.credsUpdate = saveCreds.bind(global.conn, true)
 
 const currentDateTime = new Date()
-const messageDateTime = new Date(conn.ev)
+const messageDateTime = new Date(global.conn.ev)
 const isGroupId = jid => jid.endsWith('@g.us') || jid.endsWith('@lid');
 
 let chats
 if (currentDateTime >= messageDateTime) {
-  chats = Object.entries(conn.chats)
+  chats = Object.entries(global.conn.chats)
     .filter(([jid, chat]) => !isGroupId(jid) && chat.isChats)
     .map(([jid]) => jid);
 } else {
-  chats = Object.entries(conn.chats)
+  chats = Object.entries(global.conn.chats)
     .filter(([jid, chat]) => !isGroupId(jid) && chat.isChats)
     .map(([jid]) => jid);
   }
   
-conn.ev.on('messages.upsert', conn.handler)
-conn.ev.on('connection.update', conn.connectionUpdate)
-conn.ev.on('creds.update', conn.credsUpdate)
+global.conn.ev.on('messages.upsert', global.conn.handler)
+global.conn.ev.on('connection.update', global.conn.connectionUpdate)
+global.conn.ev.on('creds.update', global.conn.credsUpdate)
 isInit = false
 return true
 };
@@ -459,19 +469,19 @@ global.rutaJadiBot = join(__dirname, global.jadi)
 if (global.yukiJadibts) {
 if (!existsSync(global.rutaJadiBot)) {
 mkdirSync(global.rutaJadiBot, { recursive: true }) 
-global.decoratedLog('JADIBOTS', `Carpeta ${jadi} creada correctamente`, 'success')
+global.decoratedLog('JADIBOTS', `Carpeta ${global.jadi} creada correctamente`, 'success')
 } else {
-global.decoratedLog('JADIBOTS', `Carpeta ${jadi} ya existe`, 'info')
+global.decoratedLog('JADIBOTS', `Carpeta ${global.jadi} ya existe`, 'info')
 }
 
-const readRutaJadiBot = readdirSync(rutaJadiBot)
+const readRutaJadiBot = readdirSync(global.rutaJadiBot)
 if (readRutaJadiBot.length > 0) {
 const creds = 'creds.json'
 for (const gjbts of readRutaJadiBot) {
-const botPath = join(rutaJadiBot, gjbts)
+const botPath = join(global.rutaJadiBot, gjbts)
 const readBotPath = readdirSync(botPath)
 if (readBotPath.includes(creds)) {
-yukiJadiBot({pathYukiJadiBot: botPath, m: null, conn, args: '', usedPrefix: '/', command: 'serbot'})
+yukiJadiBot({pathYukiJadiBot: botPath, m: null, conn: global.conn, args: '', usedPrefix: '/', command: 'serbot'})
 }
 }
 }
@@ -555,41 +565,41 @@ unlinkSync(filePath)})
 
 function purgeSession() {
 let prekey = []
-let directorio = readdirSync(`./${sessions}`)
+let directorio = readdirSync(`./${global.sessions}`)
 let filesFolderPreKeys = directorio.filter(file => {
 return file.startsWith('pre-key-')
 })
 prekey = [...prekey, ...filesFolderPreKeys]
 filesFolderPreKeys.forEach(files => {
-unlinkSync(`./${sessions}/${files}`)
+unlinkSync(`./${global.sessions}/${files}`)
 })
 } 
 
 function purgeSessionSB() {
 try {
-const listaDirectorios = readdirSync(`./${jadi}/`);
+const listaDirectorios = readdirSync(`./${global.jadi}/`);
 let SBprekey = [];
 listaDirectorios.forEach(directorio => {
-if (statSync(`./${jadi}/${directorio}`).isDirectory()) {
-const DSBPreKeys = readdirSync(`./${jadi}/${directorio}`).filter(fileInDir => {
+if (statSync(`./${global.jadi}/${directorio}`).isDirectory()) {
+const DSBPreKeys = readdirSync(`./${global.jadi}/${directorio}`).filter(fileInDir => {
 return fileInDir.startsWith('pre-key-')
 })
 SBprekey = [...SBprekey, ...DSBPreKeys];
 DSBPreKeys.forEach(fileInDir => {
 if (fileInDir !== 'creds.json') {
-unlinkSync(`./${jadi}/${directorio}/${fileInDir}`)
+unlinkSync(`./${global.jadi}/${directorio}/${fileInDir}`)
 }})
 }})
 if (SBprekey.length === 0) {
-global.decoratedLog('LIMPIEZA', `${jadi} - Nada por eliminar`, 'info')
+global.decoratedLog('LIMPIEZA', `${global.jadi} - Nada por eliminar`, 'info')
 } else {
-global.decoratedLog('LIMPIEZA', `${jadi} - Archivos no esenciales eliminados`, 'success')
+global.decoratedLog('LIMPIEZA', `${global.jadi} - Archivos no esenciales eliminados`, 'success')
 }} catch (err) {
-global.decoratedLog('LIMPIEZA', `Error en ${jadi}: ${err}`, 'error')
+global.decoratedLog('LIMPIEZA', `Error en ${global.jadi}: ${err}`, 'error')
 }}
 
 function purgeOldFiles() {
-const directories = [`./${sessions}/`, `./${jadi}/`]
+const directories = [`./${global.sessions}/`, `./${global.jadi}/`]
 directories.forEach(dir => {
 readdirSync(dir, (err, files) => {
 if (err) throw err
@@ -616,24 +626,24 @@ originalConsoleMethod.apply(console, arguments)
 
 // Intervalos de limpieza con logs mejorados
 setInterval(async () => {
-if (stopped === 'close' || !conn || !conn.user) return
+if (global.stopped === 'close' || !global.conn || !global.conn.user) return
 await clearTmp()
 global.decoratedLog('LIMPIEZA', 'Archivos temporales eliminados', 'info')
 }, 1000 * 60 * 4) // 4 min 
 
 setInterval(async () => {
-if (stopped === 'close' || !conn || !conn.user) return
+if (global.stopped === 'close' || !global.conn || !global.conn.user) return
 await purgeSession()
 global.decoratedLog('LIMPIEZA', `Sesiones no esenciales de ${global.sessions} eliminadas`, 'info')
 }, 1000 * 60 * 10) // 10 min
 
 setInterval(async () => {
-if (stopped === 'close' || !conn || !conn.user) return
+if (global.stopped === 'close' || !global.conn || !global.conn.user) return
 await purgeSessionSB()
 }, 1000 * 60 * 10) 
 
 setInterval(async () => {
-if (stopped === 'close' || !conn || !conn.user) return
+if (global.stopped === 'close' || !global.conn || !global.conn.user) return
 await purgeOldFiles()
 global.decoratedLog('LIMPIEZA', 'Archivos residuales eliminados', 'info')
 }, 1000 * 60 * 10)
