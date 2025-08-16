@@ -188,9 +188,6 @@ const carpeta = path.join('./tmp')
 // Crear carpeta tmp si no existe
 if (!fs.existsSync(carpeta)) {
     fs.mkdirSync(carpeta, { recursive: true })
-    global.decoratedLog('SISTEMA', 'Carpeta tmp creada exitosamente', 'success')
-} else {
-    global.decoratedLog('SISTEMA', 'Carpeta tmp verificada correctamente', 'info')
 }
 
 const question = (texto) => new Promise((resolver) => rl.question(texto, resolver))
@@ -375,7 +372,7 @@ global.decoratedLog('QR', 'Escanea el código QR (expira en 45 segundos)', 'warn
 }
 }
 if (connection == 'open') {
-global.decoratedLog('CONEXIÓN', 'YukiBot-MD conectado exitosamente', 'success')
+global.decoratedLog('CONEXIÓN', 'MaycolAIUltraMD conectado exitosamente', 'success')
 global.botStats.connections++
 }
 let reason = new Boom(lastDisconnect?.error)?.output?.statusCode
@@ -461,11 +458,9 @@ return true
 global.rutaJadiBot = join(__dirname, global.jadi)
 
 if (global.yukiJadibts) {
-if (!existsSync(global.rutaJadiBot)) {
-mkdirSync(global.rutaJadiBot, { recursive: true }) 
-global.decoratedLog('JADIBOTS', `Carpeta ${global.jadi} creada correctamente`, 'success')
-} else {
-global.decoratedLog('JADIBOTS', `Carpeta ${global.jadi} ya existe`, 'info')
+  if (!existsSync(global.rutaJadiBot)) {
+    mkdirSync(global.rutaJadiBot, { recursive: true }) 
+  }
 }
 
 const readRutaJadiBot = readdirSync(global.rutaJadiBot)
@@ -642,7 +637,7 @@ await purgeOldFiles()
 global.decoratedLog('LIMPIEZA', 'Archivos residuales eliminados', 'info')
 }, 1000 * 60 * 10)
 
-_quickTest().then(() => global.decoratedLog('SISTEMA', 'Inicialización completada exitosamente', 'success')).catch(console.error)
+_quickTest().catch(() => {})
 
 async function isValidPhoneNumber(number) {
 try {
