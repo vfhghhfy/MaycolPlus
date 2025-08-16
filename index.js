@@ -188,6 +188,9 @@ const carpeta = path.join('./tmp')
 // Crear carpeta tmp si no existe
 if (!fs.existsSync(carpeta)) {
     fs.mkdirSync(carpeta, { recursive: true })
+    global.decoratedLog('SISTEMA', 'Carpeta tmp creada exitosamente', 'success')
+} else {
+    global.decoratedLog('SISTEMA', 'Carpeta tmp verificada correctamente', 'info')
 }
 
 const question = (texto) => new Promise((resolver) => rl.question(texto, resolver))
@@ -471,7 +474,6 @@ const botPath = join(global.rutaJadiBot, gjbts)
 const readBotPath = readdirSync(botPath)
 if (readBotPath.includes(creds)) {
 yukiJadiBot({pathYukiJadiBot: botPath, m: null, conn: global.conn, args: '', usedPrefix: '/', command: 'serbot'})
-}
 }
 }
 }
