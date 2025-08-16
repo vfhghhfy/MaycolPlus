@@ -1,8 +1,11 @@
 <h2 align="center">𝕄𝕒𝕪𝕔𝕠𝕝𝔸𝕀𝐔𝐥𝐭𝐫𝐚-𝐌𝐃</h1>
 
  ![Hanako](/src/hanako.gif)
-
-> Mas de +500 comandos y bueno para tu grupo, ademas que tiene una web integrada
+<div align="center">
+  
+[![Gmail](https://img.shields.io/badge/Gmail-D14836?style=for-the-badge&logo=gmail&logoColor=white)](mailto:soymaycol.cn@gmail.com)
+[![PayPal](https://img.shields.io/badge/PayPal-00457C?style=for-the-badge&logo=paypal&logoColor=white)](https://www.paypal.com/paypalme/soymaycol)
+</div>
 
 ---
 
