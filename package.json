@@ -49,6 +49,7 @@
     "ytdl-han": "github:HanSamu-27/ytdl-han",
     "boxen": "^7.1.1",
     "cfonts": "^3.3.0",
+    "chess.js": "^1.4.0",
     "chalk": "^5.1.0",
     "cheerio": "npm:cheerio@1.0.0-rc.12",
     "crypto": "^1.0.1",
