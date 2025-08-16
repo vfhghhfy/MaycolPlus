@@ -7,7 +7,7 @@ import {createRequire} from 'module'
 import {fileURLToPath, pathToFileURL} from 'url'
 import {platform} from 'process'
 import * as ws from 'ws'
-import fs, {readdirSync, statSync, unlinkSync, existsSync, mkdirSync, readFileSync, rmSync, watch} from 'fs'
+import fs, {readdirSync, statSync, unlinkSync, existsSync, mkdirSync, readFileSync, rmSync, watch, writeFileSync} from 'fs'
 import yargs from 'yargs';
 import {spawn} from 'child_process'
 import lodash from 'lodash'
@@ -28,6 +28,11 @@ import { JSONFile } from 'lowdb'
 import {mongoDB, mongoDBV2} from './lib/mongoDB.js'
 import store from './lib/store.js'
 import pkg from 'google-libphonenumber'
+// Importar express y otras dependencias para el servidor
+import express from 'express'
+import { Server } from 'http'
+import os from 'os'
+
 const { PhoneNumberUtil } = pkg
 const phoneUtil = PhoneNumberUtil.getInstance()
 import baileys from '@soymaycol/maybailyes'
@@ -36,13 +41,66 @@ import readline, { createInterface } from 'readline'
 import NodeCache from 'node-cache'
 const {CONNECTING} = ws
 const {chain} = lodash
-const PORT = process.env.PORT || process.env.SERVER_PORT || 3000
 
-//const yuw = dirname(fileURLToPath(import.meta.url))
-//let require = createRequire(megu)
+// Archivo para guardar la configuración del puerto
+const configFile = './src/config/port.json'
+
+// Función para crear logs decorados
+global.decoratedLog = (title, message, type = 'info') => {
+    const colors = {
+        info: chalk.cyan,
+        success: chalk.green,
+        warning: chalk.yellow,
+        error: chalk.red,
+        magic: chalk.magenta
+    }
+    
+    const color = colors[type] || colors.info
+    
+    console.log(color(`
+╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <𝟹 ✦ 」
+│
+├─ ${message}
+│
+╰─✦`))
+}
+
+// Función para cargar o crear configuración de puerto
+function loadPortConfig() {
+    try {
+        if (existsSync(configFile)) {
+            const config = JSON.parse(readFileSync(configFile, 'utf8'))
+            return config.port || null
+        }
+    } catch (error) {
+        global.decoratedLog('CONFIG', 'Error al leer configuración de puerto, creando nueva...', 'warning')
+    }
+    return null
+}
+
+// Función para guardar configuración de puerto
+function savePortConfig(port) {
+    try {
+        const configDir = './src/config'
+        if (!existsSync(configDir)) {
+            mkdirSync(configDir, { recursive: true })
+        }
+        writeFileSync(configFile, JSON.stringify({ port: parseInt(port) }, null, 2))
+        global.decoratedLog('CONFIG', `Puerto ${port} guardado exitosamente`, 'success')
+    } catch (error) {
+        global.decoratedLog('CONFIG', 'Error al guardar configuración de puerto', 'error')
+    }
+}
+
+// Cargar puerto guardado o preguntar por uno nuevo
+let savedPort = loadPortConfig()
+let PORT = savedPort || process.env.PORT || process.env.SERVER_PORT
+
+const __dirname = global.__dirname(import.meta.url)
+
 let { say } = cfonts
 
-console.log(chalk.bold.redBright(`\n♥ Iniciando MaycolAIUltraMD ★\n`))
+console.log(chalk.bold.redBright(`\n♥ Iniciando MaycolAIUltraMD ☆\n`))
 
 say(global.namebotttt, {
     font: 'block',
@@ -71,11 +129,8 @@ global.API = (name, path = '/', query = {}, apikeyqueryname) => (name in global.
 
 global.timestamp = {start: new Date}
 
-const __dirname = global.__dirname(import.meta.url)
-
 global.opts = new Object(yargs(process.argv.slice(2)).exitProcess(false).parse())
 global.prefix = new RegExp('^[#/!.]')
-// global.opts['db'] = process.env['db']
 
 global.db = new Low(/https?:\/\//.test(opts['db'] || '') ? new cloudDBAdapter(opts['db']) : new JSONFile('./src/database/database.json'))
 
@@ -120,14 +175,109 @@ const opcionTexto = chalk.bold.cyan
 const rl = readline.createInterface({ input: process.stdin, output: process.stdout })
 const carpeta = path.join('./tmp')
 
+// Crear carpeta tmp si no existe
 if (!fs.existsSync(carpeta)) {
     fs.mkdirSync(carpeta, { recursive: true })
-    console.log('✔ Carpeta tmp creada con éxito UwU')
+    global.decoratedLog('SISTEMA', 'Carpeta tmp creada exitosamente', 'success')
 } else {
-    console.log('✔ La carpeta tmp ya existe, todo bien (⁠｡⁠･⁠ω⁠･⁠｡⁠)⁠ﾉ⁠♡')
+    global.decoratedLog('SISTEMA', 'Carpeta tmp verificada correctamente', 'info')
 }
 
 const question = (texto) => new Promise((resolver) => rl.question(texto, resolver))
+
+// Preguntar por el puerto si no está guardado
+if (!savedPort) {
+    let validPort = false
+    do {
+        try {
+            PORT = await question(chalk.bgBlue.white('🌐 Configuración del Servidor:\n') + 
+                               chalk.bold.cyan('Ingresa el puerto para el servidor web (ej: 3000): '))
+            
+            const portNum = parseInt(PORT)
+            if (portNum && portNum > 0 && portNum <= 65535) {
+                validPort = true
+                savePortConfig(PORT)
+                global.decoratedLog('SERVIDOR', `Puerto ${PORT} configurado correctamente`, 'success')
+            } else {
+                console.log(chalk.bold.red('❌ Puerto inválido. Debe ser un número entre 1 y 65535'))
+            }
+        } catch (error) {
+            console.log(chalk.bold.red('❌ Error al procesar el puerto'))
+        }
+    } while (!validPort)
+} else {
+    global.decoratedLog('SERVIDOR', `Usando puerto guardado: ${PORT}`, 'info')
+}
+
+// Inicializar servidor Express
+const app = express()
+const server = Server(app)
+
+// Variables globales para estadísticas
+global.botStats = {
+    startTime: new Date(),
+    messagesProcessed: 0,
+    connections: 0,
+    uptime: 0
+}
+
+// Middleware
+app.use(express.json())
+app.use(express.static('./src/public'))
+
+// Endpoint principal
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'src/public/index.html'))
+})
+
+// Endpoint de estado del bot
+app.get('/api/status', (req, res) => {
+    const uptime = Date.now() - global.botStats.startTime.getTime()
+    const uptimeHours = Math.floor(uptime / (1000 * 60 * 60))
+    const uptimeMinutes = Math.floor((uptime % (1000 * 60 * 60)) / (1000 * 60))
+    
+    const systemInfo = {
+        platform: os.platform(),
+        arch: os.arch(),
+        nodeVersion: process.version,
+        totalMemory: (os.totalmem() / 1024 / 1024 / 1024).toFixed(2) + ' GB',
+        freeMemory: (os.freemem() / 1024 / 1024 / 1024).toFixed(2) + ' GB',
+        cpus: os.cpus().length,
+        loadAverage: os.loadavg()
+    }
+    
+    const botInfo = {
+        status: global.conn?.user ? 'conectado' : 'desconectado',
+        user: global.conn?.user || null,
+        uptime: `${uptimeHours}h ${uptimeMinutes}m`,
+        startTime: global.botStats.startTime,
+        messagesProcessed: global.botStats.messagesProcessed,
+        connections: global.botStats.connections,
+        database: {
+            users: Object.keys(global.db?.data?.users || {}).length,
+            chats: Object.keys(global.db?.data?.chats || {}).length,
+            messages: Object.keys(global.db?.data?.msgs || {}).length
+        }
+    }
+    
+    res.json({
+        success: true,
+        timestamp: new Date(),
+        system: systemInfo,
+        bot: botInfo,
+        server: {
+            port: PORT,
+            environment: process.env.NODE_ENV || 'development'
+        }
+    })
+})
+
+// Iniciar servidor
+server.listen(PORT, () => {
+    global.decoratedLog('SERVIDOR', `Servidor web iniciado en puerto ${PORT}`, 'success')
+    global.decoratedLog('SERVIDOR', `Panel disponible en: http://localhost:${PORT}`, 'info')
+    global.decoratedLog('SERVIDOR', `API Status: http://localhost:${PORT}/api/status`, 'info')
+})
 
 let opcion
 if (methodCodeQR) {
@@ -138,10 +288,11 @@ do {
 opcion = await question(colores('⌨ Seleccione una opción:\n') + opcionQR('1. Con código QR\n') + opcionTexto('2. Con código de texto de 8 dígitos\n--> '))
 
 if (!/^[1-2]$/.test(opcion)) {
-console.log(chalk.bold.redBright(`✦ No se permiten numeros que no sean 1 o 2, tampoco letras o símbolos especiales.`))
+global.decoratedLog('INPUT', 'Solo se permiten números 1 o 2', 'warning')
 }} while (opcion !== '1' && opcion !== '2' || fs.existsSync(`./${sessions}/creds.json`))
 } 
 
+// Silenciar logs innecesarios
 console.info = () => {} 
 console.debug = () => {} 
 
@@ -178,7 +329,7 @@ if (!!phoneNumber) {
 addNumber = phoneNumber.replace(/[^0-9]/g, '')
 } else {
 do {
-phoneNumber = await question(chalk.bgBlack(chalk.bold.greenBright(`✦ Por favor, Ingrese el número de WhatsApp.\n${chalk.bold.yellowBright(`✏  Ejemplo: 57321×××××××`)}\n${chalk.bold.magentaBright('---> ')}`)))
+phoneNumber = await question(chalk.bgBlack(chalk.bold.greenBright(`✦ Por favor, Ingrese el número de WhatsApp.\n${chalk.bold.yellowBright(`✠ Ejemplo: 57321×××××××`)}\n${chalk.bold.magentaBright('---> ')}`)))
 phoneNumber = phoneNumber.replace(/\D/g,'')
 if (!phoneNumber.startsWith('+')) {
 phoneNumber = `+${phoneNumber}`
@@ -189,14 +340,13 @@ addNumber = phoneNumber.replace(/\D/g, '')
 setTimeout(async () => {
 let codeBot = await conn.requestPairingCode(addNumber)
 codeBot = codeBot?.match(/.{1,4}/g)?.join("-") || codeBot
-console.log(chalk.bold.white(chalk.bgMagenta(`✧ CÓDIGO DE VINCULACIÓN ✧`)), chalk.bold.white(chalk.white(codeBot)))
+global.decoratedLog('CONEXIÓN', `Código de vinculación: ${codeBot}`, 'magic')
 }, 3000)
 }}}
 }
 
 conn.isInit = false;
 conn.well = false;
-//conn.logger.info(`✦  H E C H O\n`)
 
 if (!opts['test']) {
 if (global.db) setInterval(async () => {
@@ -204,8 +354,6 @@ if (global.db.data) await global.db.write()
 if (opts['autocleartmp'] && (global.support || {}).find) (tmp = [os.tmpdir(), 'tmp', `${jadi}`], tmp.forEach((filename) => cp.spawn('find', [filename, '-amin', '3', '-type', 'f', '-delete'])));
 }, 30 * 1000);
 }
-
-// if (opts['server']) (await import('./server.js')).default(global.conn, PORT);
 
 async function connectionUpdate(update) {
 const {connection, lastDisconnect, isNewLogin} = update;
@@ -219,37 +367,42 @@ global.timestamp.connect = new Date;
 if (global.db.data == null) loadDatabase();
 if (update.qr != 0 && update.qr != undefined || methodCodeQR) {
 if (opcion == '1' || methodCodeQR) {
-console.log(chalk.bold.yellow(`\n❐ ESCANEA EL CÓDIGO QR EXPIRA EN 45 SEGUNDOS`))}
+global.decoratedLog('QR', 'Escanea el código QR (expira en 45 segundos)', 'warning')
+}
 }
 if (connection == 'open') {
-console.log(chalk.bold.green('\n❀ YukiBot-MD Conectada con éxito ❀'))
+global.decoratedLog('CONEXIÓN', 'YukiBot-MD conectado exitosamente', 'success')
+global.botStats.connections++
 }
 let reason = new Boom(lastDisconnect?.error)?.output?.statusCode
 if (connection === 'close') {
 if (reason === DisconnectReason.badSession) {
-console.log(chalk.bold.cyanBright(`\n⚠︎ SIN CONEXIÓN, BORRE LA CARPETA ${global.sessions} Y ESCANEA EL CÓDIGO QR ⚠︎`))
+global.decoratedLog('ERROR', `Sin conexión, elimina la carpeta ${global.sessions} y escanea el código QR`, 'error')
 } else if (reason === DisconnectReason.connectionClosed) {
-console.log(chalk.bold.magentaBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ☹\n┆ ⚠︎ CONEXION CERRADA, RECONECTANDO....\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ☹`))
+global.decoratedLog('CONEXIÓN', 'Conexión cerrada, reconectando...', 'warning')
 await global.reloadHandler(true).catch(console.error)
 } else if (reason === DisconnectReason.connectionLost) {
-console.log(chalk.bold.blueBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ☂\n┆ ⚠︎ CONEXIÓN PERDIDA CON EL SERVIDOR, RECONECTANDO....\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ☂`))
+global.decoratedLog('CONEXIÓN', 'Conexión perdida con el servidor, reconectando...', 'warning')
 await global.reloadHandler(true).catch(console.error)
 } else if (reason === DisconnectReason.connectionReplaced) {
-console.log(chalk.bold.yellowBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ✗\n┆ ⚠︎ CONEXIÓN REEMPLAZADA, SE HA ABIERTO OTRA NUEVA SESION, POR FAVOR, CIERRA LA SESIÓN ACTUAL PRIMERO.\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ✗`))
+global.decoratedLog('CONEXIÓN', 'Conexión reemplazada, cierra la sesión actual primero', 'error')
 } else if (reason === DisconnectReason.loggedOut) {
-console.log(chalk.bold.redBright(`\n⚠︎ SIN CONEXIÓN, BORRE LA CARPETA ${global.sessions} Y ESCANEA EL CÓDIGO QR ⚠︎`))
+global.decoratedLog('ERROR', `Sin conexión, elimina la carpeta ${global.sessions} y escanea el código QR`, 'error')
 await global.reloadHandler(true).catch(console.error)
 } else if (reason === DisconnectReason.restartRequired) {
-console.log(chalk.bold.cyanBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ✓\n┆ ✧ CONECTANDO AL SERVIDOR...\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ✓`))
+global.decoratedLog('SISTEMA', 'Conectando al servidor...', 'info')
 await global.reloadHandler(true).catch(console.error)
 } else if (reason === DisconnectReason.timedOut) {
-console.log(chalk.bold.yellowBright(`\n╭┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ▸\n┆ ⧖ TIEMPO DE CONEXIÓN AGOTADO, RECONECTANDO....\n╰┄┄┄┄┄┄┄┄┄┄┄┄┄┄ • • • ┄┄┄┄┄┄┄┄┄┄┄┄┄┄ ▸`))
-await global.reloadHandler(true).catch(console.error) //process.send('reset')
+global.decoratedLog('CONEXIÓN', 'Tiempo de conexión agotado, reconectando...', 'warning')
+await global.reloadHandler(true).catch(console.error)
 } else {
-console.log(chalk.bold.redBright(`\n⚠︎！ RAZON DE DESCONEXIÓN DESCONOCIDA: ${reason || 'No encontrado'} >> ${connection || 'No encontrado'}`))
+global.decoratedLog('ERROR', `Razón de desconexión desconocida: ${reason || 'No encontrado'} >> ${connection || 'No encontrado'}`, 'error')
 }}
 }
-process.on('uncaughtException', console.error)
+
+process.on('uncaughtException', (error) => {
+global.decoratedLog('ERROR', `Error no capturado: ${error.message}`, 'error')
+})
 
 let isInit = true;
 let handler = await import('./handler.js')
@@ -301,16 +454,14 @@ isInit = false
 return true
 };
 
-//Arranque nativo para subbots by - ReyEndymion >> https://github.com/ReyEndymion
-
 global.rutaJadiBot = join(__dirname, global.jadi)
 
 if (global.yukiJadibts) {
 if (!existsSync(global.rutaJadiBot)) {
 mkdirSync(global.rutaJadiBot, { recursive: true }) 
-console.log(chalk.bold.cyan(`La carpeta: ${jadi} se creó correctamente.`))
+global.decoratedLog('JADIBOTS', `Carpeta ${jadi} creada correctamente`, 'success')
 } else {
-console.log(chalk.bold.cyan(`La carpeta: ${jadi} ya está creada.`)) 
+global.decoratedLog('JADIBOTS', `Carpeta ${jadi} ya existe`, 'info')
 }
 
 const readRutaJadiBot = readdirSync(rutaJadiBot)
@@ -336,7 +487,7 @@ const file = global.__filename(join(pluginFolder, filename))
 const module = await import(file)
 global.plugins[filename] = module.default || module
 } catch (e) {
-conn.logger.error(e)
+global.decoratedLog('PLUGINS', `Error cargando plugin ${filename}: ${e.message}`, 'error')
 delete global.plugins[filename]
 }}}
 filesInit().then((_) => Object.keys(global.plugins)).catch(console.error);
@@ -345,22 +496,22 @@ global.reload = async (_ev, filename) => {
 if (pluginFilter(filename)) {
 const dir = global.__filename(join(pluginFolder, filename), true);
 if (filename in global.plugins) {
-if (existsSync(dir)) conn.logger.info(` updated plugin - '${filename}'`)
+if (existsSync(dir)) global.decoratedLog('PLUGINS', `Plugin actualizado: ${filename}`, 'info')
 else {
-conn.logger.warn(`deleted plugin - '${filename}'`)
+global.decoratedLog('PLUGINS', `Plugin eliminado: ${filename}`, 'warning')
 return delete global.plugins[filename]
-}} else conn.logger.info(`new plugin - '${filename}'`);
+}} else global.decoratedLog('PLUGINS', `Nuevo plugin: ${filename}`, 'success');
 const err = syntaxerror(readFileSync(dir), filename, {
 sourceType: 'module',
 allowAwaitOutsideFunction: true,
 });
-if (err) conn.logger.error(`syntax error while loading '${filename}'\n${format(err)}`)
+if (err) global.decoratedLog('PLUGINS', `Error de sintaxis en ${filename}: ${format(err)}`, 'error')
 else {
 try {
 const module = (await import(`${global.__filename(dir)}?update=${Date.now()}`));
 global.plugins[filename] = module.default || module;
 } catch (e) {
-conn.logger.error(`error require plugin '${filename}\n${format(e)}'`)
+global.decoratedLog('PLUGINS', `Error requiriendo plugin ${filename}: ${format(e)}`, 'error')
 } finally {
 global.plugins = Object.fromEntries(Object.entries(global.plugins).sort(([a], [b]) => a.localeCompare(b)))
 }}
@@ -368,6 +519,7 @@ global.plugins = Object.fromEntries(Object.entries(global.plugins).sort(([a], [b
 Object.freeze(global.reload)
 watch(pluginFolder, global.reload)
 await global.reloadHandler()
+
 async function _quickTest() {
 const test = await Promise.all([
 spawn('ffmpeg'),
@@ -429,11 +581,11 @@ unlinkSync(`./${jadi}/${directorio}/${fileInDir}`)
 }})
 }})
 if (SBprekey.length === 0) {
-console.log(chalk.bold.green(`\n╭» ❍ ${jadi} ❍\n│→ NADA POR ELIMINAR \n╰― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ⌫ ♻︎`))
+global.decoratedLog('LIMPIEZA', `${jadi} - Nada por eliminar`, 'info')
 } else {
-console.log(chalk.bold.cyanBright(`\n╭» ❍ ${jadi} ❍\n│→ ARCHIVOS NO ESENCIALES ELIMINADOS\n╰― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ⌫ ♻︎︎`))
+global.decoratedLog('LIMPIEZA', `${jadi} - Archivos no esenciales eliminados`, 'success')
 }} catch (err) {
-console.log(chalk.bold.red(`\n╭» ❍ ${jadi} ❍\n│→ OCURRIÓ UN ERROR\n╰― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ⌫ ♻\n` + err))
+global.decoratedLog('LIMPIEZA', `Error en ${jadi}: ${err}`, 'error')
 }}
 
 function purgeOldFiles() {
@@ -446,9 +598,9 @@ if (file !== 'creds.json') {
 const filePath = path.join(dir, file);
 unlinkSync(filePath, err => {
 if (err) {
-console.log(chalk.bold.red(`\n╭» ❍ ARCHIVO ❍\n│→ ${file} NO SE LOGRÓ BORRAR\n╰― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ⌫ ✘\n` + err))
+global.decoratedLog('LIMPIEZA', `${file} no se logró borrar`, 'error')
 } else {
-console.log(chalk.bold.green(`\n╭» ❍ ARCHIVO ❍\n│→ ${file} BORRADO CON ÉXITO\n╰― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ⌫ ♻`))
+global.decoratedLog('LIMPIEZA', `${file} borrado con éxito`, 'success')
 } }) }
 }) }) }) }
 
@@ -462,26 +614,31 @@ arguments[0] = ""
 originalConsoleMethod.apply(console, arguments)
 }}
 
+// Intervalos de limpieza con logs mejorados
 setInterval(async () => {
 if (stopped === 'close' || !conn || !conn.user) return
 await clearTmp()
-console.log(chalk.bold.cyanBright(`\n╭» ❍ MULTIMEDIA ❍\n│→ ARCHIVOS DE LA CARPETA TMP ELIMINADAS\n╰― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ⌫ ♻`))}, 1000 * 60 * 4) // 4 min 
+global.decoratedLog('LIMPIEZA', 'Archivos temporales eliminados', 'info')
+}, 1000 * 60 * 4) // 4 min 
 
 setInterval(async () => {
 if (stopped === 'close' || !conn || !conn.user) return
 await purgeSession()
-console.log(chalk.bold.cyanBright(`\n╭» ❍ ${global.sessions} ❍\n│→ SESIONES NO ESENCIALES ELIMINADAS\n╰― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ⌫ ♻`))}, 1000 * 60 * 10) // 10 min
+global.decoratedLog('LIMPIEZA', `Sesiones no esenciales de ${global.sessions} eliminadas`, 'info')
+}, 1000 * 60 * 10) // 10 min
 
 setInterval(async () => {
 if (stopped === 'close' || !conn || !conn.user) return
-await purgeSessionSB()}, 1000 * 60 * 10) 
+await purgeSessionSB()
+}, 1000 * 60 * 10) 
 
 setInterval(async () => {
 if (stopped === 'close' || !conn || !conn.user) return
 await purgeOldFiles()
-console.log(chalk.bold.cyanBright(`\n╭» ❍ ARCHIVOS ❍\n│→ ARCHIVOS RESIDUALES ELIMINADAS\n╰― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ― ⌫ ♻`))}, 1000 * 60 * 10)
+global.decoratedLog('LIMPIEZA', 'Archivos residuales eliminados', 'info')
+}, 1000 * 60 * 10)
 
-_quickTest().then(() => conn.logger.info(chalk.bold(`✦  H E C H O\n`.trim()))).catch(console.error)
+_quickTest().then(() => global.decoratedLog('SISTEMA', 'Inicialización completada exitosamente', 'success')).catch(console.error)
 
 async function isValidPhoneNumber(number) {
 try {
