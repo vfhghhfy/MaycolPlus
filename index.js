@@ -363,9 +363,7 @@ const setupServer = () => {
         })
     })
     
-    server.listen(PORT, () => {
-        global.decoratedLog('SERVIDOR', `Servidor iniciado en puerto ${PORT}`, 'success')
-    })
+    server.listen(PORT)
     
     return { app, server }
 }
@@ -522,7 +520,6 @@ const loadPluginsOptimized = async () => {
     const results = await Promise.allSettled(loadPromises)
     const successful = results.filter(r => r.status === 'fulfilled' && r.value).length
     
-    global.decoratedLog('PLUGINS', `${successful}/${pluginFiles.length} plugins cargados`, 'success')
 }
 
 // Sistema de limpieza optimizado
@@ -611,7 +608,7 @@ const initializeOptimizedBot = async () => {
             global.decoratedLog('ERROR', `Promesa rechazada: ${reason}`, 'error')
         })
         
-        global.decoratedLog('SISTEMA', 'Bot optimizado iniciado exitosamente', 'success')
+        global.decoratedLog('SISTEMA', 'MaycolAIUltraMD iniciado exitosamente', 'success')
         
     } catch (error) {
         global.decoratedLog('ERROR', `Error crítico en inicialización: ${error.message}`, 'error')
