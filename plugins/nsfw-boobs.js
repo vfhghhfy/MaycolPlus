@@ -4,6 +4,7 @@ import fetch from "node-fetch";
   if (!db.data.chats[m.chat].nsfw && m.isGroup) {
     return m.reply(`《✦》El contenido *NSFW* está desactivado en este grupo.\n> Un administrador puede activarlo con el comando » *#nsfw on*`);
   }
+    
   try {
     // Hacemos la petición a la API de gatos
     let res = await fetch("https://delirius-apiofc.vercel.app/nsfw/boobs");
