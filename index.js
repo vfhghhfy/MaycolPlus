@@ -125,7 +125,6 @@ return path.dirname(global.__filename(pathURL, true))
 return createRequire(dir)
 }
 
-const __dirname = global.__dirname(import.meta.url)
 let PORT = savedPort || process.env.PORT || process.env.SERVER_PORT
 
 global.API = (name, path = '/', query = {}, apikeyqueryname) => (name in global.APIs ? global.APIs[name] : name) + path + (query || apikeyqueryname ? '?' + new URLSearchParams(Object.entries({...query, ...(apikeyqueryname ? {[apikeyqueryname]: global.APIKeys[name in global.APIs ? global.APIs[name] : name]} : {})})) : '');
