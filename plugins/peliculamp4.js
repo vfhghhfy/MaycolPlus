@@ -5,7 +5,7 @@ const handler = async (m, { text, conn }) => {
 ✘ 「 𝑻𝑰́𝑻𝑼𝑳𝑶 𝑭𝑨𝑳𝑻𝑨𝑵𝑻𝑬 」
 ➤ Usa: *peliculamp4 <título>*`, m);
 
-  const apiUrl = `https://nightapioficial.onrender.com/api/movies/info?title=${encodeURIComponent(text)}`;
+  const apiUrl = `https://nightapi.is-a.dev/api/movies/info?title=${encodeURIComponent(text)}`;
 
   await conn.reply(m.chat, `
 ╭──〔 ✦ 𝑯𝑨𝑵𝑨𝑲𝑶-𝑲𝑼𝑵 𝑬𝑺𝑻𝑨́ 𝑬𝑿𝑷𝑳𝑶𝑹𝑨𝑵𝑫𝑶... ✦ 〕──╮
