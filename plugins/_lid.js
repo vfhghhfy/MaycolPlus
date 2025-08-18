@@ -16,7 +16,6 @@ const handler = async (msg, { conn }) => {
   const tipo = esLID ? 'LID oculto (@lid)' : 'Número visible (@s.whatsapp.net)'
   const numero = objetivo.replace(/[^0-9]/g, '')
 
-  // Mensaje con vibes de "You Are An Idiot ☻"
   const mensaje = `
 [☻] JAJA atrapado...  
 *Identificador:* ${objetivo}  
