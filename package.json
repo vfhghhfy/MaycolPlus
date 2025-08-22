@@ -35,7 +35,7 @@
     "@bochilteam/scraper": "^4.2.4",
     "@bochilteam/scraper-sosmed": "^1.0.5",
     "@ibaraki-douji/pixivts": "^2.4.1",
-    "@soymaycol/maybailyes": "github:nstar-y/bail",
+    "@soymaycol/maybailyes": "github:Ado-rgb/AdonixBaileys",
     "@soymaycol/mayhtml": "^1.0.0",
     "@soymaycol/maytube": "^2.0.1",
     "@vitalets/google-translate-api": "^8.0.0",
