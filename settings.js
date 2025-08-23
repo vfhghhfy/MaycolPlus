@@ -14,7 +14,7 @@ import axios from 'axios'
 import moment from 'moment-timezone'
 
 // ╭── ✦ Número de Bot ✦ ──⊷
-global.botNumber = '' // Ejemplo: 51921826291
+global.botNumber = process.env.BOT_NUMBER || '' // Ejemplo: 51921826291
 
 // ╭── ✦ Propietario y Staff ✦ ──⊷
 global.owner = ['51921826291', '180650938249287']
