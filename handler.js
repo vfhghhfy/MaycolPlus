@@ -5,6 +5,7 @@ import path, { join } from 'path'
 import { unwatchFile, watchFile } from 'fs'
 import chalk from 'chalk'
 import fetch from 'node-fetch'
+import './settings.js'
 
 const { proto } = (await import('@soymaycol/maybailyes')).default
 const isNumber = x => typeof x === 'number' && !isNaN(x)
@@ -18,7 +19,7 @@ this.msgqueque = this.msgqueque || []
 this.uptime = this.uptime || Date.now()
 if (!chatUpdate)
 return
-this.pushMessage(chatUpdate.messages).catch(console.error)
+    this.pushMessage(chatUpdate.messages).catch(console.error)
 let m = chatUpdate.messages[chatUpdate.messages.length - 1]
 if (!m)
 return;
@@ -32,7 +33,8 @@ m.exp = 0
 m.coin = false
 try {
 let user = global.db.data.users[m.sender]
-if (typeof user !== 'object')  
+if (typeof user !== 'object')
+  
 global.db.data.users[m.sender] = {}
 if (user) {
 if (!isNumber(user.exp))
@@ -108,7 +110,7 @@ user.bank = 0
 if (!isNumber(user.warn))
 user.warn = 0
 } else
-global.db.data.users[m.sender] = {
+                global.db.data.users[m.sender] = {
 exp: 0,
 coin: 10,
 joincount: 1,
@@ -146,10 +148,6 @@ premiumTime: 0,
 let chat = global.db.data.chats[m.chat]
 if (typeof chat !== 'object')
 global.db.data.chats[m.chat] = {}
-// 🔹 Filtro de bot primario
-const chatData = global.db.data.chats[m.chat] || {}
-const primaryBot = chatData.primaryBot
-if (primaryBot && primaryBot !== this.user.jid && m.sender !== this.user.jid) return
 if (chat) {
 if (!('isBanned' in chat))
 chat.isBanned = false
@@ -173,7 +171,7 @@ if (!('antiBot' in chat))
 chat.antiBot = false
 if (!('antiBot2' in chat))
 chat.antiBot2 = false
-if (!('modoadmin' in chat))
+if (!('modoadmin' in chat))                     
 chat.modoadmin = false   
 if (!('antiLink' in chat))
 chat.antiLink = true
@@ -187,6 +185,10 @@ if (!('delete' in chat))
 chat.delete = false
 if (!isNumber(chat.expired))
 chat.expired = 0
+if (!('antiLag' in chat))
+chat.antiLag = false
+if (!('per' in chat))
+chat.per = []
 } else
 global.db.data.chats[m.chat] = {
 isBanned: false,
@@ -228,22 +230,43 @@ status: 0
 } catch (e) {
 console.error(e)
 }
-
-let _user = global.db.data && global.db.data.users && global.db.data.users[m.sender]
-
-const detectwhat = m.sender.includes('@lid') ? '@lid' : '@s.whatsapp.net';
-const isROwner = [...global.owner.map(([number]) => number)].map(v => v.replace(/[^0-9]/g, '') + detectwhat).includes(m.sender)
-const isOwner = isROwner || m.fromMe
-const isMods = isROwner || global.mods.map(v => v.replace(/[^0-9]/g, '') + detectwhat).includes(m.sender)
-const isPrems = isROwner || global.prems.map(v => v.replace(/[^0-9]/g, '') + detectwhat).includes(m.sender) || _user.premium == true
-
-if (m.isBaileys) return
+const mainBot = global.conn.user.jid
+const chat = global.db.data.chats[m.chat] || {}
+const isSubbs = chat.antiLag === true
+const allowedBots = chat.per || []
+if (!allowedBots.includes(mainBot)) allowedBots.push(mainBot)
+const isAllowed = allowedBots.includes(this.user.jid)
+if (isSubbs && !isAllowed) 
+return
+    
 if (opts['nyimak'])  return
-if (!isROwner && opts['self']) return
+if (!m.fromMe && opts['self'])  return
 if (opts['swonly'] && m.chat !== 'status@broadcast')  return
 if (typeof m.text !== 'string')
 m.text = ''
 
+let _user = global.db.data && global.db.data.users && global.db.data.users[m.sender]
+
+function formatJid(number) {
+  // Sacamos solo los dígitos
+  const digits = number.replace(/[^0-9]/g, '');
+
+  // Si tiene más de 15 dígitos o si el original tiene caracteres raros (no dígitos)
+  // ponemos '@lid', si no '@s.whatsapp.net'
+  const hasRarities = /[^0-9]/.test(number); // hay algo raro
+  if (digits.length > 15 || hasRarities) {
+    return digits + '@lid';
+  } else {
+    return digits + '@s.whatsapp.net';
+  }
+}
+
+// Ahora usamos la función para construir tus arrays:
+const isROwner = [conn.decodeJid(global.conn.user.id), ...global.owner.map(([num]) => formatJid(num))].includes(m.sender);
+const isOwner = isROwner || m.fromMe;
+const isMods = isOwner || global.mods.map(v => formatJid(v)).includes(m.sender);
+const isPrems = isROwner || global.prems.map(v => formatJid(v)).includes(m.sender) || _user.premium == true;
+    
 if (opts['queque'] && m.text && !(isMods || isPrems)) {
 let queque = this.msgqueque, time = 1000 * 5
 const previousID = queque[queque.length - 1]
@@ -254,27 +277,22 @@ await delay(time)
 }, time)
 }
 
+if (m.isBaileys) {
+return
+}
 m.exp += Math.ceil(Math.random() * 10)
 
 let usedPrefix
 
-async function getLidFromJid(id, conn) {
-if (id.endsWith('@lid')) return id
-const res = await conn.onWhatsApp(id).catch(() => [])
-return res[0]?.lid || id
-}
-const senderLid = await getLidFromJid(m.sender, conn)
-const botLid = await getLidFromJid(conn.user.jid, conn)
-const senderJid = m.sender
-const botJid = conn.user.jid
-const groupMetadata = m.isGroup ? ((conn.chats[m.chat] || {}).metadata || await this.groupMetadata(m.chat).catch(_ => null)) : {}
-const participants = m.isGroup ? (groupMetadata.participants || []) : []
-const user = participants.find(p => p.id === senderLid || p.jid === senderJid) || {}
-const bot = participants.find(p => p.id === botLid || p.id === botJid) || {}
-const isRAdmin = user?.admin === "superadmin"
-const isAdmin = isRAdmin || user?.admin === "admin"
-const isBotAdmin = !!bot?.admin
-
+const groupMetadata = (m.isGroup ? ((conn.chats[m.chat] || {}).metadata || await this.groupMetadata(m.chat).catch(_ => null)) : {}) || {}
+const participants = (m.isGroup ? groupMetadata.participants : []) || []
+const user = (m.isGroup ? participants.find(u => conn.decodeJid(u.id) === m.sender) : {}) || {}
+const bot = (m.isGroup ? participants.find(u => conn.decodeJid(u.id) == this.user.jid) : {}) || {}
+const channel = m.key.remoteJid?.endsWith('@newsletter') || false
+const isRAdmin = user?.admin == 'superadmin' || false
+const isAdmin = isRAdmin || user?.admin == 'admin' || false
+const isBotAdmin = bot?.admin || false
+    
 const ___dirname = path.join(path.dirname(fileURLToPath(import.meta.url)), './plugins')
 for (let name in global.plugins) {
 let plugin = global.plugins[name]
@@ -323,6 +341,7 @@ bot,
 isROwner,
 isOwner,
 isRAdmin,
+channel,
 isAdmin,
 isBotAdmin,
 isPrems,
@@ -343,10 +362,10 @@ let text = _args.join` `
 command = (command || '').toLowerCase()
 let fail = plugin.fail || global.dfail
 let isAccept = plugin.command instanceof RegExp ? 
-plugin.command.test(command) :
-Array.isArray(plugin.command) ?
-plugin.command.some(cmd => cmd instanceof RegExp ? 
-cmd.test(command) :
+                    plugin.command.test(command) :
+                    Array.isArray(plugin.command) ?
+                        plugin.command.some(cmd => cmd instanceof RegExp ? 
+                            cmd.test(command) :
 cmd === command) :
 typeof plugin.command === 'string' ? 
 plugin.command === command :
@@ -359,16 +378,27 @@ if ((m.id.startsWith('NJX-') || (m.id.startsWith('BAE5') && m.id.length === 16) 
 if (!isAccept) {
 continue
 }
+if (plugin.mantenimiento && !isROwner) {
+    m.reply(`╭─❍「 ✦ ${global.apodo} ✦ 」\n│\n├─ El hechizo *${usedPrefix}${command}* está en *mantenimiento*.\n│\n├─ Vuelve a intentarlo más tarde~\n╰─✦`)
+    continue
+}
 m.plugin = name
 if (m.chat in global.db.data.chats || m.sender in global.db.data.users) {
 let chat = global.db.data.chats[m.chat]
 let user = global.db.data.users[m.sender]
 if (!['grupo-unbanchat.js'].includes(name) && chat && chat.isBanned && !isROwner) return
-if (name != 'grupo-unbanchat.js' && name != 'owner-exec.js' && name != 'owner-exec2.js' && name != 'grupo-delete.js' && chat?.isBanned && !isROwner) return
+if (name != 'grupo-unbanchat.js' && name != 'owner-exec.js' && name != 'owner-exec2.js' && name != 'grupo-delete.js' && chat?.isBanned && !isROwner) return 
+if (user.antispam > 2) return
 if (m.text && user.banned && !isROwner) {
 m.reply(`《✦》Estas baneado/a, no puedes usar comandos en este bot!\n\n${user.bannedReason ? `✰ *Motivo:* ${user.bannedReason}` : '✰ *Motivo:* Sin Especificar'}\n\n> ✧ Si este Bot es cuenta oficial y tiene evidencia que respalde que este mensaje es un error, puedes exponer tu caso con un moderador.`)
+user.antispam++
 return
 }
+
+if (user.antispam2 && isROwner) return
+let time = global.db.data.users[m.sender].spam + 3000
+if (new Date - global.db.data.users[m.sender].spam < 3000) return console.log(`[ SPAM ]`) 
+global.db.data.users[m.sender].spam = new Date * 1
 
 if (m.chat in global.db.data.chats || m.sender in global.db.data.users) {
 let chat = global.db.data.chats[m.chat]
@@ -379,7 +409,6 @@ return
 if (name != 'owner-unbanuser.js' && user?.banned)
 return
 }}
-
 let hl = _prefix 
 let adminMode = global.db.data.chats[m.chat].modoadmin
 let mini = `${plugins.botAdmin || plugins.admin || plugins.group || plugins || noPrefix || hl ||  m.text.slice(0, 1) == hl || plugins.command}`
@@ -414,6 +443,10 @@ continue
 fail('admin', m, this)
 continue
 }
+if (plugin.channel && !channel) {
+fail('channel', m, this)
+continue
+}
 if (plugin.private && m.isGroup) {
 fail('private', m, this)
 continue
@@ -423,14 +456,17 @@ fail('unreg', m, this)
 continue
 }
 m.isCommand = true
-let xp = 'exp' in plugin ? parseInt(plugin.exp) : 10
+let xp = 'exp' in plugin ? parseInt(plugin.exp) : 17 
+if (xp > 200)
+m.reply('chirrido -_-')
+else
 m.exp += xp
 if (!isPrems && plugin.coin && global.db.data.users[m.sender].coin < plugin.coin * 1) {
 conn.reply(m.chat, `❮✦❯ Se agotaron tus ${moneda}`, m)
 continue
 }
 if (plugin.level > _user.level) {
-conn.reply(m.chat, `❮✦❯ Se requiere el nivel: *${plugin.level}*\n\n• Tu nivel actual es: *${_user.level}*\n\n• Usa este comando para subir de nivel:\n*${usedPrefix}levelup*`, m)
+conn.reply(m.chat, `❮✦❯ Se requiere el nivel: *${plugin.level}*\n\n• Tu nivel actual es: *${_user.level}*\n\n• Usa este comando para subir de nivel:\n*${usedPrefix}levelup*`, m)       
 continue
 }
 let extra = {
@@ -445,6 +481,7 @@ conn: this,
 participants,
 groupMetadata,
 user,
+channel,
 bot,
 isROwner,
 isOwner,
@@ -487,7 +524,7 @@ console.error(e)
 if (opts['queque'] && m.text) {
 const quequeIndex = this.msgqueque.indexOf(m.id || m.key.id)
 if (quequeIndex !== -1)
-this.msgqueque.splice(quequeIndex, 1)
+                this.msgqueque.splice(quequeIndex, 1)
 }
 let user, stats = global.db.data.stats
 if (m) { let utente = global.db.data.users[m.sender]
@@ -549,67 +586,76 @@ let user2 = m.pushName || 'Anónimo'
 let verifyaleatorio = ['registrar', 'reg', 'verificar', 'verify', 'register'].getRandom()
 
 const msg = {
-      rowner: `
+  rowner: `
 ╔═══════❖『 ✦ ${global.botname} ✦ 』❖═══════╗
-║ (≖ᴗ≖✿) El hechizo *${command}* solo puede ser
+║ (≖ᴗ≖✿) El hechizo *${comando}* solo puede ser
 ║ invocado por los Dioses del retrete (creadores).
 ╚════════════════════════════════════╝`,
 
-      owner: `
+  owner: `
 ╭─┈ ✦『 Control Paranormal 』✦ ┈─╮
-│ ⛧ *${command}* está reservado para los  
+│ ⛧ *${comando}* está reservado para los  
 │ shinigamis programadores (desarrolladores).  
-╰──────────────────────────╯`,
+╰───────────────────────────────╯`,
 
-      mods: `
+  mods: `
 ╔═──「 ✧ Espíritus Vigilantes ✧ 」──═╗
 ║ Sólo los protectores del otro mundo (mods)  
-║ pueden controlar el hechizo *${command}*.  
+║ pueden controlar el hechizo *${comando}*.  
 ╚════════════════════════════════════╝`,
 
-      premium: `
+  premium: `
 ╭───✿『 ✦ ✧ MOCHI PREMIUM ✧ ✦ 』✿───╮
 │ (◍•ᴗ•◍)❤ Solo almas elegidas pueden usar  
-│ el comando sagrado *${command}*.  
-╰──────────────────────────╯`,
+│ el comando sagrado *${comando}*.  
+╰──────────────────────────────────╯`,
 
-      group: `
+  group: `
 ╔═━「 ☁︎ Ritual Grupal ☁︎ 」━═╗
-║ (⁎⁍̴̛ᴗ⁍̴̛⁎) *${command}* requiere un círculo  
+║ (⁎⁍̴̛ᴗ⁍̴̛⁎) *${comando}* requiere un círculo  
 ║ de invocación múltiple (grupo).  
 ╚═════════════════════════════╝`,
 
-      private: `
+  private: `
 ╭──⊹⊱『 ☁︎ Susurro Privado ☁︎ 』⊰⊹──╮
-│ Este hechizo *${command}* solo puede ser  
+│ Este hechizo *${comando}* solo puede ser  
 │ revelado en un santuario secreto (chat privado).  
-╰──────────────────────────╯`,
+╰─────────────────────────────────────╯`,
 
-      admin: `
+  admin: `
 ╭────『 ✦ Líder Espiritual ✦ 』────╮
-│ El comando *${command}* sólo responde a  
+│ El comando *${comando}* sólo responde a  
 │ los shamanes del grupo (admins).  
-╰────────────────────────╯`,
+╰─────────────────────────────╯`,
 
-      botAdmin: `
+  botAdmin: `
 (╥﹏╥) ¡Ay no!  
-No puedo usar *${command}* si no soy un  
+No puedo usar *${comando}* si no soy un  
 espíritu superior (admin del grupo).  
 ¡Dame poder MUAJAJAJA o me encierro en el baño para siempre >:(`,
 
-      unreg: `
+  unreg: `
 ╔══『 ✦ PACTO FANTASMAL ✦ 』══╗
-║ (｡•́︿•̀｡) No puedes usar *${command}* ║ hasta que firmes tu contrato espiritual.
+║ (｡•́︿•̀｡) No puedes usar *${comando}*  
+║ hasta que firmes tu contrato espiritual.
 ║ Usa el ritual:
 ║ » #${verifyaleatorio} ${user2}.${edadaleatoria}
 ╚═══════════════════════════╝`,
 
+  channel: `
+╔══『 ✦ SEGUDORES FANTASMAS ✦ 』══╗
+║ (｡•́︿•̀｡) No puedes usar *${comando}*  
+║ Solo se permite en canales.
+║ Usa los comandos de canales para
+║ Tu Canal!
+╚═════════════════════════════╝`,
 
-      restrict: `
+  restrict: `
 ⊱┈・『 ✦ FUNCIÓN SELLADA ✦ 』・┈⊰  
 (⚆_⚆) Este hechizo está encerrado por  
 un sello maldito. ¡Actívalo si te atreves!`
 }[type];
+    
 if (msg) return m.reply(msg).then(_ => m.react('✖️'))}
 
 let file = global.__filename(import.meta.url, true)
@@ -618,7 +664,7 @@ unwatchFile(file)
 console.log(chalk.magenta("Se actualizo 'handler.js'"))
 
 if (global.conns && global.conns.length > 0 ) {
-const users = [...new Set([...global.conns.filter((conn) => conn.user && conn.ws.socket && conn.ws.socket.readyState !== ws.CLOSED).map((conn) => conn)])]
+const users = [...new Set([...global.conns.filter((conn) => conn.user && conn.ws.socket && conn.ws.socket.readyState !== ws.CLOSED).map((conn) => conn)])];
 for (const userr of users) {
 userr.subreloadHandler(false)
-}}})
+}}});
