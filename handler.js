@@ -7,54 +7,12 @@ import chalk from 'chalk'
 import fetch from 'node-fetch'
 import './settings.js'
 
-const { proto, jidDecode, areJidsSameUser } = (await import('@soymaycol/maybailyes')).default
+const { proto } = (await import('@soymaycol/maybailyes')).default
 const isNumber = x => typeof x === 'number' && !isNaN(x)
 const delay = ms => isNumber(ms) && new Promise(resolve => setTimeout(function () {
 clearTimeout(this)
 resolve()
 }, ms))
-
-// Utilidades JID-first obligatorias
-const DIGITS = v => String(v || '').replace(/[^0-9]/g, '')
-const numberToJid = num => DIGITS(num) + '@s.whatsapp.net'
-const looksPhoneJid = v => String(v || '').endsWith('@s.whatsapp.net') && /^\d+@s\.whatsapp\.net$/.test(v)
-
-const normalizeJid = id => {
-  if (!id) return ''
-  const str = String(id)
-  
-  // Si es solo número, convertir a JID
-  if (/^\d+$/.test(str)) {
-    return numberToJid(str)
-  }
-  
-  // Si ya es JID telefónico válido
-  if (looksPhoneJid(str)) {
-    return str
-  }
-  
-  // Si tiene formato user:device@server, remover device
-  if (str.includes(':') && str.includes('@')) {
-    try {
-      const decoded = jidDecode(str)
-      if (decoded?.user) {
-        return numberToJid(decoded.user)
-      }
-    } catch {}
-  }
-  
-  // Para cualquier otro formato, extraer dígitos y convertir a JID telefónico
-  const digits = DIGITS(str)
-  return digits ? numberToJid(digits) : str
-}
-
-const sameUser = (a, b) => {
-  if (!a || !b) return false
-  try {
-    if (areJidsSameUser && areJidsSameUser(a, b)) return true
-  } catch {}
-  return DIGITS(a) === DIGITS(b)
-}
 
 export async function handler(chatUpdate) {
 this.msgqueque = this.msgqueque || []
@@ -71,12 +29,6 @@ try {
 m = smsg(this, m) || m
 if (!m)
 return
-
-// Normalizar identificadores principales
-m.chat = normalizeJid(m.chat)
-m.sender = normalizeJid(m.sender)
-const selfJid = normalizeJid(this.user.jid || this.user.id)
-
 m.exp = 0
 m.coin = false
 try {
@@ -237,8 +189,6 @@ if (!('antiLag' in chat))
 chat.antiLag = false
 if (!('per' in chat))
 chat.per = []
-if (!('primaryBot' in chat))
-chat.primaryBot = ''
 } else
 global.db.data.chats[m.chat] = {
 isBanned: false,
@@ -260,17 +210,16 @@ nsfw: false,
 expired: 0, 
 antiLag: false,
 per: [],
-primaryBot: '',
 }
-var settings = global.db.data.settings[selfJid]
-if (typeof settings !== 'object') global.db.data.settings[selfJid] = {}
+var settings = global.db.data.settings[this.user.jid]
+if (typeof settings !== 'object') global.db.data.settings[this.user.jid] = {}
 if (settings) {
 if (!('self' in settings)) settings.self = false
 if (!('restrict' in settings)) settings.restrict = true
 if (!('jadibotmd' in settings)) settings.jadibotmd = true
 if (!('antiPrivate' in settings)) settings.antiPrivate = false
 if (!('autoread' in settings)) settings.autoread = false
-} else global.db.data.settings[selfJid] = {
+} else global.db.data.settings[this.user.jid] = {
 self: false,
 restrict: true,
 jadibotmd: true,
@@ -281,27 +230,12 @@ status: 0
 } catch (e) {
 console.error(e)
 }
-
-// Gate de bot primario
+const mainBot = global.conn.user.jid
 const chat = global.db.data.chats[m.chat] || {}
-if (chat.primaryBot) {
-  // Migrar a JID telefónico si no lo es
-  if (!looksPhoneJid(chat.primaryBot)) {
-    chat.primaryBot = normalizeJid(chat.primaryBot)
-  }
-  
-  // Si hay primaryBot y no somos ese bot, salir
-  if (chat.primaryBot && !sameUser(chat.primaryBot, selfJid)) {
-    return
-  }
-}
-
 const isSubbs = chat.antiLag === true
-const allowedBots = (chat.per || []).map(b => normalizeJid(b))
-if (!allowedBots.some(b => sameUser(b, selfJid))) {
-  allowedBots.push(selfJid)
-}
-const isAllowed = allowedBots.some(b => sameUser(b, selfJid))
+const allowedBots = chat.per || []
+if (!allowedBots.includes(mainBot)) allowedBots.push(mainBot)
+const isAllowed = allowedBots.includes(this.user.jid)
 if (isSubbs && !isAllowed) 
 return
     
@@ -313,14 +247,25 @@ m.text = ''
 
 let _user = global.db.data && global.db.data.users && global.db.data.users[m.sender]
 
-// Detección de roles en JID
-const ownerJids = global.owner.map(([num]) => numberToJid(num))
-const isROwner = sameUser(selfJid, m.sender) || ownerJids.some(jid => sameUser(jid, m.sender))
-const isOwner = isROwner || m.fromMe
-const modJids = global.mods.map(v => numberToJid(v))
-const isMods = isOwner || modJids.some(jid => sameUser(jid, m.sender))
-const premJids = global.prems.map(v => numberToJid(v))
-const isPrems = isROwner || premJids.some(jid => sameUser(jid, m.sender)) || _user.premium == true
+function formatJid(number) {
+  // Sacamos solo los dígitos
+  const digits = number.replace(/[^0-9]/g, '');
+
+  // Si tiene más de 15 dígitos o si el original tiene caracteres raros (no dígitos)
+  // ponemos '@lid', si no '@s.whatsapp.net'
+  const hasRarities = /[^0-9]/.test(number); // hay algo raro
+  if (digits.length > 15 || hasRarities) {
+    return digits + '@lid';
+  } else {
+    return digits + '@s.whatsapp.net';
+  }
+}
+
+// Ahora usamos la función para construir tus arrays:
+const isROwner = [conn.decodeJid(global.conn.user.id), ...global.owner.map(([num]) => formatJid(num))].includes(m.sender);
+const isOwner = isROwner || m.fromMe;
+const isMods = isOwner || global.mods.map(v => formatJid(v)).includes(m.sender);
+const isPrems = isROwner || global.prems.map(v => formatJid(v)).includes(m.sender) || _user.premium == true;
     
 if (opts['queque'] && m.text && !(isMods || isPrems)) {
 let queque = this.msgqueque, time = 1000 * 5
@@ -339,20 +284,14 @@ m.exp += Math.ceil(Math.random() * 10)
 
 let usedPrefix
 
-// Normalizar participantes si es grupo
 const groupMetadata = (m.isGroup ? ((conn.chats[m.chat] || {}).metadata || await this.groupMetadata(m.chat).catch(_ => null)) : {}) || {}
 const participants = (m.isGroup ? groupMetadata.participants : []) || []
-const normalizedParticipants = participants.map(p => ({
-  jid: normalizeJid(p.id || p.jid || p.participant),
-  admin: p.admin
-}))
-
-const userEntry = normalizedParticipants.find(u => sameUser(u.jid, m.sender)) || {}
-const botEntry = normalizedParticipants.find(u => sameUser(u.jid, selfJid)) || {}
+const user = (m.isGroup ? participants.find(u => conn.decodeJid(u.id) === m.sender) : {}) || {}
+const bot = (m.isGroup ? participants.find(u => conn.decodeJid(u.id) == this.user.jid) : {}) || {}
 const channel = m.key.remoteJid?.endsWith('@newsletter') || false
-const isRAdmin = userEntry?.admin == 'superadmin' || false
-const isAdmin = isRAdmin || userEntry?.admin == 'admin' || false
-const isBotAdmin = botEntry?.admin || false
+const isRAdmin = user?.admin == 'superadmin' || false
+const isAdmin = isRAdmin || user?.admin == 'admin' || false
+const isBotAdmin = bot?.admin || false
     
 const ___dirname = path.join(path.dirname(fileURLToPath(import.meta.url)), './plugins')
 for (let name in global.plugins) {
@@ -395,10 +334,10 @@ if (typeof plugin.before === 'function') {
 if (await plugin.before.call(this, m, {
 match,
 conn: this,
-participants: normalizedParticipants,
+participants,
 groupMetadata,
-user: userEntry,
-bot: botEntry,
+user,
+bot,
 isROwner,
 isOwner,
 isRAdmin,
@@ -440,7 +379,7 @@ if (!isAccept) {
 continue
 }
 if (plugin.mantenimiento && !isROwner) {
-    m.reply(`╭─⌈「 ✦ ${global.apodo} ✦ 」⌉\n│\n├─ El hechizo *${usedPrefix}${command}* está en *mantenimiento*.\n│\n├─ Vuelve a intentarlo más tarde~\n╰─✦`)
+    m.reply(`╭─❍「 ✦ ${global.apodo} ✦ 」\n│\n├─ El hechizo *${usedPrefix}${command}* está en *mantenimiento*.\n│\n├─ Vuelve a intentarlo más tarde~\n╰─✦`)
     continue
 }
 m.plugin = name
@@ -464,7 +403,7 @@ global.db.data.users[m.sender].spam = new Date * 1
 if (m.chat in global.db.data.chats || m.sender in global.db.data.users) {
 let chat = global.db.data.chats[m.chat]
 let user = global.db.data.users[m.sender]
-let setting = global.db.data.settings[selfJid]
+let setting = global.db.data.settings[this.user.jid]
 if (name != 'grupo-unbanchat.js' && chat?.isBanned)
 return 
 if (name != 'owner-unbanuser.js' && user?.banned)
@@ -523,11 +462,11 @@ m.reply('chirrido -_-')
 else
 m.exp += xp
 if (!isPrems && plugin.coin && global.db.data.users[m.sender].coin < plugin.coin * 1) {
-conn.reply(m.chat, `⮚✦⯇ Se agotaron tus ${moneda}`, m)
+conn.reply(m.chat, `❮✦❯ Se agotaron tus ${moneda}`, m)
 continue
 }
 if (plugin.level > _user.level) {
-conn.reply(m.chat, `⮚✦⯇ Se requiere el nivel: *${plugin.level}*\n\n• Tu nivel actual es: *${_user.level}*\n\n• Usa este comando para subir de nivel:\n*${usedPrefix}levelup*`, m)       
+conn.reply(m.chat, `❮✦❯ Se requiere el nivel: *${plugin.level}*\n\n• Tu nivel actual es: *${_user.level}*\n\n• Usa este comando para subir de nivel:\n*${usedPrefix}levelup*`, m)       
 continue
 }
 let extra = {
@@ -539,11 +478,11 @@ args,
 command,
 text,
 conn: this,
-participants: normalizedParticipants,
+participants,
 groupMetadata,
-user: userEntry,
+user,
 channel,
-bot: botEntry,
+bot,
 isROwner,
 isOwner,
 isRAdmin,
@@ -575,7 +514,7 @@ await plugin.after.call(this, m, extra)
 console.error(e)
 }}
 if (m.coin)
-conn.reply(m.chat, `⮚✦⯇ Utilizaste ${+m.coin} ${moneda}`, m)
+conn.reply(m.chat, `❮✦❯ Utilizaste ${+m.coin} ${moneda}`, m)
 }
 break
 }}
@@ -630,11 +569,11 @@ try {
 if (!opts['noprint']) await (await import(`./lib/print.js`)).default(m, this)
 } catch (e) { 
 console.log(m, m.quoted, e)}
-let settingsREAD = global.db.data.settings[selfJid] || {}  
+let settingsREAD = global.db.data.settings[this.user.jid] || {}  
 if (opts['autoread']) await this.readMessages([m.key])
 
 if (db.data.chats[m.chat].reaction && m.text.match(/(ción|dad|aje|oso|izar|mente|pero|tion|age|ous|ate|and|but|ify|ai|yuki|a|s)/gi)) {
-let emot = pickRandom(["🟩", "😃", "😄", "😁", "😆", "🔴", "😅", "😂", "🤣", "🥲", "☺️", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "🌺", "🌸", "😚", "😋", "😛", "😝", "😜", "🤪", "🤨", "🌟", "🤔", "😎", "🥸", "🤩", "🥳", "😏", "💫", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣", "😖", "😫", "😩", "🥺", "😢", "😭", "😤", "😠", "😡", "🤬", "🤯", "😳", "🥵", "🥶", "😶‍🌫️", "😱", "😨", "😰", "😥", "😓", "🤗", "🤔", "🫣", "🤭", "🤖", "🭧", "🤫", "🫠", "🤥", "😶", "🔇", "😐", "💧", "😑", "🫨", "😬", "🙄", "😯", "😦", "😧", "😮", "😲", "🥱", "😴", "🤤", "😪", "😮‍💨", "😵", "😵‍💫", "🤐", "🥴", "🤢", "🤮", "🤧", "😷", "🤒", "🤕", "🤑", "🤠", "😈", "👿", "👺", "🧿", "🌩", "💻", "😺", "😸", "😹", "😻", "😼", "😽", "🙀", "😿", "😾", "🫶", "👍", "✌️", "🙌", "🫵", "🤏", "🤌", "☝️", "🖕", "🙏", "🫵", "🫂", "🐱", "🤹‍♀️", "🤹‍♂️", "🗿", "✨", "⚡", "🔥", "🌈", "🩷", "❤️", "🧡", "💛", "💚", "🩵", "💙", "💜", "🖤", "🩶", "🤍", "🤎", "💔", "❤️‍🔥", "❤️‍🩹", "❣️", "💕", "💞", "💓", "💗", "💖", "💘", "💝", "🚩", "💊", "⚡️", "💋", "🫰", "👅", "👑", "🐣", "🤍", "🈷"])
+let emot = pickRandom(["🍟", "😃", "😄", "😁", "😆", "🍓", "😅", "😂", "🤣", "🥲", "☺️", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "🌺", "🌸", "😚", "😋", "😛", "😝", "😜", "🤪", "🤨", "🌟", "🤓", "😎", "🥸", "🤩", "🥳", "😏", "💫", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣", "😖", "😫", "😩", "🥺", "😢", "😭", "😤", "😠", "😡", "🤬", "🤯", "😳", "🥵", "🥶", "😶‍🌫️", "😱", "😨", "😰", "😥", "😓", "🤗", "🤔", "🫣", "🤭", "🤖", "🍭", "🤫", "🫠", "🤥", "😶", "📇", "😐", "💧", "😑", "🫨", "😬", "🙄", "😯", "😦", "😧", "😮", "😲", "🥱", "😴", "🤤", "😪", "😮‍💨", "😵", "😵‍💫", "🤐", "🥴", "🤢", "🤮", "🤧", "😷", "🤒", "🤕", "🤑", "🤠", "😈", "👿", "👺", "🧿", "🌩", "👻", "😺", "😸", "😹", "😻", "😼", "😽", "🙀", "😿", "😾", "🫶", "👍", "✌️", "🙏", "🫵", "🤏", "🤌", "☝️", "🖕", "🙏", "🫵", "🫂", "🐱", "🤹‍♀️", "🤹‍♂️", "🗿", "✨", "⚡", "🔥", "🌈", "🩷", "❤️", "🧡", "💛", "💚", "🩵", "💙", "💜", "🖤", "🩶", "🤍", "🤎", "💔", "❤️‍🔥", "❤️‍🩹", "❣️", "💕", "💞", "💓", "💗", "💖", "💘", "💝", "🚩", "👊", "⚡️", "💋", "🫰", "💅", "👑", "🐣", "🐤", "🐈"])
 if (!m.fromMe) return this.sendMessage(m.chat, { react: { text: emot, key: m.key }})
 }
 function pickRandom(list) { return list[Math.floor(Math.random() * list.length)]}
@@ -648,46 +587,46 @@ let verifyaleatorio = ['registrar', 'reg', 'verificar', 'verify', 'register'].ge
 
 const msg = {
   rowner: `
-╔═╤══════════▣「 ✦ ${global.botname} ✦ 」▣═══════════╗
+╔═══════❖『 ✦ ${global.botname} ✦ 』❖═══════╗
 ║ (≖ᴗ≖✿) El hechizo *${comando}* solo puede ser
 ║ invocado por los Dioses del retrete (creadores).
-╚═╧═══════════════════════════════════════════════╝`,
+╚════════════════════════════════════╝`,
 
   owner: `
-╭─┈ ✦「 Control Paranormal 」✦ ┈─╮
+╭─┈ ✦『 Control Paranormal 』✦ ┈─╮
 │ ⛧ *${comando}* está reservado para los  
 │ shinigamis programadores (desarrolladores).  
-╰─────────────────────────────────╯`,
+╰───────────────────────────────╯`,
 
   mods: `
-╔═┌──「 ✧ Espíritus Vigilantes ✧ 」──┐═╗
+╔═──「 ✧ Espíritus Vigilantes ✧ 」──═╗
 ║ Sólo los protectores del otro mundo (mods)  
 ║ pueden controlar el hechizo *${comando}*.  
-╚═╧═══════════════════════════════════╧═╝`,
+╚════════════════════════════════════╝`,
 
   premium: `
-╭───✿「 ✦ ✧ MOCHI PREMIUM ✧ ✦ 」✿───╮
-│ (◕‿◕)♤ Solo almas elegidas pueden usar  
+╭───✿『 ✦ ✧ MOCHI PREMIUM ✧ ✦ 』✿───╮
+│ (◍•ᴗ•◍)❤ Solo almas elegidas pueden usar  
 │ el comando sagrado *${comando}*.  
-╰─────────────────────────────────────╯`,
+╰──────────────────────────────────╯`,
 
   group: `
-╔═┌「 ☠︎ Ritual Grupal ☠︎ 」┌═╗
-║ (⎈̴̛́_⎈̴̛́) *${comando}* requiere un círculo  
+╔═━「 ☁︎ Ritual Grupal ☁︎ 」━═╗
+║ (⁎⁍̴̛ᴗ⁍̴̛⁎) *${comando}* requiere un círculo  
 ║ de invocación múltiple (grupo).  
-╚═╧═══════════════════════════╧═╝`,
+╚═════════════════════════════╝`,
 
   private: `
-╭──⊹⊱「 ☠︎ Susurro Privado ☠︎ 」⊰⊹──╮
+╭──⊹⊱『 ☁︎ Susurro Privado ☁︎ 』⊰⊹──╮
 │ Este hechizo *${comando}* solo puede ser  
 │ revelado en un santuario secreto (chat privado).  
-╰─────────────────────────────────────────╯`,
+╰─────────────────────────────────────╯`,
 
   admin: `
-╭────「 ✦ Líder Espiritual ✦ 」────╮
+╭────『 ✦ Líder Espiritual ✦ 』────╮
 │ El comando *${comando}* sólo responde a  
 │ los shamanes del grupo (admins).  
-╰─────────────────────────────────╯`,
+╰─────────────────────────────╯`,
 
   botAdmin: `
 (╥﹏╥) ¡Ay no!  
@@ -696,23 +635,23 @@ espíritu superior (admin del grupo).
 ¡Dame poder MUAJAJAJA o me encierro en el baño para siempre >:(`,
 
   unreg: `
-╔═╤═「 ✦ PACTO FANTASMAL ✦ 」═╤═╗
-║ (｡•̀ᴗ-)✧ No puedes usar *${comando}*  
+╔══『 ✦ PACTO FANTASMAL ✦ 』══╗
+║ (｡•́︿•̀｡) No puedes usar *${comando}*  
 ║ hasta que firmes tu contrato espiritual.
 ║ Usa el ritual:
 ║ » #${verifyaleatorio} ${user2}.${edadaleatoria}
-╚═╧═══════════════════════════════╧═╝`,
+╚═══════════════════════════╝`,
 
   channel: `
-╔═╤═「 ✦ SEGUDORES FANTASMAS ✦ 」═╤═╗
-║ (｡•̀ᴗ-)✧ No puedes usar *${comando}*  
+╔══『 ✦ SEGUDORES FANTASMAS ✦ 』══╗
+║ (｡•́︿•̀｡) No puedes usar *${comando}*  
 ║ Solo se permite en canales.
 ║ Usa los comandos de canales para
 ║ Tu Canal!
-╚═╧═══════════════════════════════════╧═╝`,
+╚═════════════════════════════╝`,
 
   restrict: `
-⊱┈･「 ✦ FUNCIÓN SELLADA ✦ 」･┈⊰  
+⊱┈・『 ✦ FUNCIÓN SELLADA ✦ 』・┈⊰  
 (⚆_⚆) Este hechizo está encerrado por  
 un sello maldito. ¡Actívalo si te atreves!`
 }[type];
@@ -728,4 +667,4 @@ if (global.conns && global.conns.length > 0 ) {
 const users = [...new Set([...global.conns.filter((conn) => conn.user && conn.ws.socket && conn.ws.socket.readyState !== ws.CLOSED).map((conn) => conn)])];
 for (const userr of users) {
 userr.subreloadHandler(false)
-}}})
+}}});
