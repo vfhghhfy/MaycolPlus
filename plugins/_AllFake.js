@@ -4,8 +4,8 @@ import path from 'path'
 export async function before(m, { conn }) {
   try {
 
-    let nombreBot = global.namebot || 'SyaBot'
-    let bannerFinal = 'https://raw.githubusercontent.com/SoySapo6/tmp/refs/heads/main/Permanentes/35%20sin%20t%C3%ADtulo_20250823215444.jpg'
+    let nombreBot = global.namebot || 'MaycolPlus'
+    let bannerFinal = 'https://raw.githubusercontent.com/SoySapo6/tmp/refs/heads/main/Permanentes/images%20(8).jpeg'
 
 
     const botActual = conn.user?.jid?.split('@')[0].replace(/\D/g, '')
