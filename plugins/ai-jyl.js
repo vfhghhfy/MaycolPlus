@@ -60,12 +60,12 @@ Tu creador es SoyMaycol (Maycol) el fue el quien te creo y como te hizo.
 
         let fkontak = { 
             "key": { "fromMe": false, "participant": "0@s.whatsapp.net", "remoteJid": "0@s.whatsapp.net" }, 
-            "message": { "contactMessage": { "displayName": "🍿 GPT 4", "vcard": "BEGIN:VCARD\nVERSION:3.0\nFN:GPT 4\nTEL;type=CELL;type=VOICE;waid=0:0\nEND:VCARD" } } 
+            "message": { "contactMessage": { "displayName": "🗣️ JYL", "vcard": "BEGIN:VCARD\nVERSION:3.0\nFN:GPT 4\nTEL;type=CELL;type=VOICE;waid=0:0\nEND:VCARD" } } 
         };
 
         await conn.sendMessage(
             m.chat,
-            { text: `\`🌤️ ChatGPT4\`\n\n> ${json}` },
+            { text: `\`🗣️\`\n\n> ${json}` },
             { quoted: fkontak }
         );
 
