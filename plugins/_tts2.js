@@ -1,29 +1,45 @@
-//--> Hecho por Ado-rgb (github.com/Ado-rgb)
-// •|• No quites créditos..
-import fetch from 'node-fetch';
+import fetch from 'node-fetch'
 
-let handler = async (m, { conn, text, usedPrefix, command }) => {
-    if (!text) return m.reply(`*Uso correcto:* ${usedPrefix + command} Tu texto`);
+const handler = async (m, { conn, text, command, usedPrefix }) => {
+    // Validación inicial
+    if (!text) {
+        return conn.sendMessage(m.chat, {
+            text: `⚡ Uso correcto:\n${usedPrefix + command} Texto a convertir`
+        }, { quoted: m })
+    }
+
+    const apiBase = "https://api.nekorinn.my.id/tools/openai-tts"
+    const voice = "nova"
+    const query = encodeURIComponent(text)
+    const apiUrl = `${apiBase}?text=${query}&voice=${voice}`
 
     try {
-        let url = `https://api.nekorinn.my.id/tools/openai-tts?text=${encodeURIComponent(text)}&voice=nova`;
-        let res = await fetch(url);
+        // Hacemos la petición
+        const response = await fetch(apiUrl)
 
-        if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
-        let audioBuffer = await res.arrayBuffer();
+        if (!response.ok) {
+            throw new Error(`Fallo en la API (status: ${response.status})`)
+        }
 
+        // Convertimos la respuesta a Buffer
+        const audio = Buffer.from(await response.arrayBuffer())
+
+        // Enviar como nota de voz
         await conn.sendMessage(m.chat, {
-            audio: Buffer.from(audioBuffer),
-            mimetype: 'audio/mpeg',
+            audio,
+            mimetype: "audio/mpeg",
             ptt: true
-        }, { quoted: m });
-    } catch (e) {
-        m.reply(`❌ *Error al generar audio:* ${e.message}`);
+        }, { quoted: m })
+
+    } catch (err) {
+        await conn.sendMessage(m.chat, {
+            text: `❌ Ocurrió un error al generar el audio:\n${err.message}`
+        }, { quoted: m })
     }
-};
+}
 
-handler.help = ['tts <texto>'];
-handler.tags = ['tools'];
-handler.command = /^tts$/i;
+handler.help = ["tts <texto>"]
+handler.tags = ["tools"]
+handler.command = /^tts$/i
 
-export default handler;
+export default handler
