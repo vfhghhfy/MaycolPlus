@@ -2,7 +2,7 @@ import fetch from 'node-fetch'
 
 let linkRegex = /chat\.whatsapp\.com\/[0-9A-Za-z]{20,24}/i
 let linkRegex1 = /whatsapp\.com\/channel\/[0-9A-Za-z]{20,24}/i
-const defaultImage = 'https://files.catbox.moe/ubftco.jpg'
+const defaultImage = 'https://raw.githubusercontent.com/SoySapo6/tmp/refs/heads/main/Permanentes/images.jpeg'
 
 async function isAdminOrOwner(m, conn) {
   try {
