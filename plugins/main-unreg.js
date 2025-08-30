@@ -29,5 +29,6 @@ let handler = async (m, { usedPrefix, command }) => {
 handler.help = ['unreg']
 handler.tags = ['info']
 handler.command = ['unreg']
+handler.register = true;
 
 export default handler
