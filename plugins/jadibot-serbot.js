@@ -33,7 +33,8 @@ let rtx2 = `
 ① Abre 𝗪𝗵𝗮𝘁𝘀𝗔𝗽𝗽 en tu teléfono  
 ② Pulsa ⋮ *Más opciones* → *Dispositivos vinculados*  
 ③ Presiona *"Vincular un dispositivo"*  
-④ Selecciona *"Con número"* e introduce el código mostrado`.trim()
+④ Selecciona *"Con número"* e introduce el código mostrado
+> Te recomiendo no hacer code en grupos ya que aveces falla, Mejor ve al privado del bot y haz code o intenta con qr desde algun grupo o privado`.trim()
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
