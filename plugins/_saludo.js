@@ -67,7 +67,7 @@ const handler = async (m, { conn }) => {
     }
 };
 
-handler.customPrefix = /^(hila|holi|ola|oa|hi|hl|gracias|grasias|hh|muchas gracias)$/i;
+handler.customPrefix = /^(hila|hola|holi|ola|oa|hi|hl|gracias|grasias|hh|muchas gracias)$/i;
 handler.command = new RegExp();
 
 export default handler;
