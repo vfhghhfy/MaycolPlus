@@ -18,29 +18,22 @@ let crm4 = "IF9hdXRvcmVzcG9uZGVyLmpzIGluZm8tYm90Lmpz"
 let drm1 = ""
 let drm2 = ""
 let rtx = `
-🎋 𝗩𝗶𝗻𝗰𝘂𝗹𝗮𝗰𝗶𝗼́𝗻 𝗽𝗼𝗿 𝗖𝗼́𝗱𝗶𝗴𝗼 𝗤𝗥
+✦ 𝗩𝗶𝗻𝗰𝘂𝗹𝗮𝗰𝗶𝗼́𝗻 𝗽𝗼𝗿 𝗖𝗼́𝗱𝗶𝗴𝗼 𝗤𝗥 ✦
 
-📌 𝗣𝗮𝘀𝗼𝘀 𝗽𝗮𝗿𝗮 𝘃𝗶𝗻𝗰𝘂𝗹𝗮𝗿 𝘁𝘂 𝗪𝗵𝗮𝘁𝘀𝗔𝗽𝗽:
-1️⃣ Abre 𝗪𝗵𝗮𝘁𝘀𝗔𝗽𝗽 en tu teléfono  
-2️⃣ Pulsa ⋮ *Más opciones* → *Dispositivos vinculados*  
-3️⃣ Presiona *"Vincular un dispositivo"*  
-4️⃣ Escanea el código QR que se mostrará aquí
-`.trim()
+🌙 𝗣𝗮𝘀𝗼𝘀 para invocar tu WhatsApp:
+① Abre 𝗪𝗵𝗮𝘁𝘀𝗔𝗽𝗽 en tu teléfono  
+② Pulsa ⋮ *Más opciones* → *Dispositivos vinculados*  
+③ Presiona *"Vincular un dispositivo"*  
+④ Escanea el código QR que aparecerá aquí`.trim()
 
 let rtx2 = `
-🍁 𝗩𝗶𝗻𝗰𝘂𝗹𝗮𝗰𝗶𝗼́𝗻 𝗽𝗼𝗿 𝗖𝗼́𝗱𝗶𝗴𝗼 𝗠𝗮𝗻𝘂𝗮𝗹 (8 dígitos)
+✧ 𝗩𝗶𝗻𝗰𝘂𝗹𝗮𝗰𝗶𝗼́𝗻 𝗽𝗼𝗿 𝗖𝗼́𝗱𝗶𝗴𝗼 𝗠𝗮𝗻𝘂𝗮𝗹 (8 dígitos) ✧
 
-📌 𝗣𝗮𝘀𝗼𝘀 𝗽𝗮𝗿𝗮 𝗵𝗮𝗰𝗲𝗿𝗹𝗼:
-1️⃣ Abre 𝗪𝗵𝗮𝘁𝘀𝗔𝗽𝗽 en tu teléfono  
-2️⃣ Pulsa ⋮ *Más opciones* → *Dispositivos vinculados*  
-3️⃣ Presiona *"Vincular un dispositivo"*  
-4️⃣ Selecciona *"Con número"* e introduce el código mostrado  
-
-⚠️ 𝗜𝗺𝗽𝗼𝗿𝘁𝗮𝗻𝘁𝗲:  
-- Algunos grupos pueden fallar al generar el código  
-- Recomendado: Solicítalo por privado al bot  
-⏳ El código es válido solo para este número y expira en pocos segundos.
-`.trim()
+🌙 𝗣𝗮𝘀𝗼𝘀 para enlazarlo:
+① Abre 𝗪𝗵𝗮𝘁𝘀𝗔𝗽𝗽 en tu teléfono  
+② Pulsa ⋮ *Más opciones* → *Dispositivos vinculados*  
+③ Presiona *"Vincular un dispositivo"*  
+④ Selecciona *"Con número"* e introduce el código mostrado`.trim()
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
