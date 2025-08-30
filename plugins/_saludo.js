@@ -1,11 +1,11 @@
 import fetch from "node-fetch";
 
 const handler = async (m, { conn }) => {
-      const msgText = (
-        m?.text || 
-        m.message?.conversation || 
-        m.message?.extendedTextMessage?.text || 
-        m.message?.imageMessage?.caption || 
+    const msgText = (
+        m?.text ||
+        m.message?.conversation ||
+        m.message?.extendedTextMessage?.text ||
+        m.message?.imageMessage?.caption ||
         ""
     ).toLowerCase().trim();
 
@@ -16,14 +16,14 @@ const handler = async (m, { conn }) => {
     const isGracias = gracias.includes(msgText);
 
     if (isHola || isGracias) {
-        
+
         const sEmojis = isHola 
             ? ["👋", "😺", "🙌", "🎁"] 
             : ["🥰", "😇", "😊", "😙"];
         
         const emoji = sEmojis[Math.floor(Math.random() * sEmojis.length)];
 
-        
+        // Reacción con emoji
         await conn.sendMessage(m.chat, {
             react: {
                 text: emoji,
@@ -32,35 +32,33 @@ const handler = async (m, { conn }) => {
         });
 
         try {
-        
             await conn.sendPresenceUpdate("recording", m.chat);
         } catch {}
 
-        
         await new Promise(r => setTimeout(r, 2100));
 
         try {
-            
-            let url = "https://myapiadonix.vercel.app/api/adonixvoz?q=" + encodeURIComponent(msgText);
-            let res = await fetch(url);
+            // Elegir la URL correcta según el tipo de mensaje
+            let audioUrl = isHola
+                ? "https://files.catbox.moe/3y7q23.mp3"
+                : "https://files.catbox.moe/nin6cv.mp3";
 
-            if (!res.ok) {
-                throw new Error("Error al obtener audio: " + res.status);
-            }
+            let res = await fetch(audioUrl);
+            if (!res.ok) throw new Error("No se pudo descargar el audio");
 
-            let buffer = await res.buffer();
+            let buffer = await res.arrayBuffer();
+            let audioBuffer = Buffer.from(buffer);
 
-            
             await conn.sendMessage(m.chat, {
-                audio: buffer,
-                ptt: true, 
+                audio: audioBuffer,
+                ptt: true,
                 mimetype: "audio/mpeg",
                 fileName: msgText + ".mp3"
             }, { quoted: m });
 
         } catch (e) {
             console.error(e);
-            await m.reply("❌ No se pudo generar el audio.");
+            await m.reply("❌ No se pudo enviar el audio.");
         }
 
         try {
@@ -68,7 +66,6 @@ const handler = async (m, { conn }) => {
         } catch {}
     }
 };
-
 
 handler.customPrefix = /^(hila|holi|ola|oa|hi|hl|gracias|grasias|hh|muchas gracias)$/i;
 handler.command = new RegExp();
