@@ -1,3 +1,4 @@
+
 import fetch from "node-fetch";
 
 const handler = async (m, { conn }) => {
@@ -9,41 +10,47 @@ const handler = async (m, { conn }) => {
         ""
     ).toLowerCase().trim();
 
-    const saludos = ["hola", "hila", "holi", "ola", "oa", "hi", "hl", "hh"];
-    const gracias = ["gracias", "grasias", "muchas gracias"];
+    // Diccionario: palabra -> URL de audio
+    const audioMap = {
+        "hola": "https://files.catbox.moe/3y7q23.mp3",
+        "hila": "https://files.catbox.moe/3y7q23.mp3",
+        "holi": "https://files.catbox.moe/3y7q23.mp3",
+        "ola": "https://files.catbox.moe/3y7q23.mp3",
+        "oa": "https://files.catbox.moe/3y7q23.mp3",
+        "hi": "https://files.catbox.moe/3y7q23.mp3",
+        "hl": "https://files.catbox.moe/3y7q23.mp3",
+        "hh": "https://files.catbox.moe/3y7q23.mp3",
 
-    const isHola = saludos.includes(msgText);
-    const isGracias = gracias.includes(msgText);
+        "gracias": "https://files.catbox.moe/nin6cv.mp3",
+        "grasias": "https://files.catbox.moe/nin6cv.mp3",
+        "muchas gracias": "https://files.catbox.moe/nin6cv.mp3",
 
-    if (isHola || isGracias) {
+        // 🚀 Tus nuevas palabras
+        "pito": "https://files.catbox.moe/62yrix.mp3",
+        "gemidos": "https://files.catbox.moe/cemz2z.mp3",
+        "bartolito": "https://files.catbox.moe/mbkoo8.mp3",
+        "gallo": "https://files.catbox.moe/mbkoo8.mp3",
+        "bendicion": "https://files.catbox.moe/l7upzc.mp3"
+    };
 
-        const sEmojis = isHola 
-            ? ["👋", "😺", "🙌", "🎁"] 
-            : ["🥰", "😇", "😊", "😙"];
-        
-        const emoji = sEmojis[Math.floor(Math.random() * sEmojis.length)];
-
-        // Reacción con emoji
-        await conn.sendMessage(m.chat, {
-            react: {
-                text: emoji,
-                key: m.key
-            }
-        });
-
+    if (audioMap[msgText]) {
         try {
+            // Reacción random
+            const sEmojis = ["👋", "😺", "🙌", "🎁", "🥰", "😇", "😊", "😙"];
+            const emoji = sEmojis[Math.floor(Math.random() * sEmojis.length)];
+
+            await conn.sendMessage(m.chat, {
+                react: {
+                    text: emoji,
+                    key: m.key
+                }
+            });
+
             await conn.sendPresenceUpdate("recording", m.chat);
-        } catch {}
+            await new Promise(r => setTimeout(r, 2100));
 
-        await new Promise(r => setTimeout(r, 2100));
-
-        try {
-            // Elegir la URL correcta según el tipo de mensaje
-            let audioUrl = isHola
-                ? "https://files.catbox.moe/3y7q23.mp3"
-                : "https://files.catbox.moe/nin6cv.mp3";
-
-            let res = await fetch(audioUrl);
+            // Descargar el audio desde el diccionario
+            let res = await fetch(audioMap[msgText]);
             if (!res.ok) throw new Error("No se pudo descargar el audio");
 
             let buffer = await res.arrayBuffer();
@@ -56,18 +63,17 @@ const handler = async (m, { conn }) => {
                 fileName: msgText + ".mp3"
             }, { quoted: m });
 
+            await conn.sendPresenceUpdate("paused", m.chat);
+
         } catch (e) {
             console.error(e);
             await m.reply("❌ No se pudo enviar el audio.");
         }
-
-        try {
-            await conn.sendPresenceUpdate("paused", m.chat);
-        } catch {}
     }
 };
 
-handler.customPrefix = /^(hila|hola|holi|ola|oa|hi|hl|gracias|grasias|hh|muchas gracias)$/i;
+// Prefijo dinámico: todas las keys del diccionario
+handler.customPrefix = /^(hola|hila|holi|ola|oa|hi|hl|hh|gracias|grasias|muchas gracias|pito|gemidos|bartolito|gallo|bendicion)$/i;
 handler.command = new RegExp();
 
 export default handler;
