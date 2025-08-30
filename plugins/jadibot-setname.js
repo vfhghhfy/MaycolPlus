@@ -5,7 +5,7 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
   if (!text) return m.reply(`Usa así: *${usedPrefix + command} nombre nuevo*`)
 
   const senderNumber = m.sender.replace(/[^0-9]/g, '')
-  const botPath = path.join('./JadiBots', senderNumber)
+  const botPath = path.join('./MayBots', senderNumber)
   const configPath = path.join(botPath, 'config.json')
 
   if (!fs.existsSync(botPath)) {
