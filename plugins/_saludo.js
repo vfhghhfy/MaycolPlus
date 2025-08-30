@@ -1,4 +1,3 @@
-
 import fetch from "node-fetch";
 
 const handler = async (m, { conn }) => {
@@ -25,7 +24,7 @@ const handler = async (m, { conn }) => {
         "grasias": "https://files.catbox.moe/nin6cv.mp3",
         "muchas gracias": "https://files.catbox.moe/nin6cv.mp3",
 
-        // 🚀 Tus nuevas palabras
+        // 🚀 Nuevas palabras
         "pito": "https://files.catbox.moe/62yrix.mp3",
         "gemidos": "https://files.catbox.moe/cemz2z.mp3",
         "bartolito": "https://files.catbox.moe/mbkoo8.mp3",
@@ -33,7 +32,10 @@ const handler = async (m, { conn }) => {
         "bendicion": "https://files.catbox.moe/l7upzc.mp3"
     };
 
-    if (audioMap[msgText]) {
+    // Buscar si el texto contiene alguna palabra clave
+    let foundKey = Object.keys(audioMap).find(key => msgText.includes(key));
+
+    if (foundKey) {
         try {
             // Reacción random
             const sEmojis = ["👋", "😺", "🙌", "🎁", "🥰", "😇", "😊", "😙"];
@@ -49,8 +51,8 @@ const handler = async (m, { conn }) => {
             await conn.sendPresenceUpdate("recording", m.chat);
             await new Promise(r => setTimeout(r, 2100));
 
-            // Descargar el audio desde el diccionario
-            let res = await fetch(audioMap[msgText]);
+            // Descargar el audio correspondiente
+            let res = await fetch(audioMap[foundKey]);
             if (!res.ok) throw new Error("No se pudo descargar el audio");
 
             let buffer = await res.arrayBuffer();
@@ -60,7 +62,7 @@ const handler = async (m, { conn }) => {
                 audio: audioBuffer,
                 ptt: true,
                 mimetype: "audio/mpeg",
-                fileName: msgText + ".mp3"
+                fileName: foundKey + ".mp3"
             }, { quoted: m });
 
             await conn.sendPresenceUpdate("paused", m.chat);
@@ -72,8 +74,8 @@ const handler = async (m, { conn }) => {
     }
 };
 
-// Prefijo dinámico: todas las keys del diccionario
-handler.customPrefix = /^(hola|hila|holi|ola|oa|hi|hl|hh|gracias|grasias|muchas gracias|pito|gemidos|bartolito|gallo|bendicion)$/i;
+// Regex con todas las palabras, para que solo despierte si contiene una
+handler.customPrefix = /(hola|hila|holi|ola|oa|hi|hl|hh|gracias|grasias|muchas gracias|pito|gemidos|bartolito|gallo|bendicion)/i;
 handler.command = new RegExp();
 
 export default handler;
