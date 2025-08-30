@@ -32,8 +32,16 @@ const handler = async (m, { conn }) => {
         "bendicion": "https://files.catbox.moe/l7upzc.mp3"
     };
 
-    // Buscar si el texto contiene alguna palabra clave
-    let foundKey = Object.keys(audioMap).find(key => msgText.includes(key));
+    let foundKey = null;
+
+    // Buscar palabra exacta usando regex con límites (\b)
+    for (let key of Object.keys(audioMap)) {
+        const regex = new RegExp(`\\b${key}\\b`, "i"); 
+        if (regex.test(msgText)) {
+            foundKey = key;
+            break;
+        }
+    }
 
     if (foundKey) {
         try {
@@ -51,7 +59,7 @@ const handler = async (m, { conn }) => {
             await conn.sendPresenceUpdate("recording", m.chat);
             await new Promise(r => setTimeout(r, 2100));
 
-            // Descargar el audio correspondiente
+            // Descargar y enviar el audio
             let res = await fetch(audioMap[foundKey]);
             if (!res.ok) throw new Error("No se pudo descargar el audio");
 
@@ -74,8 +82,8 @@ const handler = async (m, { conn }) => {
     }
 };
 
-// Regex con todas las palabras, para que solo despierte si contiene una
-handler.customPrefix = /(hola|hila|holi|ola|oa|hi|hl|hh|gracias|grasias|muchas gracias|pito|gemidos|bartolito|gallo|bendicion)/i;
+// Regex: despierta el handler solo si hay palabra exacta
+handler.customPrefix = /\b(hola|hila|holi|ola|oa|hi|hl|hh|gracias|grasias|muchas gracias|pito|gemidos|bartolito|gallo|bendicion)\b/i;
 handler.command = new RegExp();
 
 export default handler;
