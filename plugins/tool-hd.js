@@ -7,7 +7,7 @@ const handler = async (m, {conn, usedPrefix, command}) => {
   let mime = (q.msg || q).mimetype || q.mediaType || ""
   if (!mime) return conn.reply(m.chat, `[★] Ups, Al parecer eres nuevo... Responde a una imagen`, m)
   if (!/image\/(jpe?g|png)/.test(mime)) return m.reply(`[★] Ups, Al parecer esa imagen no soporto como soy eh?, Intenta con otro. Tal vez ese si me soporte`)
-  conn.reply(m.chat, `[★] Debes see paciente querido espíritu...`, m)  
+  conn.reply(m.chat, `[★] Debes ser paciente querido espíritu...`, m)  
   let img = await q.download?.()
   let pr = await remini(img, "enhance")
   await conn.sendFile(m.chat, pr, 'thumbnail.jpg', listo, m, null)
