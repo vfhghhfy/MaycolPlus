@@ -388,5 +388,6 @@ function cleanName(name) {
 
 handler.command = handler.help = ["play", "playaudio", "ytmp3", "play2", "playvid", "ytv", "ytmp4", "yt"];
 handler.tags = ["descargas"];
+handler.register = true;
 
 export default handler;
