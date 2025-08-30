@@ -22,13 +22,19 @@ const handler = async (m, { conn, command, args, isAdmin }) => {
   const type = (args[0] || '').toLowerCase()
   const enable = command === 'on'
 
-  if (!['antilink', 'welcome', 'antiarabe', 'modoadmin'].includes(type)) {
-    return m.reply(`✳️ Usa:
+  if (!['antilink', 'welcome', 'antiarabe', 'modoadmin', 'antinsfw'].includes(type)) {
+  return m.reply(`✳️ Usa:
 🌙 *.on antilink* / *.off antilink*
 🌙 *.on welcome* / *.off welcome*
 🌙 *.on antiarabe* / *.off antiarabe*
-🌙 *.on modoadmin* / *.off modoadmin*`)
-  }
+🌙 *.on modoadmin* / *.off modoadmin*
+🌙 *.on antinsfw* / *.off antinsfw*`)
+}
+
+if (type === 'antinsfw') {
+  chat.antiNSFW = enable
+  return m.reply(`👻 「MaycolPlus」 ➜ AntiNSFW ${enable ? '🟢 activado' : '🔴 desactivado'}.`)
+}
 
   if (!isAdmin) return m.reply('❌「MaycolPlus」 ➜ Solo los *admins* pueden controlar estas opciones.')
 
