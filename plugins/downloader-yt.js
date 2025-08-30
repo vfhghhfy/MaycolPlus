@@ -1,6 +1,8 @@
 import yts from "yt-search";
 import fetch from "node-fetch";
 
+const limit = 100;
+
 const handler = async (m, { conn, text, command }) => {
   if (!text) return m.reply(`╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <3 ✦ 」  
 │  
@@ -14,9 +16,10 @@ const handler = async (m, { conn, text, command }) => {
   await m.react("🕛");
 
   try {
-    // 1️⃣ Buscar video
     const res = await yts(text);
-    if (!res?.videos?.length) return m.reply("❌ No se encontraron resultados.");
+    if (!res || !res.videos || res.videos.length === 0) {
+      return m.reply("❌ No se encontraron resultados para tu búsqueda.");
+    }
 
     const video = res.videos[0];
     const title = video.title || "Sin título";
@@ -26,35 +29,29 @@ const handler = async (m, { conn, text, command }) => {
     const url = video.url || "";
     const thumbnail = video.thumbnail || "";
 
-    // 2️⃣ Preparar mensaje con info y barra de progreso
-    let progress = 0;
-    const getProgressBar = (p) => {
-      const total = 20;
-      const filled = Math.floor((p / 100) * total);
-      return "█".repeat(filled) + "░".repeat(total - filled) + ` ${p}%`;
-    };
+    const isDirectDownload = ["play", "playaudio", "ytmp3", "play2", "playvid", "ytv", "ytmp4"].includes(command);
 
-    const infoMessage = `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <3 ✦ 」  
+    // Barra de progreso inicial
+    let progress = 0;
+    const msg = await conn.sendMessage(m.chat, {
+      image: { url: thumbnail },
+      caption: `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <3 ✦ 」  
 │  
 ├─ 「❀」${title}  
 ├─ ✧ Canal: ${authorName}  
 ├─ ✧ Duración: ${durationTimestamp}  
 ├─ ✧ Vistas: ${views}  
 │  
-├─ Progreso de descarga:  
-${getProgressBar(progress)}  
-╰─✦`;
-
-    let sentMsg = await conn.sendMessage(m.chat, {
-      image: { url: thumbnail },
-      caption: infoMessage,
+├─ ⏳ Procesando: [${"░".repeat(0)}${"█".repeat(0)}] 0%  
+╰─✦`,
+      headerType: 4
     }, { quoted: m });
 
-    // 3️⃣ Animar barra en loop cada 0.5s hasta recibir respuesta de API
+    // Animar barra de progreso mientras llega la respuesta de la API
     const interval = setInterval(async () => {
-      if (progress < 89) {
-        progress += 1;
-        await conn.editMessageCaption(m.chat, sentMsg.key, {
+      if (progress < 90) progress += 5;
+      try {
+        await conn.editMessageCaption(m.chat, msg.key, {
           caption: `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <3 ✦ 」  
 │  
 ├─ 「❀」${title}  
@@ -62,75 +59,58 @@ ${getProgressBar(progress)}
 ├─ ✧ Duración: ${durationTimestamp}  
 ├─ ✧ Vistas: ${views}  
 │  
-├─ Progreso de descarga:  
-${getProgressBar(progress)}  
-╰─✦`,
+├─ ⏳ Procesando: [${"█".repeat(progress/10)}${"░".repeat(10-progress/10)}] ${progress}%  
+╰─✦`
         });
-      }
+      } catch {}
     }, 500);
 
-    // 4️⃣ Llamar a API de descarga según comando
+    // Llamada a la API de Vreden según comando
     let apiUrl;
     if (["play", "playaudio", "ytmp3"].includes(command)) {
       apiUrl = `https://api.vreden.my.id/api/ytmp3?url=${encodeURIComponent(url)}`;
-    } else {
+    } else if (["play2", "playvid", "ytv", "ytmp4"].includes(command)) {
       apiUrl = `https://api.vreden.my.id/api/ytmp4?url=${encodeURIComponent(url)}`;
     }
 
-    const resApi = await fetch(apiUrl).then(r => r.json());
-    if (!resApi.result?.download?.url) throw new Error("No se pudo obtener el archivo");
+    const response = await fetch(apiUrl);
+    const data = await response.json();
 
-    // 5️⃣ Actualizar barra al 90%
-    progress = 90;
-    await conn.editMessageCaption(m.chat, sentMsg.key, {
-      caption: `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <3 ✦ 」  
+    clearInterval(interval); // Detener barra de progreso
+    progress = 100; // Llevar al 100%
+    try {
+      await conn.editMessageCaption(m.chat, msg.key, {
+        caption: `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <3 ✦ 」  
 │  
 ├─ 「❀」${title}  
 ├─ ✧ Canal: ${authorName}  
 ├─ ✧ Duración: ${durationTimestamp}  
 ├─ ✧ Vistas: ${views}  
 │  
-├─ Progreso de descarga:  
-${getProgressBar(progress)}  
-╰─✦`,
-    });
+├─ ✅ Listo! [${"█".repeat(10)}] 100%  
+╰─✦`
+      });
+    } catch {}
 
-    clearInterval(interval); // Detener animación
-
-    // 6️⃣ Enviar archivo
-    const fileUrl = resApi.result.download.url;
-    const fileName = resApi.result.download.filename;
-
-    if (["play", "playaudio", "ytmp3"].includes(command)) {
-      await conn.sendMessage(m.chat, {
-        audio: { url: fileUrl },
+    // Enviar audio o video
+    if (data?.result?.download?.url) {
+      const downloadUrl = data.result.download.url;
+      const cleanTitle = cleanName(title) + (["play", "playaudio", "ytmp3"].includes(command) ? ".mp3" : ".mp4");
+      const messagePayload = ["play", "playaudio", "ytmp3"].includes(command) ? {
+        audio: { url: downloadUrl },
         mimetype: "audio/mpeg",
-        fileName: fileName,
-      }, { quoted: m });
-    } else {
-      await conn.sendMessage(m.chat, {
-        video: { url: fileUrl },
+        fileName: cleanTitle
+      } : {
+        video: { url: downloadUrl },
         mimetype: "video/mp4",
-        fileName: fileName,
-      }, { quoted: m });
+        fileName: cleanTitle
+      };
+      await conn.sendMessage(m.chat, messagePayload, { quoted: m });
+      await m.react("✅");
+    } else {
+      await m.reply("❌ Error: no se pudo obtener la descarga de la API.");
+      await m.react("❌");
     }
-
-    // 7️⃣ Barra al 100%
-    progress = 100;
-    await conn.editMessageCaption(m.chat, sentMsg.key, {
-      caption: `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <3 ✦ 」  
-│  
-├─ 「❀」${title}  
-├─ ✧ Canal: ${authorName}  
-├─ ✧ Duración: ${durationTimestamp}  
-├─ ✧ Vistas: ${views}  
-│  
-├─ Progreso de descarga:  
-${getProgressBar(progress)}  
-╰─✦`,
-    });
-
-    await m.react("✅");
 
   } catch (error) {
     console.error("❌ Error general:", error);
@@ -143,6 +123,11 @@ ${getProgressBar(progress)}
   }
 };
 
+function cleanName(name) {
+  return name.replace(/[^\w\s-_.]/gi, "").substring(0, 50);
+}
+
 handler.command = handler.help = ["play", "playaudio", "ytmp3", "play2", "playvid", "ytv", "ytmp4", "yt"];
 handler.tags = ["descargas"];
+
 export default handler;
