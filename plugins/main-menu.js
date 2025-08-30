@@ -81,6 +81,7 @@ ${cmds.map(cmd => `│ ▪️ ${cmd}`).join('\n')}
 handler.help = ['menu']
 handler.tags = ['main']
 handler.command = ['menu', 'menú', 'help', 'ayuda']
+handler.register = true;
 
 export default handler
 
