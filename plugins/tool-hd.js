@@ -52,7 +52,7 @@ let handler = async (m, { conn, usedPrefix, command }) => {
 
     if (data.status !== 'success' || !data.result_url) throw new Error('No se pudo mejorar la imagen.')  
 
-    const improvedRes = await fetch(data.result_url)  
+    const improvedRes = await fetch(data.result)  
     const buffer = await improvedRes.buffer()  
 
     await conn.sendMessage(m.chat, {  
