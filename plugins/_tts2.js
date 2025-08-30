@@ -1,68 +1,94 @@
 import fetch from 'node-fetch'
+import https from 'https'
+import fs from 'fs'
+import path from 'path'
+import crypto from 'crypto'
 
-let handler = async (m, { conn, args, command }) => {
-  const vocesDisponibles = [
-    'optimus_prime',
-    'eminem',
-    'taylor_swift',
-    'nahida',
-    'miku',
-    'nami',
-    'goku',
-    'ana',
-    'elon_musk',
-    'mickey_mouse',
-    'kendrick_lamar',
-    'angela_adkinsh'
-  ]
+const API_KEY = '88ae7828893847a080f52fee2c48bf39'
+const SPEAKER_ID = '67aee909-5d4b-11ee-a861-00163e2ac61b' // Hatsune Miku 💙
 
-  // si no hay argumentos -> error
-  if (args.length < 1) {
-    return m.reply(`✐ Uso correcto:\n.${command} [voz] <texto>\n\n❐ Voces disponibles:\n${vocesDisponibles.join(', ')}\n\n⚠ Si no pones voz, usaré por defecto: miku UwU`)
-  }
+const ttsDir = path.join(process.cwd(), 'tts')
+if (!fs.existsSync(ttsDir)) {
+  fs.mkdirSync(ttsDir, { recursive: true })
+}
 
-  let voiceModel, text
+async function generateMikuTTS(text) {
+  return new Promise((resolve, reject) => {
+    const fileId = crypto.randomBytes(8).toString('hex')
+    const outputPath = path.join(ttsDir, `${fileId}.wav`)
 
-  // si hay más de un argumento y la primera coincide con voces disponibles → usar esa voz
-  if (vocesDisponibles.includes(args[0].toLowerCase())) {
-    voiceModel = args[0].toLowerCase()
-    text = args.slice(1).join(' ')
-  } else {
-    // si no hay voz válida → usar "miku" como predeterminada
-    voiceModel = 'miku'
-    text = args.join(' ')
-  }
+    const postData = JSON.stringify({
+      text: text,
+      speaker: SPEAKER_ID,
+      emotion: 'Happy'
+    })
 
+    const options = {
+      hostname: 'api.topmediai.com',
+      path: '/v1/text2speech',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': API_KEY,
+        'Content-Length': Buffer.byteLength(postData)
+      }
+    }
+
+    const req = https.request(options, (res) => {
+      let data = ''
+      res.on('data', chunk => data += chunk)
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(data)
+          const audioUrl = json?.data?.oss_url
+
+          if (!audioUrl) return reject(new Error('No audio URL in response'))
+
+          // Descargar audio
+          const file = fs.createWriteStream(outputPath)
+          https.get(audioUrl, (audioRes) => {
+            audioRes.pipe(file)
+            file.on('finish', () => {
+              file.close()
+              resolve(outputPath)
+            })
+          }).on('error', err => reject(err))
+
+        } catch (err) {
+          reject(err)
+        }
+      })
+    })
+
+    req.on('error', reject)
+    req.write(postData)
+    req.end()
+  })
+}
+
+let handler = async (m, { conn, args }) => {
+  const text = args.join(' ')
   if (!text) return m.reply('✐ Debes escribir el texto para convertir en audio.')
 
   try {
-    const res = await fetch(`https://zenzxz.dpdns.org/tools/text2speech?text=${encodeURIComponent(text)}`)
-    const json = await res.json()
-
-    if (!json.status || !Array.isArray(json.results)) {
-      return m.reply('✦ Error al obtener datos de la API.')
-    }
-
-    const voice = json.results.find(v => v.model === voiceModel)
-    if (!voice || !voice.audio_url) {
-      return m.reply(`✿ No se pudo generar el audio con la voz "${voiceModel}".`)
-    }
-
-    const audioRes = await fetch(voice.audio_url)
-    const audioBuffer = await audioRes.arrayBuffer()
+    const audioPath = await generateMikuTTS(text)
 
     await conn.sendMessage(m.chat, {
-      audio: Buffer.from(audioBuffer),
+      audio: fs.readFileSync(audioPath),
       mimetype: 'audio/mpeg',
       ptt: true
     }, { quoted: m })
 
+    fs.unlink(audioPath, (err) => {
+      if (err) console.error(`Error eliminando archivo: ${err.message}`)
+    })
+
   } catch (e) {
     console.error(e)
-    m.reply('✐ Ocurrió un error al generar el audio.')
+    m.reply('✐ Ocurrió un error al generar el audio con Miku.')
   }
 }
 
-handler.command = /^tts$/i  // ahora el comando es "tts"
+handler.command = /^tts$/i
 handler.register = true
 export default handler
