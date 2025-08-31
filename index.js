@@ -37,6 +37,10 @@ const { CONNECTING } = ws
 const { chain } = lodash
 const PORT = process.env.PORT || process.env.SERVER_PORT || 3000
 
+// Cache optimizado para LIDs con TTL más agresivo
+const lidCache = new NodeCache({ stdTTL: 300, checkperiod: 60, maxKeys: 1000 })
+const processCache = new Map() // Cache en memoria para procesos repetitivos
+
 let { say } = cfonts
 console.log(chalk.magentaBright('\nIniciando MaycolPlus...'))
 say('MaycolPlus', {
@@ -53,7 +57,7 @@ protoType()
 serialize()
 
 if (!existsSync("./tmp")) {
-  mkdirSync("./tmp");
+  mkdirSync("./tmp", { recursive: true });
 }
 
 global.__filename = function filename(pathURL = import.meta.url, rmPrefix = platform !== 'win32') {
@@ -73,11 +77,13 @@ global.db = new Low(/https?:\/\//.test(opts['db'] || '') ? new cloudDBAdapter(op
 global.DATABASE = global.db; 
 global.loadDatabase = async function loadDatabase() {
 if (global.db.READ) {
-return new Promise((resolve) => setInterval(async function() {
+return new Promise((resolve) => {
+const checkInterval = setInterval(async function() {
 if (!global.db.READ) {
-clearInterval(this);
+clearInterval(checkInterval);
 resolve(global.db.data == null ? global.loadDatabase() : global.db.data)
-}}, 1 * 1000))
+}}, 100) // Reducido de 1000ms a 100ms
+})
 }
 if (global.db.data !== null) return
 global.db.READ = true
@@ -98,8 +104,9 @@ loadDatabase()
 
 const {state, saveState, saveCreds} = await useMultiFileAuthState(global.sessions)
 const msgRetryCounterMap = new Map()
-const msgRetryCounterCache = new NodeCache({ stdTTL: 0, checkperiod: 0 })
-const userDevicesCache = new NodeCache({ stdTTL: 0, checkperiod: 0 })
+// Cache optimizado con TTL más corto para mejor rendimiento
+const msgRetryCounterCache = new NodeCache({ stdTTL: 300, checkperiod: 30, maxKeys: 500 })
+const userDevicesCache = new NodeCache({ stdTTL: 600, checkperiod: 60, maxKeys: 1000 })
 const { version } = await fetchLatestBaileysVersion()
 let phoneNumber = global.botNumber
 const methodCodeQR = process.argv.includes("qr")
@@ -145,7 +152,7 @@ creds: state.creds,
 keys: makeCacheableSignalKeyStore(state.keys, Pino({ level: "fatal" }).child({ level: "fatal" })),
 },
 markOnlineOnConnect: false, 
-generateHighQualityLinkPreview: true, 
+generateHighQualityLinkPreview: false, // Deshabilitado para velocidad
 syncFullHistory: false,
 getMessage: async (key) => {
 try {
@@ -155,13 +162,16 @@ return msg?.message || ""
 } catch (error) {
 return ""
 }},
-msgRetryCounterCache: msgRetryCounterCache || new Map(),
-userDevicesCache: userDevicesCache || new Map(),
-defaultQueryTimeoutMs: undefined,
+msgRetryCounterCache: msgRetryCounterCache,
+userDevicesCache: userDevicesCache,
+defaultQueryTimeoutMs: 5000, // Timeout más agresivo
 cachedGroupMetadata: (jid) => globalThis.conn.chats[jid] ?? {},
 version: version, 
-keepAliveIntervalMs: 55000, 
-maxIdleTimeMs: 60000, 
+keepAliveIntervalMs: 30000, // Reducido para respuesta más rápida
+maxIdleTimeMs: 35000, // Reducido para mejor rendimiento
+retryRequestDelayMs: 250, // Delay más corto para reintentos
+maxMsgRetryCount: 2, // Menos reintentos para mayor velocidad
+connectTimeoutMs: 20000, // Timeout de conexión más rápido
 }
 
 global.conn = makeWASocket(connectionOptions)
@@ -185,19 +195,20 @@ setTimeout(async () => {
 let codeBot = await conn.requestPairingCode(addNumber)
 codeBot = codeBot?.match(/.{1,4}/g)?.join("-") || codeBot
 console.log(chalk.bold.white(chalk.bgMagenta(`[♦]  Código de Vinculacion:`)), chalk.bold.white(chalk.white(codeBot)))
-}, 3000)
+}, 1500) // Reducido de 3000ms a 1500ms
 }}}}
 conn.isInit = false
 conn.well = false
-conn.logger.info(`[♠] Hecho exitosamente...\n`)
+conn.logger.info(`[♠ ] Hecho exitosamente...\n`)
 if (!opts['test']) {
 if (global.db) setInterval(async () => {
 if (global.db.data) await global.db.write()
 if (opts['autocleartmp'] && (global.support || {}).find) (tmp = [os.tmpdir(), 'tmp', `${jadi}`], tmp.forEach((filename) => cp.spawn('find', [filename, '-amin', '3', '-type', 'f', '-delete'])))
-}, 30 * 1000)
+}, 15 * 1000) // Reducido de 30s a 15s para mayor frecuencia
 }
 
-async function resolveLidToRealJid(lidJid, groupJid, maxRetries = 3, retryDelay = 1000) {
+// Función optimizada con cache mejorado
+async function resolveLidToRealJid(lidJid, groupJid, maxRetries = 2, retryDelay = 300) { // Reducido retries y delay
 if (!lidJid?.endsWith("@lid") || !groupJid?.endsWith("@g.us")) return lidJid?.includes("@") ? lidJid : `${lidJid}@s.whatsapp.net`
 const cached = lidCache.get(lidJid);
 if (cached) return cached;
@@ -205,26 +216,39 @@ const lidToFind = lidJid.split("@")[0];
 let attempts = 0
 while (attempts < maxRetries) {
 try {
-const metadata = await conn.groupMetadata(groupJid)
+// Cache de metadatos de grupo para evitar llamadas repetidas
+const cacheKey = `metadata_${groupJid}`
+let metadata = processCache.get(cacheKey)
+if (!metadata) {
+metadata = await conn.groupMetadata(groupJid)
+processCache.set(cacheKey, metadata)
+setTimeout(() => processCache.delete(cacheKey), 30000) // Expira en 30s
+}
 if (!metadata?.participants) throw new Error("No se obtuvieron participantes")
 for (const participant of metadata.participants) {
 try {
 if (!participant?.jid) continue
-const contactDetails = await conn.onWhatsApp(participant.jid)
+const contactCacheKey = `contact_${participant.jid}`
+let contactDetails = processCache.get(contactCacheKey)
+if (!contactDetails) {
+contactDetails = await conn.onWhatsApp(participant.jid)
+processCache.set(contactCacheKey, contactDetails)
+setTimeout(() => processCache.delete(contactCacheKey), 60000) // Expira en 1min
+}
 if (!contactDetails?.[0]?.lid) continue
 const possibleLid = contactDetails[0].lid.split("@")[0]
 if (possibleLid === lidToFind) {
-lidCache.set(lidJid, participant.jid)
+lidCache.set(lidJid, participant.jid, 300) // TTL de 5min
 return participant.jid
 }} catch (e) {
 continue
 }}
-lidCache.set(lidJid, lidJid)
+lidCache.set(lidJid, lidJid, 300)
 return lidJid
 } catch (e) {
 attempts++
 if (attempts >= maxRetries) {
-lidCache.set(lidJid, lidJid)
+lidCache.set(lidJid, lidJid, 300)
 return lidJid
 }
 await new Promise(resolve => setTimeout(resolve, retryDelay))
@@ -232,48 +256,106 @@ await new Promise(resolve => setTimeout(resolve, retryDelay))
 return lidJid
 }
 
+// Función optimizada con procesamiento en paralelo
 async function extractAndProcessLids(text, groupJid) {
 if (!text) return text
 const lidMatches = text.match(/\d+@lid/g) || []
+if (lidMatches.length === 0) return text
 let processedText = text
-for (const lid of lidMatches) {
+// Procesar LIDs en paralelo para mayor velocidad
+const lidPromises = lidMatches.map(async (lid) => {
 try {
 const realJid = await resolveLidToRealJid(lid, groupJid);
-processedText = processedText.replace(new RegExp(lid, 'g'), realJid)
+return { lid, realJid }
 } catch (e) {
 console.error(`Error procesando LID ${lid}:`, e)
-}}
+return { lid, realJid: lid }
+}})
+const results = await Promise.all(lidPromises)
+results.forEach(({ lid, realJid }) => {
+processedText = processedText.replace(new RegExp(lid, 'g'), realJid)
+})
 return processedText
 }
 
+// Función optimizada con menos operaciones síncronas
 async function processLidsInMessage(message, groupJid) {
 if (!message || !message.key) return message
 try {
-const messageCopy = {
-key: {...message.key},
-message: message.message ? {...message.message} : undefined,
-...(message.quoted && {quoted: {...message.quoted}}),
-...(message.mentionedJid && {mentionedJid: [...message.mentionedJid]})
-}
+// Shallow copy más eficiente
+const messageCopy = { ...message }
+if (message.key) messageCopy.key = { ...message.key }
+if (message.message) messageCopy.message = { ...message.message }
+if (message.quoted) messageCopy.quoted = { ...message.quoted }
+if (message.mentionedJid) messageCopy.mentionedJid = [...message.mentionedJid]
+
 const remoteJid = messageCopy.key.remoteJid || groupJid
-if (messageCopy.key?.participant?.endsWith('@lid')) { messageCopy.key.participant = await resolveLidToRealJid(messageCopy.key.participant, remoteJid) }
-if (messageCopy.message?.extendedTextMessage?.contextInfo?.participant?.endsWith('@lid')) { messageCopy.message.extendedTextMessage.contextInfo.participant = await resolveLidToRealJid( messageCopy.message.extendedTextMessage.contextInfo.participant, remoteJid ) }
+
+// Procesar LIDs críticos en paralelo
+const lidPromises = []
+if (messageCopy.key?.participant?.endsWith('@lid')) { 
+lidPromises.push(resolveLidToRealJid(messageCopy.key.participant, remoteJid).then(result => {
+messageCopy.key.participant = result
+}))
+}
+if (messageCopy.message?.extendedTextMessage?.contextInfo?.participant?.endsWith('@lid')) { 
+lidPromises.push(resolveLidToRealJid(messageCopy.message.extendedTextMessage.contextInfo.participant, remoteJid).then(result => {
+messageCopy.message.extendedTextMessage.contextInfo.participant = result
+}))
+}
+
+// Esperar procesamiento en paralelo
+if (lidPromises.length > 0) {
+await Promise.all(lidPromises)
+}
+
+// Procesar menciones si existen
 if (messageCopy.message?.extendedTextMessage?.contextInfo?.mentionedJid) {
 const mentionedJid = messageCopy.message.extendedTextMessage.contextInfo.mentionedJid
 if (Array.isArray(mentionedJid)) {
-for (let i = 0; i < mentionedJid.length; i++) {
-if (mentionedJid[i]?.endsWith('@lid')) {
-mentionedJid[i] = await resolveLidToRealJid(mentionedJid[i], remoteJid)
-}}}}
+const mentionPromises = mentionedJid.map(async (jid, i) => {
+if (jid?.endsWith('@lid')) {
+return resolveLidToRealJid(jid, remoteJid).then(result => {
+mentionedJid[i] = result
+})
+}
+return Promise.resolve()
+})
+await Promise.all(mentionPromises)
+}}
+
+// Procesar menciones citadas si existen
 if (messageCopy.message?.extendedTextMessage?.contextInfo?.quotedMessage?.extendedTextMessage?.contextInfo?.mentionedJid) {
 const quotedMentionedJid = messageCopy.message.extendedTextMessage.contextInfo.quotedMessage.extendedTextMessage.contextInfo.mentionedJid;
 if (Array.isArray(quotedMentionedJid)) {
-for (let i = 0; i < quotedMentionedJid.length; i++) {
-if (quotedMentionedJid[i]?.endsWith('@lid')) {
-quotedMentionedJid[i] = await resolveLidToRealJid(quotedMentionedJid[i], remoteJid)
-}}}}
-if (messageCopy.message?.conversation) { messageCopy.message.conversation = await extractAndProcessLids(messageCopy.message.conversation, remoteJid) }
-if (messageCopy.message?.extendedTextMessage?.text) { messageCopy.message.extendedTextMessage.text = await extractAndProcessLids(messageCopy.message.extendedTextMessage.text, remoteJid) }
+const quotedMentionPromises = quotedMentionedJid.map(async (jid, i) => {
+if (jid?.endsWith('@lid')) {
+return resolveLidToRealJid(jid, remoteJid).then(result => {
+quotedMentionedJid[i] = result
+})
+}
+return Promise.resolve()
+})
+await Promise.all(quotedMentionPromises)
+}}
+
+// Procesar texto en paralelo
+const textPromises = []
+if (messageCopy.message?.conversation) { 
+textPromises.push(extractAndProcessLids(messageCopy.message.conversation, remoteJid).then(result => {
+messageCopy.message.conversation = result
+}))
+}
+if (messageCopy.message?.extendedTextMessage?.text) { 
+textPromises.push(extractAndProcessLids(messageCopy.message.extendedTextMessage.text, remoteJid).then(result => {
+messageCopy.message.extendedTextMessage.text = result
+}))
+}
+
+if (textPromises.length > 0) {
+await Promise.all(textPromises)
+}
+
 if (messageCopy.message?.extendedTextMessage?.contextInfo?.participant && !messageCopy.quoted) {
 const quotedSender = await resolveLidToRealJid( messageCopy.message.extendedTextMessage.contextInfo.participant, remoteJid );
 messageCopy.quoted = { sender: quotedSender, message: messageCopy.message.extendedTextMessage.contextInfo.quotedMessage }
@@ -301,32 +383,33 @@ console.log(chalk.green.bold(`[ ✿ ]  Escanea este código QR`))}
 if (connection === "open") {
 const userJid = jidNormalizedUser(conn.user.id)
 const userName = conn.user.name || conn.user.verifiedName || "Desconocido"
-await joinChannels(conn)
+// Unir canales sin await para no bloquear
+joinChannels(conn).catch(() => {}) // No bloqueante
 console.log(chalk.green.bold(`[ ✿ ]  Conectado a: ${userName}`))
 }
 let reason = new Boom(lastDisconnect?.error)?.output?.statusCode
 if (connection === 'close') {
 if (reason === DisconnectReason.badSession) {
-console.log(chalk.bold.cyanBright(`\n⚠︎ Sin conexión, borra la session principal del Bot, y conectate nuevamente.`))
+console.log(chalk.bold.cyanBright(`\n⚠️ Sin conexión, borra la session principal del Bot, y conectate nuevamente.`))
 } else if (reason === DisconnectReason.connectionClosed) {
 console.log(chalk.bold.magentaBright(`\n♻ Reconectando la conexión del Bot...`))
-await global.reloadHandler(true).catch(console.error)
+setTimeout(() => global.reloadHandler(true).catch(console.error), 1000) // Delay mínimo
 } else if (reason === DisconnectReason.connectionLost) {
-console.log(chalk.bold.blueBright(`\n⚠︎ Conexión perdida con el servidor, reconectando el Bot...`))
-await global.reloadHandler(true).catch(console.error)
+console.log(chalk.bold.blueBright(`\n⚠️ Conexión perdida con el servidor, reconectando el Bot...`))
+setTimeout(() => global.reloadHandler(true).catch(console.error), 1000)
 } else if (reason === DisconnectReason.connectionReplaced) {
-console.log(chalk.bold.yellowBright(`\nꕥ La conexión del Bot ha sido reemplazada.`))
+console.log(chalk.bold.yellowBright(`\n☥ La conexión del Bot ha sido reemplazada.`))
 } else if (reason === DisconnectReason.loggedOut) {
-console.log(chalk.bold.redBright(`\n⚠︎ Sin conexión, borra la session principal del Bot, y conectate nuevamente.`))
-await global.reloadHandler(true).catch(console.error)
+console.log(chalk.bold.redBright(`\n⚠️ Sin conexión, borra la session principal del Bot, y conectate nuevamente.`))
+setTimeout(() => global.reloadHandler(true).catch(console.error), 1000)
 } else if (reason === DisconnectReason.restartRequired) {
 console.log(chalk.bold.cyanBright(`\n♻ Conectando el Bot con el servidor...`))
-await global.reloadHandler(true).catch(console.error)
+setTimeout(() => global.reloadHandler(true).catch(console.error), 500) // Más rápido
 } else if (reason === DisconnectReason.timedOut) {
 console.log(chalk.bold.yellowBright(`\n♻ Conexión agotada, reconectando el Bot...`))
-await global.reloadHandler(true).catch(console.error)
+setTimeout(() => global.reloadHandler(true).catch(console.error), 1000)
 } else {
-console.log(chalk.bold.redBright(`\n⚠︎ Conexión cerrada, conectese nuevamente.`))
+console.log(chalk.bold.redBright(`\n⚠️ Conexión cerrada, conectese nuevamente.`))
 }}}
 process.on('uncaughtException', console.error)
 let isInit = true
@@ -368,10 +451,12 @@ conn.ev.on('creds.update', conn.credsUpdate)
 isInit = false
 return true
 }
+// Intervalo de reinicio más largo para evitar interrupciones
 setInterval(() => {
 console.log('[ ✿ ]  Reiniciando...');
 process.exit(0)
-}, 10800000)
+}, 14400000) // Aumentado a 4 horas
+
 let rtU = join(__dirname, `./${jadi}`)
 if (!existsSync(rtU)) {
 mkdirSync(rtU, { recursive: true }) 
@@ -381,9 +466,9 @@ global.rutaJadiBot = join(__dirname, `./${jadi}`)
 if (global.yukiJadibts) {
 if (!existsSync(global.rutaJadiBot)) {
 mkdirSync(global.rutaJadiBot, { recursive: true }) 
-console.log(chalk.bold.cyan(`ꕥ La carpeta: ${jadi} se creó correctamente.`))
+console.log(chalk.bold.cyan(`☥ La carpeta: ${jadi} se creó correctamente.`))
 } else {
-console.log(chalk.bold.cyan(`ꕥ La carpeta: ${jadi} ya está creada.`)) 
+console.log(chalk.bold.cyan(`☥ La carpeta: ${jadi} ya está creada.`)) 
 }
 const readRutaJadiBot = readdirSync(rutaJadiBot)
 if (readRutaJadiBot.length > 0) {
@@ -398,16 +483,24 @@ yukiJadiBot({pathYukiJadiBot: botPath, m: null, conn, args: '', usedPrefix: '/',
 const pluginFolder = global.__dirname(join(__dirname, './plugins/index'))
 const pluginFilter = (filename) => /\.js$/.test(filename)
 global.plugins = {}
+// Carga de plugins optimizada
 async function filesInit() {
-for (const filename of readdirSync(pluginFolder).filter(pluginFilter)) {
+const files = readdirSync(pluginFolder).filter(pluginFilter)
+const pluginPromises = files.map(async (filename) => {
 try {
 const file = global.__filename(join(pluginFolder, filename))
 const module = await import(file)
-global.plugins[filename] = module.default || module
+return { filename, module: module.default || module }
 } catch (e) {
 conn.logger.error(e)
-delete global.plugins[filename]
-}}}
+return { filename, module: null }
+}})
+const results = await Promise.all(pluginPromises)
+results.forEach(({ filename, module }) => {
+if (module) {
+global.plugins[filename] = module
+}})
+}
 filesInit().then((_) => Object.keys(global.plugins)).catch(console.error)
 
 global.reload = async (_ev, filename) => {
@@ -417,147 +510,4 @@ if (filename in global.plugins) {
 if (existsSync(dir)) conn.logger.info(` updated plugin - '${filename}'`)
 else {
 conn.logger.warn(`deleted plugin - '${filename}'`)
-return delete global.plugins[filename]
-}} else conn.logger.info(`new plugin - '${filename}'`)
-const err = syntaxerror(readFileSync(dir), filename, {
-sourceType: 'module',
-allowAwaitOutsideFunction: true,
-});
-if (err) conn.logger.error(`syntax error while loading '${filename}'\n${format(err)}`)
-else {
-try {
-const module = (await import(`${global.__filename(dir)}?update=${Date.now()}`));
-global.plugins[filename] = module.default || module;
-} catch (e) {
-conn.logger.error(`error require plugin '${filename}\n${format(e)}'`)
-} finally {
-global.plugins = Object.fromEntries(Object.entries(global.plugins).sort(([a], [b]) => a.localeCompare(b)))
-}}}}
-Object.freeze(global.reload)
-watch(pluginFolder, global.reload)
-await global.reloadHandler()
-async function _quickTest() {
-const test = await Promise.all([
-spawn('ffmpeg'),
-spawn('ffprobe'),
-spawn('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-filter_complex', 'color', '-frames:v', '1', '-f', 'webp', '-']),
-spawn('convert'),
-spawn('magick'),
-spawn('gm'),
-spawn('find', ['--version']),
-].map((p) => {
-return Promise.race([
-new Promise((resolve) => {
-p.on('close', (code) => {
-resolve(code !== 127);
-});
-}),
-new Promise((resolve) => {
-p.on('error', (_) => resolve(false))
-})])
-}))
-const [ffmpeg, ffprobe, ffmpegWebp, convert, magick, gm, find] = test;
-const s = global.support = {ffmpeg, ffprobe, ffmpegWebp, convert, magick, gm, find};
-Object.freeze(global.support);
-}
-function clearTmp() {
-const tmpDir = join(__dirname, 'tmp')
-const filenames = readdirSync(tmpDir)
-filenames.forEach(file => {
-const filePath = join(tmpDir, file)
-unlinkSync(filePath)})
-}
-
-function purgeSession() {
-let prekey = []
-let directorio = readdirSync(`./${sessions}`)
-let filesFolderPreKeys = directorio.filter(file => {
-return file.startsWith('pre-key-')
-})
-prekey = [...prekey, ...filesFolderPreKeys]
-filesFolderPreKeys.forEach(files => {
-unlinkSync(`./${sessions}/${files}`)
-})
-} 
-
-function purgeSessionSB() {
-try {
-const listaDirectorios = readdirSync(`./${jadi}/`);
-let SBprekey = [];
-listaDirectorios.forEach(directorio => {
-if (statSync(`./${jadi}/${directorio}`).isDirectory()) {
-const DSBPreKeys = readdirSync(`./${jadi}/${directorio}`).filter(fileInDir => {
-return fileInDir.startsWith('pre-key-')
-})
-SBprekey = [...SBprekey, ...DSBPreKeys];
-DSBPreKeys.forEach(fileInDir => {
-if (fileInDir !== 'creds.json') {
-unlinkSync(`./${jadi}/${directorio}/${fileInDir}`)
-}})
-}})
-if (SBprekey.length === 0) {
-console.log(chalk.bold.green(`\nꕥ No hay archivos en ${jadi} para eliminar.`))
-} else {
-console.log(chalk.bold.cyanBright(`\n⌦ Archivos de la carpeta ${jadi} han sido eliminados correctamente.`))
-}} catch (err) {
-console.log(chalk.bold.red(`\n⚠︎ Error para eliminar archivos de la carpeta ${jadi}.\n` + err))
-}}
-
-function purgeOldFiles() {
-const directories = [`./${sessions}/`, `./${jadi}/`]
-directories.forEach(dir => {
-readdirSync(dir, (err, files) => {
-if (err) throw err
-files.forEach(file => {
-if (file !== 'creds.json') {
-const filePath = path.join(dir, file);
-unlinkSync(filePath, err => {
-if (err) {
-console.log(chalk.bold.red(`\n⚠︎ El archivo ${file} no se logró borrar.\n` + err))
-} else {
-console.log(chalk.bold.green(`\n⌦ El archivo ${file} se ha borrado correctamente.`))
-} }) }
-}) }) }) }
-function redefineConsoleMethod(methodName, filterStrings) {
-const originalConsoleMethod = console[methodName]
-console[methodName] = function() {
-const message = arguments[0]
-if (typeof message === 'string' && filterStrings.some(filterString => message.includes(atob(filterString)))) {
-arguments[0] = ""
-}
-originalConsoleMethod.apply(console, arguments)
-}}
-setInterval(async () => {
-if (stopped === 'close' || !conn || !conn.user) return
-await clearTmp()
-console.log(chalk.bold.cyanBright(`\n⌦ Archivos de la carpeta TMP no necesarios han sido eliminados del servidor.`))}, 1000 * 60 * 4)
-setInterval(async () => {
-if (stopped === 'close' || !conn || !conn.user) return
-await purgeSession()
-console.log(chalk.bold.cyanBright(`\n⌦ Archivos de la carpeta ${global.sessions} no necesario han sido eliminados del servidor.`))}, 1000 * 60 * 10)
-setInterval(async () => {
-if (stopped === 'close' || !conn || !conn.user) return
-await purgeSessionSB()}, 1000 * 60 * 10) 
-setInterval(async () => {
-if (stopped === 'close' || !conn || !conn.user) return
-await purgeOldFiles()
-console.log(chalk.bold.cyanBright(`\n⌦ Archivos no necesario han sido eliminados del servidor.`))}, 1000 * 60 * 10)
-_quickTest().catch(console.error)
-async function isValidPhoneNumber(number) {
-try {
-number = number.replace(/\s+/g, '')
-if (number.startsWith('+521')) {
-number = number.replace('+521', '+52');
-} else if (number.startsWith('+52') && number[4] === '1') {
-number = number.replace('+52 1', '+52');
-}
-const parsedNumber = phoneUtil.parseAndKeepRawInput(number)
-return phoneUtil.isValidNumber(parsedNumber)
-} catch (error) {
-return false
-}}
-
-async function joinChannels(conn) {
-for (const channelId of Object.values(global.ch)) {
-await conn.newsletterFollow(channelId).catch(() => {})
-}}
+return delet
