@@ -510,4 +510,227 @@ if (filename in global.plugins) {
 if (existsSync(dir)) conn.logger.info(` updated plugin - '${filename}'`)
 else {
 conn.logger.warn(`deleted plugin - '${filename}'`)
-return delet
+return delete global.plugins[filename]
+}} else conn.logger.info(`new plugin - '${filename}'`)
+const err = syntaxerror(readFileSync(dir), filename, {
+sourceType: 'module',
+allowAwaitOutsideFunction: true,
+});
+if (err) conn.logger.error(`syntax error while loading '${filename}'\n${format(err)}`)
+else {
+try {
+const module = (await import(`${global.__filename(dir)}?update=${Date.now()}`));
+global.plugins[filename] = module.default || module;
+} catch (e) {
+conn.logger.error(`error require plugin '${filename}\n${format(e)}'`)
+} finally {
+global.plugins = Object.fromEntries(Object.entries(global.plugins).sort(([a], [b]) => a.localeCompare(b)))
+}}}}
+Object.freeze(global.reload)
+watch(pluginFolder, global.reload)
+await global.reloadHandler()
+
+// Test optimizado para ejecución más rápida
+async function _quickTest() {
+const testPromises = [
+'ffmpeg', 'ffprobe', 'convert', 'magick', 'gm'
+].map(cmd => new Promise((resolve) => {
+const p = spawn(cmd, ['--version'])
+const timeout = setTimeout(() => {
+p.kill()
+resolve(false)
+}, 2000) // Timeout más agresivo
+p.on('close', (code) => {
+clearTimeout(timeout)
+resolve(code !== 127);
+});
+p.on('error', (_) => {
+clearTimeout(timeout)
+resolve(false)
+})
+}))
+
+// Test especial para ffmpeg webp
+testPromises.push(new Promise((resolve) => {
+const p = spawn('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-filter_complex', 'color', '-frames:v', '1', '-f', 'webp', '-'])
+const timeout = setTimeout(() => {
+p.kill()
+resolve(false)
+}, 2000)
+p.on('close', (code) => {
+clearTimeout(timeout)
+resolve(code !== 127);
+});
+p.on('error', (_) => {
+clearTimeout(timeout)
+resolve(false)
+})
+}))
+
+// Test para find
+testPromises.push(new Promise((resolve) => {
+const p = spawn('find', ['--version'])
+const timeout = setTimeout(() => {
+p.kill()
+resolve(false)
+}, 2000)
+p.on('close', (code) => {
+clearTimeout(timeout)
+resolve(code !== 127);
+});
+p.on('error', (_) => {
+clearTimeout(timeout)
+resolve(false)
+})
+}))
+
+const [ffmpeg, ffprobe, convert, magick, gm, ffmpegWebp, find] = await Promise.all(testPromises);
+const s = global.support = {ffmpeg, ffprobe, ffmpegWebp, convert, magick, gm, find};
+Object.freeze(global.support);
+}
+
+// Función de limpieza optimizada
+function clearTmp() {
+try {
+const tmpDir = join(__dirname, 'tmp')
+if (!existsSync(tmpDir)) return
+const filenames = readdirSync(tmpDir)
+filenames.forEach(file => {
+try {
+const filePath = join(tmpDir, file)
+unlinkSync(filePath)
+} catch {} // Ignorar errores individuales
+})
+} catch (e) {
+// Ignorar errores de limpieza para no afectar rendimiento
+}
+}
+
+function purgeSession() {
+try {
+let directorio = readdirSync(`./${sessions}`)
+let filesFolderPreKeys = directorio.filter(file => file.startsWith('pre-key-'))
+filesFolderPreKeys.forEach(files => {
+try {
+unlinkSync(`./${sessions}/${files}`)
+} catch {} // Ignorar errores individuales
+})
+} catch {} // No bloquear por errores de limpieza
+} 
+
+function purgeSessionSB() {
+try {
+const listaDirectorios = readdirSync(`./${jadi}/`);
+listaDirectorios.forEach(directorio => {
+try {
+if (statSync(`./${jadi}/${directorio}`).isDirectory()) {
+const DSBPreKeys = readdirSync(`./${jadi}/${directorio}`).filter(fileInDir => {
+return fileInDir.startsWith('pre-key-')
+})
+DSBPreKeys.forEach(fileInDir => {
+if (fileInDir !== 'creds.json') {
+try {
+unlinkSync(`./${jadi}/${directorio}/${fileInDir}`)
+} catch {} // Ignorar errores individuales
+}})
+}
+} catch {} // Ignorar errores por directorio
+})
+} catch (err) {
+// No mostrar errores para no afectar rendimiento
+}
+}
+
+function purgeOldFiles() {
+const directories = [`./${sessions}/`, `./${jadi}/`]
+directories.forEach(dir => {
+try {
+const files = readdirSync(dir)
+files.forEach(file => {
+if (file !== 'creds.json') {
+try {
+const filePath = path.join(dir, file);
+unlinkSync(filePath)
+} catch {} // Ignorar errores individuales
+}
+})
+} catch {} // Ignorar errores por directorio
+})
+}
+
+function redefineConsoleMethod(methodName, filterStrings) {
+const originalConsoleMethod = console[methodName]
+console[methodName] = function() {
+const message = arguments[0]
+if (typeof message === 'string' && filterStrings.some(filterString => message.includes(atob(filterString)))) {
+arguments[0] = ""
+}
+originalConsoleMethod.apply(console, arguments)
+}}
+
+// Intervalos optimizados para mejor rendimiento
+setInterval(async () => {
+if (stopped === 'close' || !conn || !conn.user) return
+clearTmp()
+console.log(chalk.bold.cyanBright(`\n⌦ Archivos de la carpeta TMP no necesarios han sido eliminados del servidor.`))
+}, 1000 * 60 * 2) // Reducido de 4min a 2min
+
+setInterval(async () => {
+if (stopped === 'close' || !conn || !conn.user) return
+purgeSession()
+console.log(chalk.bold.cyanBright(`\n⌦ Archivos de la carpeta ${global.sessions} no necesario han sido eliminados del servidor.`))
+}, 1000 * 60 * 5) // Reducido de 10min a 5min
+
+setInterval(async () => {
+if (stopped === 'close' || !conn || !conn.user) return
+purgeSessionSB()
+}, 1000 * 60 * 5) // Reducido de 10min a 5min
+
+setInterval(async () => {
+if (stopped === 'close' || !conn || !conn.user) return
+purgeOldFiles()
+console.log(chalk.bold.cyanBright(`\n⌦ Archivos no necesario han sido eliminados del servidor.`))
+}, 1000 * 60 * 5) // Reducido de 10min a 5min
+
+// Ejecutar test en paralelo sin bloquear
+_quickTest().catch(console.error)
+
+// Validación de teléfono con cache
+const phoneValidationCache = new Map()
+async function isValidPhoneNumber(number) {
+try {
+if (phoneValidationCache.has(number)) {
+return phoneValidationCache.get(number)
+}
+number = number.replace(/\s+/g, '')
+if (number.startsWith('+521')) {
+number = number.replace('+521', '+52');
+} else if (number.startsWith('+52') && number[4] === '1') {
+number = number.replace('+52 1', '+52');
+}
+const parsedNumber = phoneUtil.parseAndKeepRawInput(number)
+const isValid = phoneUtil.isValidNumber(parsedNumber)
+phoneValidationCache.set(number, isValid)
+// Limpiar cache después de 5 minutos
+setTimeout(() => phoneValidationCache.delete(number), 300000)
+return isValid
+} catch (error) {
+return false
+}}
+
+// Función optimizada para unirse a canales
+async function joinChannels(conn) {
+const channelPromises = Object.values(global.ch || {}).map(channelId => 
+conn.newsletterFollow(channelId).catch(() => {}) // Fallar silenciosamente
+)
+// Procesar en lotes de 5 para no sobrecargar
+const batchSize = 5
+for (let i = 0; i < channelPromises.length; i += batchSize) {
+const batch = channelPromises.slice(i, i + batchSize)
+await Promise.allSettled(batch)
+// Pequeño delay entre lotes
+if (i + batchSize < channelPromises.length) {
+await new Promise(resolve => setTimeout(resolve, 100))
+}
+}
+}
