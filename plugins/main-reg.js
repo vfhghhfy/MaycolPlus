@@ -54,6 +54,7 @@ ${usedPrefix + command} Hanako.16`);
 • Nombre: ${user.name}  
 • Edad: ${user.age} años  
 
+> No te Olvides *_Seguirme_*: https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R
 ¡Bienvenid@ al Reino Hanako! 👻🖤  
 ╚════ஓ๑♡๑ஓ════╝`);
 
