@@ -18,23 +18,27 @@ let crm4 = "IF9hdXRvcmVzcG9uZGVyLmpzIGluZm8tYm90Lmpz"
 let drm1 = ""
 let drm2 = ""
 let rtx = `
-⟩ Para vincular el bot con tu WhatsApp usa el método de *Código QR*  
+✦ 𝗩𝗶𝗻𝗰𝘂𝗹𝗮𝗰𝗶𝗼́𝗻 𝗽𝗼𝗿 𝗖𝗼́𝗱𝗶𝗴𝗼 𝗤𝗥 ✦
 
-» Paso 1: Ve a los ︙ arriba lado derecho  
-» Paso 2: Ve a *Dispositivos vinculados*  
-» Paso 3: Toca en *Vincular un dispositivo*  
-» Paso 4: Escanea este *Código QR* que aparece aquí  
-`.trim()
+> No te olvides *_Seguirme_*: https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R
+
+🌙 𝗣𝗮𝘀𝗼𝘀 para invocar tu WhatsApp:
+① Abre 𝗪𝗵𝗮𝘁𝘀𝗔𝗽𝗽 en tu teléfono  
+② Pulsa ⋮ *Más opciones* → *Dispositivos vinculados*  
+③ Presiona *"Vincular un dispositivo"*  
+④ Escanea el código QR que aparecerá aquí`.trim()
 
 let rtx2 = `
-⟩ Vincula usando el *código de 8 dígitos*  
+✧ 𝗩𝗶𝗻𝗰𝘂𝗹𝗮𝗰𝗶𝗼́𝗻 𝗽𝗼𝗿 𝗖𝗼́𝗱𝗶𝗴𝗼 𝗠𝗮𝗻𝘂𝗮𝗹 (8 dígitos) ✧
 
-» Paso 1: Ve a los ︙ arriba lado derecho
-» Paso 2: Ve a *Dispositivos vinculados*  
-» Paso 3: Toca en *Vincular un dispositivo*  
-» Paso 4: Selecciona la opción *Vincular con el número de teléfono*  
-» Paso 5: Ingresa el *código de 8 dígitos* que se mostrará a continuación
-`.trim()
+> No te olvides *_Seguirme_*: https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R
+
+🌙 𝗣𝗮𝘀𝗼𝘀 para enlazarlo:
+① Abre 𝗪𝗵𝗮𝘁𝘀𝗔𝗽𝗽 en tu teléfono  
+② Pulsa ⋮ *Más opciones* → *Dispositivos vinculados*  
+③ Presiona *"Vincular un dispositivo"*  
+④ Selecciona *"Con número"* e introduce el código mostrado
+> Te recomiendo no hacer code en grupos ya que aveces falla, Mejor ve al privado del bot y haz code o intenta con qr desde algun grupo o privado`.trim()
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -47,7 +51,7 @@ let time = global.db.data.users[m.sender].Subs + 120000
 
 const subBots = [...new Set([...global.conns.filter((conn) => conn.user && conn.ws.socket && conn.ws.socket.readyState !== ws.CLOSED).map((conn) => conn)])]
 const subBotsCount = subBots.length
-if (subBotsCount === 100) {
+if (subBotsCount === 50) {
 return m.reply(`No se han encontrado espacios para *Sub-Bots* disponibles.`)
 }
 
@@ -203,18 +207,19 @@ fs.rmdirSync(pathYukiJadiBot, { recursive: true })
 if (global.db.data == null) loadDatabase()
 if (connection == `open`) {
 if (!global.db.data?.users) loadDatabase()
-await joinChannels(conn)
-let userName, userJid
+let userName, userJid 
 userName = sock.authState.creds.me.name || 'Anónimo'
 userJid = sock.authState.creds.me.jid || `${path.basename(pathYukiJadiBot)}@s.whatsapp.net`
 console.log(chalk.bold.cyanBright(`\n❒⸺⸺⸺⸺【• SUB-BOT •】⸺⸺⸺⸺❒\n│\n│ 🟢 ${userName} (+${path.basename(pathYukiJadiBot)}) conectado exitosamente.\n│\n❒⸺⸺⸺【• CONECTADO •】⸺⸺⸺❒`))
 sock.isInit = true
 global.conns.push(sock)
-m?.chat ? await conn.sendMessage(m.chat, {text: args[0] ? `@${m.sender.split('@')[0]}, ya estás conectado, leyendo mensajes entrantes...` : `> @${m.sender.split('@')[0]}, 𝖠𝗁𝗈𝗋𝖺 𝖾𝗋𝖾𝗌 𝗉𝖺𝗋𝗍𝖾 𝖽𝖾 𝗅𝖺 𝖿𝖺𝗆𝗂𝗅𝗂𝖺 *𝗆𝗂𝖼𝗁𝗂𝗌 𝗐𝖺 𝖻𝗈𝗍𝗌* :𝖣`, mentions: [m.sender]}, { quoted: m }) : ''
+await joinChannels(sock)
+
 }}
 setInterval(async () => {
 if (!sock.user) {
 try { sock.ws.close() } catch (e) {      
+
 }
 sock.ev.removeAllListeners()
 let i = global.conns.indexOf(sock)                
@@ -230,7 +235,7 @@ const Handler = await import(`../handler.js?update=${Date.now()}`).catch(console
 if (Object.keys(Handler || {}).length) handler = Handler
 
 } catch (e) {
-console.error('⚠️ Nuevo error: ', e)
+console.error('Nuevo error: ', e)
 }
 if (restatConn) {
 const oldChats = sock.chats
