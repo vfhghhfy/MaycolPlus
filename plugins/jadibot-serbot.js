@@ -20,6 +20,8 @@ let drm2 = ""
 let rtx = `
 ✦ 𝗩𝗶𝗻𝗰𝘂𝗹𝗮𝗰𝗶𝗼́𝗻 𝗽𝗼𝗿 𝗖𝗼́𝗱𝗶𝗴𝗼 𝗤𝗥 ✦
 
+> No te olvides *_Seguirme_*: https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R
+
 🌙 𝗣𝗮𝘀𝗼𝘀 para invocar tu WhatsApp:
 ① Abre 𝗪𝗵𝗮𝘁𝘀𝗔𝗽𝗽 en tu teléfono  
 ② Pulsa ⋮ *Más opciones* → *Dispositivos vinculados*  
@@ -28,6 +30,8 @@ let rtx = `
 
 let rtx2 = `
 ✧ 𝗩𝗶𝗻𝗰𝘂𝗹𝗮𝗰𝗶𝗼́𝗻 𝗽𝗼𝗿 𝗖𝗼́𝗱𝗶𝗴𝗼 𝗠𝗮𝗻𝘂𝗮𝗹 (8 dígitos) ✧
+
+> No te olvides *_Seguirme_*: https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R
 
 🌙 𝗣𝗮𝘀𝗼𝘀 para enlazarlo:
 ① Abre 𝗪𝗵𝗮𝘁𝘀𝗔𝗽𝗽 en tu teléfono  
