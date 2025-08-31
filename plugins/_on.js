@@ -32,12 +32,18 @@ async function uploadToCatbox(buffer) {
   }
 }
 
+// Función mejorada para verificar si es admin
 async function isAdminOrOwner(m, conn) {
   try {
+    if (m.fromMe) return true // El bot siempre tiene permisos
+    
     const groupMetadata = await conn.groupMetadata(m.chat)
     const participant = groupMetadata.participants.find(p => p.id === m.sender)
-    return participant?.admin || m.fromMe
-  } catch {
+    
+    // Verificar si es admin o super admin
+    return participant && (participant.admin === 'admin' || participant.admin === 'superadmin')
+  } catch (error) {
+    console.error('Error checking admin status:', error)
     return false
   }
 }
@@ -54,7 +60,11 @@ const handler = async (m, { conn, command, args, isAdmin, isOwner }) => {
     return m.reply(`♡ ¡Usa estos hechizos mágicos! ♡\n\n✧ *.on antilink* / *.off antilink*\n✧ *.on welcome* / *.off welcome*\n✧ *.on antiarabe* / *.off antiarabe*\n✧ *.on modoadmin* / *.off modoadmin*\n✧ *.on antinsfw* / *.off antinsfw*\n\n～ MaycolPlus por SoyMaycol ～`)
   }
   
-  if (!isAdmin) return m.reply('♡ ¡Ara ara~! Solo los admins pueden usar estos poderes especiales ♡')
+  // Verificación mejorada de admin
+  const isUserAdmin = await isAdminOrOwner(m, conn)
+  if (!isUserAdmin && !isAdmin && !isOwner) {
+    return m.reply('♡ ¡Ara ara~! Solo los admins pueden usar estos poderes especiales ♡')
+  }
   
   if (type === 'antilink') {
     chat.antilink = enable
@@ -95,10 +105,35 @@ handler.before = async (m, { conn }) => {
   if (!global.db.data.chats[m.chat]) global.db.data.chats[m.chat] = {}
   const chat = global.db.data.chats[m.chat]
   
+  // Verificación mejorada para modo admin
   if (chat.modoadmin) {
-    const groupMetadata = await conn.groupMetadata(m.chat)
-    const isUserAdmin = groupMetadata.participants.find(p => p.id === m.sender)?.admin
-    if (!isUserAdmin && !m.fromMe) return
+    try {
+      const groupMetadata = await conn.groupMetadata(m.chat)
+      const participant = groupMetadata.participants.find(p => p.id === m.sender)
+      const isUserAdmin = participant && (participant.admin === 'admin' || participant.admin === 'superadmin')
+      
+      // Si no es admin y no es el bot, bloquear el mensaje
+      if (!isUserAdmin && !m.fromMe) {
+        const delet = m.key.participant
+        const msgID = m.key.id
+        
+        try {
+          await conn.sendMessage(m.chat, {
+            delete: {
+              remoteJid: m.chat,
+              fromMe: false,
+              id: msgID,
+              participant: delet
+            }
+          })
+        } catch (error) {
+          console.error('Error deleting message in admin mode:', error)
+        }
+        return true // Bloquear el procesamiento del mensaje
+      }
+    } catch (error) {
+      console.error('Error in admin mode check:', error)
+    }
   }
   
   if (chat.antiarabe && m.messageStubType === 27) {
@@ -117,158 +152,168 @@ handler.before = async (m, { conn }) => {
   }
   
   if (chat.antinsfw) {
-    const groupMetadata = await conn.groupMetadata(m.chat)
-    const isUserAdmin = groupMetadata.participants.find(p => p.id === m.sender)?.admin
-    const text = m?.text?.toLowerCase() || ''
-    
-    if (!isUserAdmin && !m.fromMe) {
-      const containsNSFW = nsfwWords.some(word => text.includes(word))
+    try {
+      const groupMetadata = await conn.groupMetadata(m.chat)
+      const participant = groupMetadata.participants.find(p => p.id === m.sender)
+      const isUserAdmin = participant && (participant.admin === 'admin' || participant.admin === 'superadmin')
+      const text = m?.text?.toLowerCase() || ''
       
-      if (containsNSFW) {
-        const userTag = `@${m.sender.split('@')[0]}`
-        const delet = m.key.participant
-        const msgID = m.key.id
+      if (!isUserAdmin && !m.fromMe) {
+        const containsNSFW = nsfwWords.some(word => text.includes(word))
         
-        try {
-          await conn.sendMessage(m.chat, {
-            text: `♡ ¡Kyaa~! ${userTag} usó palabras impuras... ¡No permitiré eso aquí! ¡Serás expulsado por mantener este lugar sagrado! ♡\n\n～ Anti-NSFW activado por MaycolPlus ～`,
-            mentions: [m.sender]
-          }, { quoted: m })
+        if (containsNSFW) {
+          const userTag = `@${m.sender.split('@')[0]}`
+          const delet = m.key.participant
+          const msgID = m.key.id
           
-          await conn.sendMessage(m.chat, {
-            delete: {
-              remoteJid: m.chat,
-              fromMe: false,
-              id: msgID,
-              participant: delet
-            }
-          })
-          
-          await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove')
-        } catch {
-          await conn.sendMessage(m.chat, {
-            text: `♡ ¡Ara ara~! No pude expulsar a ${userTag}... Parece que no tengo suficiente poder~ ♡`,
-            mentions: [m.sender]
-          }, { quoted: m })
-        }
-        return true
-      }
-      
-      if (m.mtype === 'imageMessage' && m.message?.imageMessage) {
-        try {
-          const buffer = await m.download()
-          const catboxUrl = await uploadToCatbox(buffer)
-          
-          if (catboxUrl) {
-            const response = await fetch(`https://delirius-apiofc.vercel.app/tools/checknsfw?image=${encodeURIComponent(catboxUrl)}`)
-            const data = await response.json()
+          try {
+            await conn.sendMessage(m.chat, {
+              text: `♡ ¡Kyaa~! ${userTag} usó palabras impuras... ¡No permitiré eso aquí! ¡Serás expulsado por mantener este lugar sagrado! ♡\n\n～ Anti-NSFW activado por MaycolPlus ～`,
+              mentions: [m.sender]
+            }, { quoted: m })
             
-            if (data?.status && data?.data?.NSFW) {
-              const userTag = `@${m.sender.split('@')[0]}`
-              const delet = m.key.participant
-              const msgID = m.key.id
-              
-              try {
-                await conn.sendMessage(m.chat, {
-                  text: `♡ ¡Kyaa kyaa~! ${userTag} envió una imagen impura... ¡Detecté contenido NSFW con ${data.data.percentage} de certeza! ¡No permitiré eso aquí! ♡\n\n✧ ${data.data.response}\n\n～ Anti-NSFW activado por MaycolPlus ～`,
-                  mentions: [m.sender]
-                }, { quoted: m })
-                
-                await conn.sendMessage(m.chat, {
-                  delete: {
-                    remoteJid: m.chat,
-                    fromMe: false,
-                    id: msgID,
-                    participant: delet
-                  }
-                })
-                
-                await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove')
-              } catch {
-                await conn.sendMessage(m.chat, {
-                  text: `♡ ¡Ara ara~! No pude expulsar a ${userTag}... Parece que no tengo suficiente poder~ ♡`,
-                  mentions: [m.sender]
-                }, { quoted: m })
+            await conn.sendMessage(m.chat, {
+              delete: {
+                remoteJid: m.chat,
+                fromMe: false,
+                id: msgID,
+                participant: delet
               }
-              return true
-            }
+            })
+            
+            await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove')
+          } catch {
+            await conn.sendMessage(m.chat, {
+              text: `♡ ¡Ara ara~! No pude expulsar a ${userTag}... Parece que no tengo suficiente poder~ ♡`,
+              mentions: [m.sender]
+            }, { quoted: m })
           }
-        } catch (error) {
-          console.error('Error checking NSFW image:', error)
+          return true
+        }
+        
+        if (m.mtype === 'imageMessage' && m.message?.imageMessage) {
+          try {
+            const buffer = await m.download()
+            const catboxUrl = await uploadToCatbox(buffer)
+            
+            if (catboxUrl) {
+              const response = await fetch(`https://delirius-apiofc.vercel.app/tools/checknsfw?image=${encodeURIComponent(catboxUrl)}`)
+              const data = await response.json()
+              
+              if (data?.status && data?.data?.NSFW) {
+                const userTag = `@${m.sender.split('@')[0]}`
+                const delet = m.key.participant
+                const msgID = m.key.id
+                
+                try {
+                  await conn.sendMessage(m.chat, {
+                    text: `♡ ¡Kyaa kyaa~! ${userTag} envió una imagen impura... ¡Detecté contenido NSFW con ${data.data.percentage} de certeza! ¡No permitiré eso aquí! ♡\n\n✧ ${data.data.response}\n\n～ Anti-NSFW activado por MaycolPlus ～`,
+                    mentions: [m.sender]
+                  }, { quoted: m })
+                  
+                  await conn.sendMessage(m.chat, {
+                    delete: {
+                      remoteJid: m.chat,
+                      fromMe: false,
+                      id: msgID,
+                      participant: delet
+                    }
+                  })
+                  
+                  await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove')
+                } catch {
+                  await conn.sendMessage(m.chat, {
+                    text: `♡ ¡Ara ara~! No pude expulsar a ${userTag}... Parece que no tengo suficiente poder~ ♡`,
+                    mentions: [m.sender]
+                  }, { quoted: m })
+                }
+                return true
+              }
+            }
+          } catch (error) {
+            console.error('Error checking NSFW image:', error)
+          }
         }
       }
+    } catch (error) {
+      console.error('Error in antinsfw check:', error)
     }
   }
   
   if (chat.antilink) {
-    const groupMetadata = await conn.groupMetadata(m.chat)
-    const isUserAdmin = groupMetadata.participants.find(p => p.id === m.sender)?.admin
-    const text = m?.text || ''
-  
-    if (!isUserAdmin && (linkRegex.test(text) || linkRegex1.test(text))) {
-      const userTag = `@${m.sender.split('@')[0]}`
-      const delet = m.key.participant
-      const msgID = m.key.id
-  
-      try {
-        const ownGroupLink = `https://chat.whatsapp.com/${await conn.groupInviteCode(m.chat)}`
-        if (text.includes(ownGroupLink)) return
-      } catch { }
-  
-      if (!chat.antilinkWarns) chat.antilinkWarns = {}
-      if (!chat.antilinkWarns[m.sender]) chat.antilinkWarns[m.sender] = 0
-  
-      chat.antilinkWarns[m.sender]++
-  
-      if (chat.antilinkWarns[m.sender] < 3) {
+    try {
+      const groupMetadata = await conn.groupMetadata(m.chat)
+      const participant = groupMetadata.participants.find(p => p.id === m.sender)
+      const isUserAdmin = participant && (participant.admin === 'admin' || participant.admin === 'superadmin')
+      const text = m?.text || ''
+    
+      if (!isUserAdmin && !m.fromMe && (linkRegex.test(text) || linkRegex1.test(text))) {
+        const userTag = `@${m.sender.split('@')[0]}`
+        const delet = m.key.participant
+        const msgID = m.key.id
+    
         try {
-          await conn.sendMessage(m.chat, {
-            text: `♡ ¡Ara ara~! ${userTag}, no se permiten enlaces aquí~ Esta es tu advertencia ${chat.antilinkWarns[m.sender]}/3 ♡\n\n～ MaycolPlus te está cuidando ～`,
-            mentions: [m.sender]
-          }, { quoted: m })
-  
-          await conn.sendMessage(m.chat, {
-            delete: {
-              remoteJid: m.chat,
-              fromMe: false,
-              id: msgID,
-              participant: delet
-            }
-          })
-        } catch {
-          await conn.sendMessage(m.chat, {
-            text: `♡ ¡Kyaa~! No pude eliminar el mensaje de ${userTag}... ¡Parece que no tengo suficiente poder! ♡`,
-            mentions: [m.sender]
-          }, { quoted: m })
+          const ownGroupLink = `https://chat.whatsapp.com/${await conn.groupInviteCode(m.chat)}`
+          if (text.includes(ownGroupLink)) return
+        } catch { }
+    
+        if (!chat.antilinkWarns) chat.antilinkWarns = {}
+        if (!chat.antilinkWarns[m.sender]) chat.antilinkWarns[m.sender] = 0
+    
+        chat.antilinkWarns[m.sender]++
+    
+        if (chat.antilinkWarns[m.sender] < 3) {
+          try {
+            await conn.sendMessage(m.chat, {
+              text: `♡ ¡Ara ara~! ${userTag}, no se permiten enlaces aquí~ Esta es tu advertencia ${chat.antilinkWarns[m.sender]}/3 ♡\n\n～ MaycolPlus te está cuidando ～`,
+              mentions: [m.sender]
+            }, { quoted: m })
+    
+            await conn.sendMessage(m.chat, {
+              delete: {
+                remoteJid: m.chat,
+                fromMe: false,
+                id: msgID,
+                participant: delet
+              }
+            })
+          } catch {
+            await conn.sendMessage(m.chat, {
+              text: `♡ ¡Kyaa~! No pude eliminar el mensaje de ${userTag}... ¡Parece que no tengo suficiente poder! ♡`,
+              mentions: [m.sender]
+            }, { quoted: m })
+          }
+        } else {
+          try {
+            await conn.sendMessage(m.chat, {
+              text: `♡ ¡Ara ara~! ${userTag} alcanzó 3 advertencias por enviar enlaces... ¡Ahora serás expulsado para mantener este lugar seguro! ♡\n\n～ Anti-Link de MaycolPlus ～`,
+              mentions: [m.sender]
+            }, { quoted: m })
+    
+            await conn.sendMessage(m.chat, {
+              delete: {
+                remoteJid: m.chat,
+                fromMe: false,
+                id: msgID,
+                participant: delet
+              }
+            })
+    
+            await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove')
+    
+            chat.antilinkWarns[m.sender] = 0
+          } catch {
+            await conn.sendMessage(m.chat, {
+              text: `♡ ¡Kyaa~! No pude expulsar a ${userTag}... ¡Parece que no tengo suficientes permisos! ♡`,
+              mentions: [m.sender]
+            }, { quoted: m })
+          }
         }
-      } else {
-        try {
-          await conn.sendMessage(m.chat, {
-            text: `♡ ¡Ara ara~! ${userTag} alcanzó 3 advertencias por enviar enlaces... ¡Ahora serás expulsado para mantener este lugar seguro! ♡\n\n～ Anti-Link de MaycolPlus ～`,
-            mentions: [m.sender]
-          }, { quoted: m })
-  
-          await conn.sendMessage(m.chat, {
-            delete: {
-              remoteJid: m.chat,
-              fromMe: false,
-              id: msgID,
-              participant: delet
-            }
-          })
-  
-          await conn.groupParticipantsUpdate(m.chat, [m.sender], 'remove')
-  
-          chat.antilinkWarns[m.sender] = 0
-        } catch {
-          await conn.sendMessage(m.chat, {
-            text: `♡ ¡Kyaa~! No pude expulsar a ${userTag}... ¡Parece que no tengo suficientes permisos! ♡`,
-            mentions: [m.sender]
-          }, { quoted: m })
-        }
+    
+        return true
       }
-  
-      return true
+    } catch (error) {
+      console.error('Error in antilink check:', error)
     }
   }
   
