@@ -22,7 +22,7 @@ const handler = async (msg, { conn, text }) => {
   try {  
     await conn.sendMessage(msg.key.remoteJid, { react: { text: "⌛", key: msg.key } })  
 
-    const { data } = await axios.get(`https://api.neoxr.eu/api/emojito?q=${encodeURIComponent(emoji)}&apikey=russellxz`)  
+    const { data } = await axios.get(`https://api.neoxr.eu/api/emojito?q=${encodeURIComponent(emoji)}&apikey=obscSw`)  
     if (!data.status || !data.data?.url) {  
       return await conn.sendMessage(msg.key.remoteJid, { text: "✘ No pude jugar con ese emoji, prueba otro..." }, { quoted: msg })  
     }  
