@@ -40,15 +40,15 @@ const handler = async (msg, { conn }) => {
     writer.end()
 
     const form = new FormData()
-    form.append('file', fs.createReadStream(inputPath))
-    form.append('expiry', '3600')
+    form.append('reqtype', 'fileupload')
+    form.append('fileToUpload', fs.createReadStream(inputPath))
 
-    const upload = await axios.post('https://cdn.russellxz.click/upload.php', form, {
+    const upload = await axios.post('https://catbox.moe/user/api.php', form, {
       headers: form.getHeaders()
     })
-    if (!upload.data || !upload.data.url) throw new Error('El archivo no quiso mostrarse, qué travieso…')
+    if (!upload.data || !upload.data.startsWith('https://')) throw new Error('El archivo no quiso mostrarse, qué travieso…')
 
-    const apiURL = `https://api.neoxr.eu/api/whatmusic?url=${encodeURIComponent(upload.data.url)}&apikey=obscSw`
+    const apiURL = `https://api.neoxr.eu/api/whatmusic?url=${encodeURIComponent(upload.data)}&apikey=obscSw`
     const res = await axios.get(apiURL)
     if (!res.data.status || !res.data.data) throw new Error('Hanako-kun se sonrojó y no logró identificar esta melodía…')
 
