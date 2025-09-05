@@ -162,7 +162,7 @@ const downloadAudio = async (conn, m, url, title, sentMessage, thumbnail) => {
             }
         }, 800);
 
-        const apiUrl = `https://www.myadonixapi.giize.com/download/yt?url=${encodeURIComponent(url)}&format=audio`;
+        const apiUrl = `https://myapiadonix.casacam.net/download/yt?url=${encodeURIComponent(url)}&format=audio`;
         const response = await fetch(apiUrl);
         const data = await response.json();
 
@@ -267,7 +267,7 @@ const downloadVideo = async (conn, m, url, title, sentMessage, thumbnail) => {
             }
         }, 800);
 
-        const apiUrl = `https://www.myadonixapi.giize.com/download/yt?url=${encodeURIComponent(url)}&format=video`;
+        const apiUrl = `https://myapiadonix.casacam.net/download/yt?url=${encodeURIComponent(url)}&format=video`;
         const response = await fetch(apiUrl);
         const data = await response.json();
 
