@@ -17,7 +17,7 @@ Recuerda que la imagen puede tardar unos segundos en generarse.
     await conn.sendMessage(m.chat, { react: { text: '🕒', key: m.key } })
 
     // Llamada a tu API que devuelve la imagen directamente
-    const api = `https://myapiadonix.vercel.app/api/IAimagen?prompt=${encodeURIComponent(prompt)}`
+    const api = `https://api.siputzx.my.id/api/ai/flux?prompt=${encodeURIComponent(prompt)}`
     const res = await fetch(api)
     if (!res.ok) throw new Error(`Error HTTP ${res.status}`)
 
