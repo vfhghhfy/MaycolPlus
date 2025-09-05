@@ -1,4 +1,4 @@
-import { totalmem, freemem, cpus, platform, arch, release, hostname, userInfo } from 'os'
+import { totalmem, freemem, cpus, platform, arch, release, hostname, uptime, loadavg, networkInterfaces } from 'os'
 import os from 'os'
 import util from 'util'
 import osu from 'node-os-utils'
@@ -6,8 +6,7 @@ import { performance } from 'perf_hooks'
 import { sizeFormatter } from 'human-readable'
 import speed from 'performance-now'
 import { spawn, exec, execSync } from 'child_process'
-import { readFileSync, existsSync } from 'fs'
-import { join } from 'path'
+import fs from 'fs'
 
 const format = sizeFormatter({
   std: 'JEDEC',
@@ -20,226 +19,167 @@ var handler = async (m, { conn }) => {
   let timestamp = speed()
   let latensi = speed() - timestamp
 
-  await m.react('🔥')
-
   let _muptime = process.uptime() * 1000
   let muptime = clockString(_muptime)
+  
+  let _osuptime = uptime() * 1000
+  let osuptime = clockString(_osuptime)
 
   let chats = Object.entries(conn.chats).filter(([id, data]) => id && data.isChats)
   let groups = Object.entries(conn.chats)
     .filter(([jid, chat]) => jid.endsWith('@g.us') && chat.isChats && !chat.metadata?.read_only && !chat.metadata?.announce)
     .map(v => v[0])
-
-  const cpu = osu.cpu
-  const mem = osu.mem
-  const netstat = osu.netstat
-  const drive = osu.drive
-
-  let cpuUsage, memInfo, networkStats, driveInfo
+  let privateChats = chats.filter(([jid]) => !jid.endsWith('@g.us')).length
   
-  try {
-    cpuUsage = await cpu.usage()
-    memInfo = await mem.info()
-    networkStats = await netstat.inOut()
-    driveInfo = await drive.info()
-  } catch (error) {
-    cpuUsage = 0
-    memInfo = { totalMemMb: 0, usedMemMb: 0, freeMemMb: 0 }
-    networkStats = { total: { inputMb: 0, outputMb: 0 } }
-    driveInfo = { totalGb: 0, usedGb: 0, freeGb: 0 }
-  }
-
-  const totalRAM = totalmem()
-  const freeRAM = freemem()
-  const usedRAM = totalRAM - freeRAM
-  const ramPercent = ((usedRAM / totalRAM) * 100).toFixed(1)
-
+  const totalMemory = totalmem()
+  const freeMemory = freemem()
+  const usedMemory = totalMemory - freeMemory
+  const memoryUsage = process.memoryUsage()
+  
   const cpuInfo = cpus()
   const cpuModel = cpuInfo[0]?.model || 'Desconocido'
   const cpuCores = cpuInfo.length
-  const cpuSpeed = cpuInfo[0]?.speed ? (cpuInfo[0].speed / 1000).toFixed(2) : 'N/A'
-
+  const cpuSpeed = cpuInfo[0]?.speed || 0
+  
   const osInfo = {
     platform: platform(),
     arch: arch(),
     release: release(),
-    hostname: hostname(),
-    nodeVersion: process.version,
-    v8Version: process.versions.v8
+    hostname: hostname()
   }
-
-  let serverLoad = 'N/A'
+  
+  const loadAverage = loadavg()
+  
+  let nodeVersion = process.version
+  let v8Version = process.versions.v8
+  let nodeEnv = process.env.NODE_ENV || 'desarrollo'
+  
+  let diskUsage = ''
   try {
-    const loadAvg = os.loadavg()
-    serverLoad = loadAvg.map(load => load.toFixed(2)).join(', ')
-  } catch (e) {
-    serverLoad = 'No disponible'
-  }
-
-  let uptimeSystem = 'N/A'
-  try {
-    const uptimeSeconds = os.uptime()
-    uptimeSystem = clockString(uptimeSeconds * 1000)
-  } catch (e) {
-    uptimeSystem = 'No disponible'
-  }
-
-  const processInfo = {
-    pid: process.pid,
-    ppid: process.ppid || 'N/A',
-    memoryUsage: process.memoryUsage(),
-    argv: process.argv.length,
-    execPath: process.execPath?.split('/').pop() || 'N/A'
-  }
-
-  const networkInterfaces = os.networkInterfaces()
-  let networkInfo = 'No disponible'
-  try {
-    const interfaces = Object.keys(networkInterfaces)
-      .filter(name => !name.includes('lo'))
-      .slice(0, 2)
-    networkInfo = interfaces.join(', ') || 'No detectadas'
-  } catch (e) {
-    networkInfo = 'Error al detectar'
-  }
-
-  let batteryInfo = 'N/A'
-  try {
-    if (existsSync('/sys/class/power_supply/BAT0/capacity')) {
-      batteryInfo = readFileSync('/sys/class/power_supply/BAT0/capacity', 'utf8').trim() + '%'
-    } else if (existsSync('/sys/class/power_supply/BAT1/capacity')) {
-      batteryInfo = readFileSync('/sys/class/power_supply/BAT1/capacity', 'utf8').trim() + '%'
+    if (platform() === 'linux' || platform() === 'darwin') {
+      const df = execSync('df -h /', { encoding: 'utf8' })
+      const lines = df.split('\n')[1]?.split(/\s+/)
+      if (lines && lines.length >= 4) {
+        diskUsage = `→ ◈ Disco: ${lines[2]} usados de ${lines[1]} total (${lines[4]})`
+      }
     }
-  } catch (e) {
-    batteryInfo = 'No disponible'
+  } catch (error) {
+    diskUsage = '→ ◈ Disco: Información no disponible'
   }
-
-  let diskUsage = 'N/A'
+  
+  let networkInfo = ''
   try {
-    if (driveInfo && driveInfo.totalGb) {
-      const diskPercent = ((driveInfo.usedGb / driveInfo.totalGb) * 100).toFixed(1)
-      diskUsage = `${driveInfo.usedGb}GB / ${driveInfo.totalGb}GB (${diskPercent}%)`
-    }
-  } catch (e) {
-    diskUsage = 'Error al obtener datos'
+    const interfaces = networkInterfaces()
+    const activeInterfaces = Object.keys(interfaces).filter(name => {
+      return interfaces[name].some(iface => !iface.internal && iface.family === 'IPv4')
+    })
+    networkInfo = activeInterfaces.length > 0 ? activeInterfaces.join(', ') : 'Sin interfaces activas'
+  } catch (error) {
+    networkInfo = 'Información no disponible'
   }
 
-  const users = Object.keys(conn.chats).filter(id => id.endsWith('@s.whatsapp.net')).length
-  const botStats = {
-    totalChats: chats.length,
-    privateChats: chats.length - groups.length,
-    groupChats: groups.length,
-    totalUsers: users,
-    commands: handler.help?.length || 1,
-    plugins: 'N/A'
+  const getMemoryPercent = (used, total) => ((used / total) * 100).toFixed(1)
+  const getCpuLoadPercent = () => {
+    const load1min = loadAverage[0]
+    return ((load1min / cpuCores) * 100).toFixed(1)
   }
 
-  try {
-    const packagePath = join(process.cwd(), 'package.json')
-    if (existsSync(packagePath)) {
-      const packageData = JSON.parse(readFileSync(packagePath, 'utf8'))
-      botStats.version = packageData.version || '1.0.0'
-      botStats.name = packageData.name || 'MaycolPlus'
-    }
-  } catch (e) {
-    botStats.version = '1.0.0'
-    botStats.name = 'MaycolPlus'
-  }
+  let texto = `╭─❍「 ◈ Estado del Sistema ◈ 」
+│
+├─ ◆ RENDIMIENTO DEL BOT
+│
+├─ → ◈ Latencia: ${latensi.toFixed(4)} ms
+├─ → ◈ Tiempo activo: ${muptime}
+├─ → ◈ Ping interno: ${timestamp.toFixed(2)} ms
+├─ → ◈ Velocidad procesamiento: ${(1000 / (latensi + 1)).toFixed(0)} req/s
+│
+├─ ◆ ESTADÍSTICAS DE CHATS
+│
+├─ → ◈ Total conexiones: ${chats.length}
+├─ → ◈ Chats privados: ${privateChats}
+├─ → ◈ Grupos activos: ${groups.length}
+├─ → ◈ Promedio msgs/chat: ${(chats.length > 0 ? (privateChats + groups.length) / chats.length * 10 : 0).toFixed(1)}
+│
+├─ ◆ MEMORIA DEL SISTEMA
+│
+├─ → ◈ RAM total: ${format(totalMemory)}
+├─ → ◈ RAM libre: ${format(freeMemory)}
+├─ → ◈ RAM usada: ${format(usedMemory)} (${getMemoryPercent(usedMemory, totalMemory)}%)
+├─ → ◈ Memoria Node.js: ${format(memoryUsage.heapUsed)}
+├─ → ◈ Memoria heap: ${format(memoryUsage.heapTotal)}
+├─ → ◈ Memoria externa: ${format(memoryUsage.external)}
+├─ → ◈ Buffer memoria: ${format(memoryUsage.arrayBuffers)}
+│
+├─ ◆ INFORMACIÓN DEL PROCESADOR
+│
+├─ → ◈ CPU: ${cpuModel}
+├─ → ◈ Núcleos: ${cpuCores} cores
+├─ → ◈ Velocidad: ${(cpuSpeed / 1000).toFixed(2)} GHz
+├─ → ◈ Carga promedio: ${getCpuLoadPercent()}%
+├─ → ◈ Load 1min: ${loadAverage[0].toFixed(2)}
+├─ → ◈ Load 5min: ${loadAverage[1].toFixed(2)}
+├─ → ◈ Load 15min: ${loadAverage[2].toFixed(2)}
+│
+├─ ◆ SISTEMA OPERATIVO
+│
+├─ → ◈ Plataforma: ${osInfo.platform}
+├─ → ◈ Arquitectura: ${osInfo.arch}
+├─ → ◈ Release: ${osInfo.release}
+├─ → ◈ Hostname: ${osInfo.hostname}
+├─ → ◈ Uptime SO: ${osuptime}
+├─ ${diskUsage}
+├─ → ◈ Interfaces red: ${networkInfo}
+│
+├─ ◆ ENTORNO DE DESARROLLO
+│
+├─ → ◈ Node.js: ${nodeVersion}
+├─ → ◈ Motor V8: ${v8Version}
+├─ → ◈ Entorno: ${nodeEnv}
+├─ → ◈ PID proceso: ${process.pid}
+├─ → ◈ Directorio: ${process.cwd()}
+├─ → ◈ Usuario: ${process.env.USER || process.env.USERNAME || 'Sistema'}
+│
+├─ ◆ MÉTRICAS AVANZADAS
+│
+├─ → ◈ Handles activos: ${process._getActiveHandles().length}
+├─ → ◈ Requests activos: ${process._getActiveRequests().length}
+├─ → ◈ Event loop lag: ${(performance.now() - timestamp).toFixed(2)} ms
+├─ → ◈ GC ejecutado: ${global.gc ? 'Disponible' : 'No disponible'}
+│
+├─ ◆ ESTADO DE CONEXIÓN
+│
+├─ → ◈ WebSocket: ${conn.ws?.readyState === 1 ? 'Conectado' : 'Desconectado'}
+├─ → ◈ Última actividad: ${new Date().toLocaleString('es-ES')}
+├─ → ◈ Zona horaria: ${Intl.DateTimeFormat().resolvedOptions().timeZone}
+├─ → ◈ Encoding: ${process.env.LANG || 'UTF-8'}
+│
+╰─❍「 ◈ Sistema optimizado ◈ 」`
 
-  const temperatura = getRandomTemp()
-  const statusEmojis = ['🔥', '💋', '😈', '♡', '✨', '💦', '🌟', '⚡']
-  const randomEmoji = statusEmojis[Math.floor(Math.random() * statusEmojis.length)]
-
-  let texto = `╭─❍「 ✦ MaycolPlus System Info ✦ 」
-│
-├─ ♡ Hola bebé~ aquí tienes toda mi información ♡
-│
-├─❍「 📊 RENDIMIENTO DEL SISTEMA 」
-├─ ⚡ Velocidad de respuesta: ${latensi.toFixed(4)} ms
-├─ 🔥 Estado: Caliente y lista ${randomEmoji}
-├─ 🌡️ Temperatura: ${temperatura}°C
-├─ ⏱️ Tiempo activo: ${muptime}
-├─ 🖥️ Tiempo del sistema: ${uptimeSystem}
-├─ 📈 Carga del servidor: ${serverLoad}
-│
-├─❍「 💾 MEMORIA Y ALMACENAMIENTO 」
-├─ 🧠 RAM Total: ${format(totalRAM)}
-├─ 💿 RAM Usada: ${format(usedRAM)} (${ramPercent}%)
-├─ 🆓 RAM Libre: ${format(freeRAM)}
-├─ 💽 Disco: ${diskUsage}
-├─ 🔋 Batería: ${batteryInfo}
-│
-├─❍「 🖥️ PROCESADOR 」
-├─ 🔧 Modelo: ${cpuModel}
-├─ ⚙️ Núcleos: ${cpuCores} cores
-├─ 🚀 Velocidad: ${cpuSpeed} GHz
-├─ 📊 Uso CPU: ${cpuUsage.toFixed(1)}%
-│
-├─❍「 🌐 SISTEMA OPERATIVO 」
-├─ 💻 Plataforma: ${osInfo.platform}
-├─ 🏗️ Arquitectura: ${osInfo.arch}
-├─ 📋 Versión: ${osInfo.release}
-├─ 🏠 Hostname: ${osInfo.hostname}
-├─ 📡 Interfaces red: ${networkInfo}
-│
-├─❍「 ⚡ RUNTIME ENVIRONMENT 」
-├─ 🟢 Node.js: ${osInfo.nodeVersion}
-├─ 🔧 V8 Engine: ${osInfo.v8Version}
-├─ 🆔 PID: ${processInfo.pid}
-├─ 👨‍💻 PPID: ${processInfo.ppid}
-├─ 📁 Ejecutable: ${processInfo.execPath}
-├─ 📝 Argumentos: ${processInfo.argv}
-│
-├─❍「 🧠 MEMORIA DEL PROCESO 」
-├─ 📊 RSS: ${format(processInfo.memoryUsage.rss)}
-├─ 🔄 Heap Total: ${format(processInfo.memoryUsage.heapTotal)}
-├─ 💾 Heap Usado: ${format(processInfo.memoryUsage.heapUsed)}
-├─ 🆓 Externa: ${format(processInfo.memoryUsage.external)}
-├─ 📋 Array Buffers: ${format(processInfo.memoryUsage.arrayBuffers || 0)}
-│
-├─❍「 💬 ESTADÍSTICAS DEL BOT 」
-├─ 👤 Chats privados: ${botStats.privateChats}
-├─ 👥 Grupos activos: ${botStats.groupChats}
-├─ 📊 Total chats: ${botStats.totalChats}
-├─ 👨‍👩‍👧‍👦 Usuarios registrados: ${botStats.totalUsers}
-├─ 🔧 Versión: ${botStats.version}
-├─ 📛 Nombre: ${botStats.name}
-│
-├─❍「 🌐 RED Y CONECTIVIDAD 」
-├─ 📤 Datos enviados: ${networkStats.total?.outputMb?.toFixed(2) || '0'} MB
-├─ 📥 Datos recibidos: ${networkStats.total?.inputMb?.toFixed(2) || '0'} MB
-├─ 🔗 Estado conexión: Estable ♡
-├─ 🌍 Región: Servidor Global
-│
-├─❍「 💋 MENSAJE ESPECIAL 」
-├─ ♡ ¿Te gusta lo que ves bebé?~
-├─ 💦 Estoy funcionando perfectamente para ti
-├─ 🔥 Siempre lista para lo que necesites
-├─ 😈 ¿Quieres que haga algo más travieso?~
-│
-├─ 💕 Con amor, tu MaycolPlus ♡
-╰─✦
-
-🎯 *Tip:* Usa _.menu_ para ver todos mis comandos sensuales~`
-
-  await m.react('💋')
-  await conn.reply(m.chat, texto, m)
+  await m.react('⚡')
+  
+  setTimeout(async () => {
+    await m.react('✅')
+  }, 1500)
+  
+  conn.reply(m.chat, texto.trim(), m)
 }
 
-function getRandomTemp() {
-  return Math.floor(Math.random() * (75 - 35 + 1)) + 35
-}
-
-handler.help = ['speed', 'info', 'status', 'system']
+handler.help = ['speed', 'status', 'info', 'ping', 'system']
 handler.tags = ['info']
-handler.command = ['speed', 'info', 'status', 'system', 'bot']
+handler.command = ['speed', 'status', 'info', 'ping', 'system', 'bot']
 handler.register = false
 
 export default handler
 
 function clockString(ms) {
-  let h = isNaN(ms) ? '--' : Math.floor(ms / 3600000)
+  let d = isNaN(ms) ? '--' : Math.floor(ms / 86400000)
+  let h = isNaN(ms) ? '--' : Math.floor(ms / 3600000) % 24
   let m = isNaN(ms) ? '--' : Math.floor(ms / 60000) % 60
   let s = isNaN(ms) ? '--' : Math.floor(ms / 1000) % 60
-  return [h, m, s].map(v => v.toString().padStart(2, 0)).join(':')
-                        }
+  return [
+    d > 0 ? d + 'd ' : '',
+    h.toString().padStart(2, 0) + 'h ',
+    m.toString().padStart(2, 0) + 'm ',
+    s.toString().padStart(2, 0) + 's'
+  ].join('').trim()
+}
