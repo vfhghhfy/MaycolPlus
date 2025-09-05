@@ -28,16 +28,16 @@ Recuerda que la imagen puede tardar unos segundos en generarse.
     await conn.sendMessage(m.chat, {
       image: buffer,
       caption: `
-✿ *¡Imagen Generada!*
+✿ *Imagen Generada* :)
 
 Detalles:
 ✎ *Prompt ›* ${prompt}
-↺ Disfruta tu nueva creación.
+↺ Disfruta tu nueva creación espiritual...
       `.trim(),
-      footer: 'Adonix API',
+      footer: 'MaycolPlus',
       buttons: [
-        { buttonId: `${usedPrefix}${command} ${prompt}`, buttonText: { displayText: '♻️ Otra' }, type: 1 },
-        { buttonId: `${usedPrefix}menu`, buttonText: { displayText: '❄️ Ir al menu' }, type: 1 }
+        { buttonId: `${usedPrefix}${command} ${prompt}`, buttonText: { displayText: '★ Otra' }, type: 1 },
+        { buttonId: `${usedPrefix}menu`, buttonText: { displayText: '♥ Ir al menu' }, type: 1 }
       ],
       headerType: 4
     }, { quoted: m })
