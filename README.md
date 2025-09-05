@@ -23,3 +23,5 @@ Este proyecto está bajo la **Licencia MIT**. Puedes usar, modificar y distribui
 ## [♥] Creador Original
 
 * **Ado:** [Ado](https://github.com/Ado-rgb)
+
+Creador de **Michi-WaBot**
