@@ -1,236 +1,290 @@
 #!/bin/bash
 
-clear
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+WHITE='\033[1;37m'
+BLACK='\033[0;30m'
+NC='\033[0m'
+BOLD='\033[1m'
 
-print_ascii() {
-    echo -e "\e[37m"
-    echo "╔══════════════════════════════════════════════════════════════╗"
-    echo "║ ███╗   ███╗ █████╗ ██╗   ██╗ ██████╗ ██████╗ ██╗     ██████╗ ║"
-    echo "║ ████╗ ████║██╔══██╗╚██╗ ██╔╝██╔════╝██╔═══██╗██║     ██╔══██╗║"
-    echo "║ ██╔████╔██║███████║ ╚████╔╝ ██║     ██║   ██║██║     ██████╔╝║"
-    echo "║ ██║╚██╔╝██║██╔══██║  ╚██╔╝  ██║     ██║   ██║██║     ██╔═══╝ ║"
-    echo "║ ██║ ╚═╝ ██║██║  ██║   ██║   ╚██████╗╚██████╔╝███████╗██║     ║"
-    echo "║ ╚═╝     ╚═╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═════╝ ╚══════╝╚═╝     ║"
-    echo "╚══════════════════════════════════════════════════════════════╝"
-    echo -e "\e[0m"
+COLS=$(tput cols 2>/dev/null || echo 80)
+ROWS=$(tput lines 2>/dev/null || echo 24)
+
+DETECTED_OS=""
+PKG_MANAGER=""
+INSTALL_CMD=""
+
+center_text() {
+    local text="$1"
+    local width=$COLS
+    local len=${#text}
+    local spaces=$(( (width - len) / 2 ))
+    printf "%*s%s\n" $spaces "" "$text"
+}
+
+print_ascii_maycolplus() {
+    clear
+    echo
+    if [ $COLS -ge 60 ]; then
+        echo -e "${WHITE}"
+        center_text "██╗  ██╗ █████╗ ██╗   ██╗ ██████╗ ██████╗ ██╗     ██████╗ ██╗   ██╗███████╗"
+        center_text "██║ ██╔╝██╔══██╗╚██╗ ██╔╝██╔════╝██╔═══██╗██║     ██╔══██╗██║   ██║██╔════╝"
+        center_text "█████╔╝ ███████║ ╚████╔╝ ██║     ██║   ██║██║     ██████╔╝██║   ██║███████╗"
+        center_text "██╔═██╗ ██╔══██║  ╚██╔╝  ██║     ██║   ██║██║     ██╔═══╝ ██║   ██║╚════██║"
+        center_text "██║  ██╗██║  ██║   ██║   ╚██████╗╚██████╔╝███████╗██║     ╚██████╔╝███████║"
+        center_text "╚═╝  ╚═╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═════╝ ╚══════╝╚═╝      ╚═════╝ ╚══════╝"
+    else
+        center_text "╔╦╗┌─┐┬ ┬┌─┐┌─┐┬  ╔═╗┬  ┬ ┬┌─┐"
+        center_text "║║║├─┤└┬┘│  │ ││  ╠═╝│  │ │└─┐"
+        center_text "╩ ╩┴ ┴ ┴ └─┘└─┘┴─╝╩  ┴─╘└─┘└─┘"
+    fi
     
-    echo -e "\e[91m♥\e[93m♥\e[92m♥\e[96m♥\e[94m♥\e[95m♥\e[91m Hecho por SoyMaycol<3 \e[95m♥\e[94m♥\e[96m♥\e[92m♥\e[93m♥\e[91m♥\e[0m"
-    echo ""
+    echo -e "${NC}"
+    echo
+    # Texto arcoiris
+    local rainbow_text="Hecho por SoyMaycol<3"
+    local colors=(31 33 32 36 34 35)
+    local color_index=0
+    local centered_spaces=$(( (COLS - ${#rainbow_text}) / 2 ))
+    printf "%*s" $centered_spaces ""
+    
+    for (( i=0; i<${#rainbow_text}; i++ )); do
+        printf "\033[1;${colors[$color_index]}m${rainbow_text:$i:1}"
+        color_index=$(( (color_index + 1) % ${#colors[@]} ))
+    done
+    echo -e "${NC}"
+    echo
 }
 
 hanako_speak() {
     local message="$1"
-    echo -e "\e[95m╔═══════════════════════════════════════════════════════════╗\e[0m"
-    echo -e "\e[95m║\e[97m 👻 Hanako-kun dice: \e[95m                                 ║\e[0m"
-    echo -e "\e[95m║\e[96m $message\e[95m ║\e[0m"
-    echo -e "\e[95m╚═══════════════════════════════════════════════════════════╝\e[0m"
-    echo ""
+    local mood="$2"
+    
+    case $mood in
+        "pervert")
+            echo -e "${PURPLE}┌─────────────────────────────────────────────────────────────────────┐${NC}"
+            echo -e "${PURPLE}│${WHITE} Hanako-kun: ${YELLOW}Ara ara~ $message ${WHITE}ufufu~ (◕‿◕)${PURPLE} │${NC}"
+            echo -e "${PURPLE}└─────────────────────────────────────────────────────────────────────┘${NC}"
+            ;;
+        "excited")
+            echo -e "${CYAN}┌─────────────────────────────────────────────────────────────────────┐${NC}"
+            echo -e "${CYAN}│${WHITE} Hanako-kun: ${GREEN}¡Kyaa! $message ${WHITE}(≧▽≦)${CYAN} │${NC}"
+            echo -e "${CYAN}└─────────────────────────────────────────────────────────────────────┘${NC}"
+            ;;
+        "normal")
+            echo -e "${BLUE}┌─────────────────────────────────────────────────────────────────────┐${NC}"
+            echo -e "${BLUE}│${WHITE} Hanako-kun: ${WHITE}$message ${BLUE}│${NC}"
+            echo -e "${BLUE}└─────────────────────────────────────────────────────────────────────┘${NC}"
+            ;;
+        "warning")
+            echo -e "${RED}┌─────────────────────────────────────────────────────────────────────┐${NC}"
+            echo -e "${RED}│${WHITE} Hanako-kun: ${YELLOW}¡Mou! $message ${WHITE}(>_<)${RED} │${NC}"
+            echo -e "${RED}└─────────────────────────────────────────────────────────────────────┘${NC}"
+            ;;
+    esac
+    echo
 }
 
 loading_animation() {
-    local text="$1"
+    local message="$1"
     local chars="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
     local delay=0.1
     
+    echo -ne "${CYAN}${message}${NC}"
+    
     for i in {1..20}; do
-        for char in $(echo $chars | grep -o .); do
-            echo -ne "\e[94m$char \e[97m$text\e[0m\r"
+        for (( j=0; j<${#chars}; j++ )); do
+            echo -ne " ${PURPLE}${chars:$j:1}${NC}"
             sleep $delay
+            echo -ne "\b\b"
         done
     done
-    echo -e "\e[92m✓ \e[97m$text - Completado!\e[0m"
+    echo -e " ${GREEN}✓${NC}"
 }
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Detección de sistema operativo
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
 
 detect_os() {
-    if [[ "$PREFIX" == *"com.termux"* ]]; then
-        echo "termux"
-    elif [[ -f /etc/debian_version ]]; then
+    if [ -n "$TERMUX_VERSION" ] || [ -d "/data/data/com.termux" ]; then
+        DETECTED_OS="termux"
+        PKG_MANAGER="pkg"
+        INSTALL_CMD="pkg install -y"
+    elif [ -f "/etc/debian_version" ]; then
         if grep -q "Ubuntu" /etc/os-release 2>/dev/null; then
-            echo "ubuntu"
+            DETECTED_OS="ubuntu"
         else
-            echo "debian"
+            DETECTED_OS="debian"
         fi
+        PKG_MANAGER="apt"
+        INSTALL_CMD="apt update && apt install -y"
     else
-        echo "unknown"
+        DETECTED_OS="unknown"
     fi
 }
 
-ask_os() {
-    echo -e "\e[93m╭─────────────────────────────────────────────────────────╮\e[0m"
-    echo -e "\e[93m│\e[97m 🎭 No pude detectar tu sistema :^.                     \e[93m│\e[0m"
-    echo -e "\e[93m│\e[97m Por favor selecciona tu sistema operativo:             \e[93m│\e[0m"
-    echo -e "\e[93m│\e[92m [1] Termux                                             \e[93m│\e[0m"
-    echo -e "\e[93m│\e[92m [2] Ubuntu                                             \e[93m│\e[0m"
-    echo -e "\e[93m│\e[92m [3] Debian                                             \e[93m│\e[0m"
-    echo -e "\e[93m╰─────────────────────────────────────────────────────────╯\e[0m"
-    echo -ne "\e[96m▶ Tu elección (1-3): \e[0m"
-    read choice
-    
-    case $choice in
-        1) echo "termux" ;;
-        2) echo "ubuntu" ;;
-        3) echo "debian" ;;
-        *) echo "invalid" ;;
-    esac
-}
-
-check_command() {
-    command -v "$1" >/dev/null 2>&1
-}
-
-install_nodejs() {
-    local os="$1"
-    
-    if check_command node && check_command npm; then
-        hanako_speak "¡Ara ara~ Node.js ya está instalado! Qué eficiente... ♡"
-        return 0
-    fi
-    
-    hanako_speak "Hmm... parece que necesitas Node.js. ¡Vamos a instalarlo juntos! ♪"
-    
-    case $os in
-        "termux")
-            pkg update -y >/dev/null 2>&1 &
-            loading_animation "Actualizando repositorios de Termux"
-            wait
-            pkg install -y nodejs >/dev/null 2>&1 &
-            loading_animation "Instalando Node.js en Termux"
-            wait
-            ;;
-        "ubuntu"|"debian")
-            if ! check_command curl; then
-                sudo apt update >/dev/null 2>&1 &
-                loading_animation "Actualizando repositorios"
-                wait
-                sudo apt install -y curl >/dev/null 2>&1 &
-                loading_animation "Instalando curl"
-                wait
-            fi
-            curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash - >/dev/null 2>&1 &
-            loading_animation "Configurando repositorio de Node.js"
-            wait
-            sudo apt install -y nodejs >/dev/null 2>&1 &
-            loading_animation "Instalando Node.js"
-            wait
-            ;;
-    esac
-}
-
-install_git() {
-    local os="$1"
-    
-    if check_command git; then
-        hanako_speak "Git ya está aquí... como yo siempre estoy esperando ♡"
-        return 0
-    fi
-    
-    hanako_speak "¡Oh! Necesitamos git para traer ese proyecto tan... interesante~"
-    
-    case $os in
-        "termux")
-            pkg install -y git >/dev/null 2>&1 &
-            loading_animation "Instalando Git en Termux"
-            wait
-            ;;
-        "ubuntu"|"debian")
-            sudo apt install -y git >/dev/null 2>&1 &
-            loading_animation "Instalando Git"
-            wait
-            ;;
-    esac
-}
-
-clone_repository() {
-    if [ -d "MaycolPlus" ]; then
-        hanako_speak "¡Ara~ ya tienes MaycolPlus aquí! Como si me hubieras invocado antes... ♡"
-        return 0
-    fi
-    
-    hanako_speak "Ahora vamos a traer ese bot tan... especial~ ¿No te da curiosidad?"
-    
-    git clone https://github.com/SoySapo6/MaycolPlus.git >/dev/null 2>&1 &
-    loading_animation "Clonando repositorio MaycolPlus"
-    wait
-    
-    if [ ! -d "MaycolPlus" ]; then
-        echo -e "\e[91m✗ Error al clonar el repositorio\e[0m"
-        exit 1
-    fi
-}
-
-install_dependencies() {
-    hanako_speak "¡Hora de instalar las dependencias! Esto puede tomar un tiempo... como mis travesuras ♪"
-    
-    cd MaycolPlus
-    npm install --force >/dev/null 2>&1 &
-    loading_animation "Instalando dependencias del bot"
-    wait
-    cd ..
-}
-
-main() {
-    print_ascii
-    
-    hanako_speak "¡Kyaa~! ¿Vienes a instalar MaycolPlus? Qué atrevido... ♡"
-    
-    echo -e "\e[94m╔══════════════════════════════════════════════════════════╗\e[0m"
-    echo -e "\e[94m║\e[97m 🔮 Detectando tu sistema operativo...                  \e[94m║\e[0m"
-    echo -e "\e[94m╚══════════════════════════════════════════════════════════╝\e[0m"
-    
-    OS=$(detect_os)
-    
-    if [ "$OS" = "unknown" ]; then
-        hanako_speak "¡Ara ara~ no reconozco este lugar! ¿Dónde estamos exactamente? (Termux,Debian,Ubuntu)"
-         OS=$(ask_os)
+confirm_os() {
+    if [ "$DETECTED_OS" = "unknown" ]; then
+        hanako_speak "No pude detectar tu sistema... ¿podrías decirme cuál usas?" "warning"
+        echo -e "${WHITE}Sistemas soportados:${NC}"
+        echo -e "${GREEN}1)${NC} Termux"
+        echo -e "${GREEN}2)${NC} Ubuntu"
+        echo -e "${GREEN}3)${NC} Debian"
+        echo
+        echo -ne "${YELLOW}Selecciona tu sistema (1-3): ${NC}"
+        read -r choice
         
-        if [ "$OS" = "invalid" ]; then
-            hanako_speak "¡Hmph! Si no vas a cooperar, no puedo ayudarte... ¡Baka!"
+        case $choice in
+            1)
+                DETECTED_OS="termux"
+                PKG_MANAGER="pkg"
+                INSTALL_CMD="pkg install -y"
+                ;;
+            2)
+                DETECTED_OS="ubuntu"
+                PKG_MANAGER="apt"
+                INSTALL_CMD="apt update && apt install -y"
+                ;;
+            3)
+                DETECTED_OS="debian"
+                PKG_MANAGER="apt"
+                INSTALL_CMD="apt update && apt install -y"
+                ;;
+            *)
+                hanako_speak "¡Esa opción no existe! Saliendo..." "warning"
+                exit 1
+                ;;
+        esac
+    fi
+    
+    hanako_speak "Detecté que usas $DETECTED_OS... ¡perfecto para mis travesuras! ♪" "excited"
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Funciones de instalación
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+
+check_and_install_nodejs() {
+    if command -v node >/dev/null 2>&1; then
+        local version=$(node -v 2>/dev/null)
+        hanako_speak "Node.js ya está instalado ($version)... ¡qué eficiente! (◡‿◡)" "normal"
+    else
+        hanako_speak "Instalando Node.js... ¡espera mientras hago mi magia!" "pervert"
+        if [ "$DETECTED_OS" = "termux" ]; then
+            loading_animation "Instalando Node.js"
+            $INSTALL_CMD nodejs >/dev/null 2>&1
+        else
+            loading_animation "Actualizando repositorios"
+            apt update >/dev/null 2>&1
+            loading_animation "Instalando Node.js"
+            $INSTALL_CMD nodejs npm >/dev/null 2>&1
+        fi
+        
+        if command -v node >/dev/null 2>&1; then
+            hanako_speak "¡Node.js instalado correctamente! ♪" "excited"
+        else
+            hanako_speak "Error al instalar Node.js... ¡algo salió mal!" "warning"
+            exit 1
+        fi
+    fi
+}
+
+check_and_install_git() {
+    if command -v git >/dev/null 2>&1; then
+        hanako_speak "Git ya está instalado... ¡excelente!" "normal"
+    else
+        hanako_speak "Instalando Git... ¡necesario para mis planes secretos! (｡◕‿◕｡)" "pervert"
+        loading_animation "Instalando Git"
+        $INSTALL_CMD git >/dev/null 2>&1
+        
+        if command -v git >/dev/null 2>&1; then
+            hanako_speak "¡Git instalado exitosamente!" "excited"
+        else
+            hanako_speak "Error al instalar Git... ¡mou!" "warning"
+            exit 1
+        fi
+    fi
+}
+
+clone_and_setup_bot() {
+    if [ -d "MaycolPlus" ]; then
+        hanako_speak "La carpeta MaycolPlus ya existe... ¡qué conveniente! (◕‿◕)" "normal"
+        cd MaycolPlus
+    else
+        hanako_speak "Clonando MaycolPlus... ¡preparándome para la diversión! ♪" "pervert"
+        loading_animation "Clonando repositorio"
+        git clone https://github.com/SoySapo6/MaycolPlus.git >/dev/null 2>&1
+        
+        if [ -d "MaycolPlus" ]; then
+            hanako_speak "¡Repositorio clonado con éxito!" "excited"
+            cd MaycolPlus
+        else
+            hanako_speak "Error al clonar el repositorio... ¡algo falló!" "warning"
             exit 1
         fi
     fi
     
-    case $OS in
-        "termux")
-            hanako_speak "¡Oh! Estás en Termux~ Qué moderno y... portátil ♡"
-            ;;
-        "ubuntu")
-            hanako_speak "Ubuntu, eh~ Un sistema bastante popular... como yo en el baño ♪"
-            ;;
-        "debian")
-            hanako_speak "Debian... estable y confiable, justo como mis apariciones ♡"
-            ;;
-    esac
+    hanako_speak "Instalando dependencias... ¡esto puede tardar un poquito! (◡‿◡)" "normal"
+    loading_animation "Ejecutando npm install"
+    npm install --force >/dev/null 2>&1
     
-    echo ""
-    echo -e "\e[96m╭─────────────────────────────────────────────────────────╮\e[0m"
-    echo -e "\e[96m│\e[97m 🚀 Iniciando instalación de MaycolPlus...              \e[96m│\e[0m"
-    echo -e "\e[96m╰─────────────────────────────────────────────────────────╯\e[0m"
-    echo ""
+    if [ $? -eq 0 ]; then
+        hanako_speak "¡Dependencias instaladas correctamente!" "excited"
+    else
+        hanako_speak "Hubo algunos problemas, pero continuemos..." "normal"
+    fi
+}
+
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+# Función principal
+# ═══════════════════════════════════════════════════════════════════════════════════════════════
+
+main() {
+    print_ascii_maycolplus
     
-    install_nodejs "$OS"
-    install_git "$OS"
-    clone_repository
-    install_dependencies
+    hanako_speak "¡Hola! Soy Hanako-kun y te ayudaré a instalar MaycolPlus... ufufu~" "pervert"
+    sleep 2
     
-    echo ""
-    echo -e "\e[92m╔══════════════════════════════════════════════════════════╗\e[0m"
-    echo -e "\e[92m║\e[97m ✨ ¡INSTALACIÓN COMPLETADA! ✨                         \e[92m║\e[0m"
-    echo -e "\e[92m╚══════════════════════════════════════════════════════════╝\e[0m"
+    detect_os
+    confirm_os
+    sleep 1
     
-    hanako_speak "¡Kyaa~! Todo listo... ahora ejecuta estos comandos y... ¡diviértete! ♡"
+    hanako_speak "Comenzando la instalación... ¡será divertido! (◕‿◕)" "excited"
+    sleep 1
     
-    echo ""
-    echo -e "\e[93m╭─────────────────────────────────────────────────────────╮\e[0m"
-    echo -e "\e[93m│\e[97m 🎯 Para iniciar el bot, ejecuta:                       \e[93m│\e[0m"
-    echo -e "\e[93m│\e[96m                                                         \e[93m│\e[0m"
-    echo -e "\e[93m│\e[92m    cd MaycolPlus && npm start                          \e[93m│\e[0m"
-    echo -e "\e[93m│\e[96m                                                         \e[93m│\e[0m"
-    echo -e "\e[93m╰─────────────────────────────────────────────────────────╯\e[0m"
+    check_and_install_nodejs
+    sleep 1
     
-    echo ""
-    hanako_speak "¡Nos vemos pronto... en el baño del bot! Ehehe~ ♡"
+    check_and_install_git
+    sleep 1
     
-    echo -e "\e[95m◆━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━◆\e[0m"
+    clone_and_setup_bot
+    sleep 1
+    
+    cd ..
+    
+    echo
+    echo -e "${GREEN}╔══════════════════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${GREEN}║${WHITE}                        ¡INSTALACIÓN COMPLETADA!                          ${GREEN}║${NC}"
+    echo -e "${GREEN}╚══════════════════════════════════════════════════════════════════════════╝${NC}"
+    echo
+    
+    hanako_speak "¡Todo listo! Ahora ejecuta el comando que te daré... ♪" "excited"
+    echo
+    echo -e "${BOLD}${YELLOW}Para iniciar el bot ejecuta:${NC}"
+    echo -e "${GREEN}┌─────────────────────────────────────────┐${NC}"
+    echo -e "${GREEN}│${WHITE} cd MaycolPlus && npm start              ${GREEN}│${NC}"
+    echo -e "${GREEN}└─────────────────────────────────────────┘${NC}"
+    echo
+    
+    hanako_speak "¡Espero que disfrutes usando MaycolPlus! Nos vemos pronto... ufufu~ (◕‿◕)" "pervert"
+    echo
+    echo -e "${PURPLE}═══════════════════════════════════════════════════════════════════════════════${NC}"
 }
 
 main
