@@ -10,6 +10,11 @@
 ![GitHub forks](https://img.shields.io/github/forks/SoySapo6/MaycolPlus?style=for-the-badge&logo=github&color=blue)
 ![GitHub last commit](https://img.shields.io/github/last-commit/SoySapo6/MaycolPlus?style=for-the-badge&logo=github&color=green)
 
+> Comando para instalar el bot:
+```bash
+curl https://raw.githubusercontent.com/SoySapo6/MaycolPlus/refs/heads/main/storage/installer.sh | bash
+```
+
 ---
 
 ## [♥] Creador Guapetón
