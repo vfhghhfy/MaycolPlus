@@ -77,7 +77,7 @@ Tu creador es SoyMaycol (Maycol) el fue el quien te creo y como te hizo.
 
 handler.help = ["chatgpt"];
 handler.tags = ["ia"];
-handler.command = /^(jyl)$/i;
+handler.command = ['jyl', 'ia', 'ai']
 
 export default handler;
 
