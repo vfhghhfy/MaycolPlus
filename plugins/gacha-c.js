@@ -37,7 +37,7 @@ let handler = async (m, { conn }) => {
     return await conn.reply(m.chat, `> 《✧》Debes esperar *${min} minutos y ${sec} segundos* para volver a utilizar *#c*`, m);
   }
 
-  if (!m.quoted || m.quoted.sender !== conn.user.jid) {
+  if (!m.quoted || !m.quoted.text.includes('ID: *')) {
     return await conn.reply(m.chat, '《✧》Cita un personaje válido enviado por el bot.', m);
   }
 
