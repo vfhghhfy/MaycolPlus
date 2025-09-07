@@ -7,13 +7,9 @@ import { fileTypeFromBuffer } from 'file-type'
 const handler = async (m, { conn, command }) => {
     const q = m.quoted || m
     const mime = (q.msg || q).mimetype || q.mediaType || ''
-    if (!mime) {
-        return conn.sendMessage(m.chat, {
-            text: `⚠️ Envía un archivo con el texto *.${command}* o responde al archivo con este comando.`,
-        }, { quoted: m })
-    }
+    if (!mime) return conn.sendMessage(m.chat, { text: `⚠️ Envía un archivo con el comando *.${command}* o responde a un archivo con él.` }, { quoted: m })
 
-    // Descargar archivo del usuario
+    // Descargar el archivo
     const media = await q.download()
     const tempDir = './temp'
     if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir)
@@ -26,9 +22,7 @@ const handler = async (m, { conn, command }) => {
     const buffer = fs.readFileSync(filePath)
 
     // Reacción de carga
-    await conn.sendMessage(m.chat, {
-        react: { text: '⏳', key: m.key }
-    })
+    await conn.sendMessage(m.chat, { react: { text: '⏳', key: m.key } })
 
     // Subir la imagen original a FreeImageHost
     const uploadToFreeImageHost = async (buffer) => {
@@ -36,7 +30,7 @@ const handler = async (m, { conn, command }) => {
             const form = new FormData()
             form.append('source', buffer, 'file')
             const res = await axios.post('https://freeimage.host/api/1/upload', form, {
-                params: { key: '6d207e02198a847aa98d0a2a901485a5' }, // tu API key
+                params: { key: '6d207e02198a847aa98d0a2a901485a5' },
                 headers: form.getHeaders()
             })
             return res.data.image.url
@@ -46,45 +40,42 @@ const handler = async (m, { conn, command }) => {
         }
     }
 
-    // Subir imagen original
-    const freehostUrl = await uploadToFreeImageHost(buffer)
+    const freehost = await uploadToFreeImageHost(buffer)
 
-    // Llamar a API para remover fondo
+    // Hacer petición a la API de nobg
+    const apiKey = 'may-2b02ac57e684a1c5ba9281d8dabf019c'
+    let nobgResult = null
     try {
-        const apiKey = 'may-2b02ac57e684a1c5ba9281d8dabf019c'
-        const nobgRes = await axios.get('https://mayapi.giize.com/nobg', {
-            params: { 
-                image: freehostUrl, // enviamos la imagen subida a freeimagehost
-                apikey: apiKey
-            },
-            responseType: 'arraybuffer' // para descargar la imagen resultante
+        const form = new FormData()
+        form.append('image', fs.createReadStream(filePath))
+        const res = await axios.post(`https://mayapi.giize.com/nobg?apikey=${apiKey}`, form, {
+            headers: form.getHeaders()
         })
-
-        const outputPath = path.join(tempDir, `nobg_${Date.now()}.png`)
-        fs.writeFileSync(outputPath, Buffer.from(nobgRes.data))
-
-        // Enviar imagen al usuario como documento
-        await conn.sendMessage(m.chat, {
-            document: fs.readFileSync(outputPath),
-            mimetype: 'image/png',
-            fileName: `nobg_${Date.now()}.png`
-        }, { quoted: m })
-
-        await conn.sendMessage(m.chat, {
-            react: { text: '✅', key: m.key }
-        })
-
-        // Limpiar archivos temporales
-        fs.unlinkSync(filePath)
-        fs.unlinkSync(outputPath)
-
+        if (res.data?.status) nobgResult = res.data.result
     } catch (err) {
-        console.error('Error al remover fondo:', err.message)
-        await conn.sendMessage(m.chat, {
-            text: `❌ Error al procesar la imagen: ${err.message}`
-        }, { quoted: m })
-        fs.unlinkSync(filePath)
+        console.error('Error Nobg:', err?.response?.data || err.message)
     }
+
+    // Descargar la imagen sin fondo
+    let nobgFilePath = null
+    if (nobgResult) {
+        const nobgBuffer = (await axios.get(nobgResult, { responseType: 'arraybuffer' })).data
+        nobgFilePath = path.join(tempDir, `nobg_${Date.now()}.png`)
+        fs.writeFileSync(nobgFilePath, nobgBuffer)
+        await conn.sendMessage(m.chat, { document: { url: nobgFilePath }, mimetype: 'image/png', fileName: `nobg_${Date.now()}.png` }, { quoted: m })
+    }
+
+    // Mensaje de confirmación con FreeImageHost
+    if (freehost) {
+        await conn.sendMessage(m.chat, { text: `✅ Imagen original subida a FreeImageHost:\n${freehost}` }, { quoted: m })
+    }
+
+    // Reacción de éxito
+    await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } })
+
+    // Borra los archivos temporales
+    fs.unlinkSync(filePath)
+    if (nobgFilePath) fs.unlinkSync(nobgFilePath)
 }
 
 handler.help = ['nobg']
