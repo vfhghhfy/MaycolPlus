@@ -1,4 +1,3 @@
-//Hecho por Ado + Modificado con <3
 import fetch from 'node-fetch'
 import FormData from 'form-data'
 
@@ -45,7 +44,7 @@ let handler = async (m, { conn, usedPrefix, command }) => {
     let uploadedUrl = await uploadImage(img)  
 
     // 2. Usamos la nueva API
-    const apiKey = "may-2b02ac57e684a1c5ba9281d8dabf019"
+    const apiKey = "may-2b02ac57e684a1c5ba9281d8dabf019c"
     const apiUrl = `https://mayapi.giize.com/remini?image=${encodeURIComponent(uploadedUrl)}&apikey=${apiKey}`
 
     const res = await fetch(apiUrl)  
