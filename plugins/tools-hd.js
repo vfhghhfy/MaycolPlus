@@ -1,4 +1,4 @@
-//Hecho por Ado
+//Hecho por Ado + Modificado con <3
 import fetch from 'node-fetch'
 import FormData from 'form-data'
 
@@ -41,22 +41,26 @@ let handler = async (m, { conn, usedPrefix, command }) => {
     let img = await q.download?.()  
     if (!img) throw new Error('No pude descargar la imagen.')  
 
+    // 1. Subimos a Catbox
     let uploadedUrl = await uploadImage(img)  
 
-    // --> Usar la nueva API
-    const apiUrl = `https://myapiadonix.vercel.app/tools/upscale?url=${encodeURIComponent(uploadedUrl)}`  
+    // 2. Usamos la nueva API
+    const apiKey = "may-2b02ac57e684a1c5ba9281d8dabf019"
+    const apiUrl = `https://mayapi.giize.com/remini?image=${encodeURIComponent(uploadedUrl)}&apikey=${apiKey}`
+
     const res = await fetch(apiUrl)  
     if (!res.ok) throw new Error(`Error en la API: ${res.statusText}`)  
-    const data = await res.json()  
 
+    const data = await res.json()  
     if (!data.status || !data.result) throw new Error('No se pudo mejorar la imagen.')  
 
+    // 3. Descargamos la imagen mejorada
     const improvedRes = await fetch(data.result)  
     const buffer = await improvedRes.buffer()  
 
     await conn.sendMessage(m.chat, {  
       image: buffer,  
-      caption: '✅ *Imagen mejorada con éxito*',  
+      caption: `✅ *Imagen mejorada con éxito*`,  
       ...global.rcanal  
     }, { quoted: m })  
 
