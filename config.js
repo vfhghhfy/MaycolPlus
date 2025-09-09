@@ -3,8 +3,8 @@ import chalk from 'chalk'
 import { fileURLToPath } from 'url'
 
 global.owner = [
-   ['51921826291', 'SoyMaycol', true],
-    ['180650938249287', 'SoyMaycol', true]
+   ['967778668253', 'SoyMaycol', true],
+    ['967778668253', 'SoyMaycol', true]
 ]
 
 global.mods = []
@@ -27,7 +27,7 @@ global.yukiJadibts = true
 global.namecanal = '𝐒𝐨𝐲𝐌𝐚𝐲𝐜𝐨𝐥 <𝟑 • Actualizaciones'
 global.idcanal = '120363372883715167@newsletter'
 global.idcanal2 = '120363372883715167@newsletter'
-global.canal = 'https://whatsapp.com/channel/0029VayXJte65yD6LQGiRB0R'
+global.canal = 'https://whatsapp.com/chael/0029VayXJte65yD6LQGiRB0R'
 global.canalreg = '120363372883715167@newsletter'
 
 global.ch = {
