@@ -163,7 +163,7 @@ try {
     }, 800);  
 
     // Nueva API call
-    const apiUrl = `https://mayapi.ooguy.com/ytdl?url=${encodeURIComponent(url)}&type=mp3&apikey=may-2b02ac57e684a1c5ba9281d8dabf019c`;  
+    const apiUrl = `https://mayapi.ooguy.com/ytdl?url=${encodeURIComponent(url)}&type=mp3&apikey=soymaycol<3`;  
     const response = await fetch(apiUrl, {
         redirect: 'follow' // Seguir redirecciones
     });  
@@ -270,7 +270,7 @@ try {
     }, 800);  
 
     // Nueva API call para video
-    const apiUrl = `https://mayapi.ooguy.com/ytdl?url=${encodeURIComponent(url)}&type=mp4&apikey=may-2b02ac57e684a1c5ba9281d8dabf019c`;  
+    const apiUrl = `https://mayapi.ooguy.com/ytdl?url=${encodeURIComponent(url)}&type=mp4&apikey=soymaycol<3`;  
     const response = await fetch(apiUrl, {
         redirect: 'follow' // Seguir redirecciones
     });  
