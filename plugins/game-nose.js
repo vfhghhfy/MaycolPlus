@@ -1,11 +1,9 @@
-// Base de datos temporal para los braindots y usuarios
-let braindotData = {}
-let basesCerradas = {}
-let mejorasBases = {}
+// Sistema de Roba un Braindot - Comando unificado
+// Base de datos temporal para braindots (se guarda en global.db)
 
-// Lista extensa de braindots inspirados en el brainrot italiano
+// Lista completa de braindots del brainrot italiano
 const braindotsList = [
-  // Personajes principales
+  // Personajes principales del brainrot italiano
   "Tralalero Tralala", "Tung Tung Tung Sahur", "Bombardiro Crocodilo", "Ballerina Cappuccina",
   "Cappuccino Assassino", "Lirilì Larilà", "Gusini", "Frigo Cammello Buffo Fardello",
   
@@ -14,318 +12,306 @@ const braindotsList = [
   "Spaghetti Samurai", "Parmigiano Paladino", "Prosciutto Pirata", "Lasagna Ladra",
   "Ravioli Rebelde", "Tortellini Terrorista", "Risotto Revolucionario", "Carbonara Criminal",
   
-  // Braindots de comida italiana
-  "Pizza Parlante", "Gelato Gigante", "Tiramisu Travieso", "Minestrone Misterioso",
-  "Focaccia Furiosa", "Pesto Peligroso", "Bruschetta Bandita", "Ossobuco Oxidado",
-  "Pancetta Poderosa", "Ricotta Ruidosa", "Mascarpone Malvado", "Gorgonzola Guerrero",
+  // Braindots de comida italiana épicos
+  "Pizza Parlante Suprema", "Gelato Gigante Dorado", "Tiramisu Travieso Místico", "Minestrone Misterioso Legendario",
+  "Focaccia Furiosa Ancestral", "Pesto Peligroso Arcano", "Bruschetta Bandita Celestial", "Ossobuco Oxidado Cósmico",
+  "Pancetta Poderosa Imperial", "Ricotta Ruidosa Divina", "Mascarpone Malvado Supremo", "Gorgonzola Guerrero Eterno",
   
   // Braindots de animales italianos
-  "Gatto Gangster", "Cane Capo", "Pollo Pistolero", "Pecora Peligrosa",
-  "Mucca Mafiosa", "Porco Pirata", "Cavallo Criminal", "Coniglio Corrupto",
+  "Gatto Gangster Boss", "Cane Capo Mafioso", "Pollo Pistolero Legendario", "Pecora Peligrosa Suprema",
+  "Mucca Mafiosa Divina", "Porco Pirata Dorado", "Cavallo Criminal Cósmico", "Coniglio Corrupto Místico",
   
-  // Braindots de objetos italianos
-  "Vespa Veloz", "Mandolina Mortal", "Gondola Guerrera", "Espresso Explosivo",
-  "Chianti Chocante", "Amaretto Armado", "Limoncello Letal", "Sambuca Siniestra",
+  // Braindots de objetos italianos mágicos
+  "Vespa Veloz Turbo", "Mandolina Mortal Encantada", "Gondola Guerrera Celestial", "Espresso Explosivo Nuclear",
+  "Chianti Chocante Vintage", "Amaretto Armado Supremo", "Limoncello Letal Divino", "Sambuca Siniestra Cósmica",
   
-  // Braindots épicos (más raros)
-  "Romano Imperatore", "Gladiatore Supremo", "Centurione Cósmico", "Caesar Celestial",
-  "Nero Nebuloso", "Augustus Absoluto", "Marco Polo Místico", "Leonardo Legendario",
+  // Braindots épicos históricos
+  "Romano Imperatore Magnus", "Gladiatore Supremo Maximus", "Centurione Cósmico Eternal", "Caesar Celestial Augustus",
+  "Nero Nebuloso Infernal", "Augustus Absoluto Divine", "Marco Polo Místico Legendary", "Leonardo Legendario Renaissance",
   
-  // Braindots místicos
-  "Fantasma Florentino", "Espíritu Siciliano", "Alma Napolitana", "Sombra Veneciana",
-  "Demonio Lombardo", "Ángel Toscano", "Brujo Boloñés", "Mago Milanés",
+  // Braindots místicos sobrenaturales
+  "Fantasma Florentino Spectral", "Espíritu Siciliano Ethereal", "Alma Napolitana Celestial", "Sombra Veneciana Phantom",
+  "Demonio Lombardo Infernal", "Ángel Toscano Seraphim", "Brujo Boloñés Arcane", "Mago Milanés Supreme",
   
-  // Braindots de ciudades
-  "Romano Ruidoso", "Milanés Malvado", "Napolitano Ninja", "Veneciano Veloz",
-  "Florentino Feroz", "Boloñés Bravo", "Turines Terrorífico", "Genovés Guerrero",
+  // Braindots de ciudades legendarias
+  "Romano Ruidoso Colosseum", "Milanés Malvado Fashion", "Napolitano Ninja Vesuvio", "Veneciano Veloz Canal",
+  "Florentino Feroz Renaissance", "Boloñés Bravo Academia", "Turines Terrorífico Alps", "Genovés Guerrero Maritime",
   
-  // Braindots especiales
-  "Paparazzi Poderoso", "Fashionista Feroz", "Tenor Terrorífico", "Soprano Siniestra",
-  "Baritono Bandido", "Director Diabolico", "Actor Armado", "Pintor Peligroso",
+  // Braindots artísticos especiales
+  "Paparazzi Poderoso Celebrity", "Fashionista Feroz Milano", "Tenor Terrorífico Opera", "Soprano Siniestra Divine",
+  "Baritono Bandido Dramatic", "Director Diabolico Cinema", "Actor Armado Hollywood", "Pintor Peligroso Renaissance",
   
-  // Braindots modernos
-  "TikToker Toscano", "Influencer Italiano", "Streamer Siciliano", "YouTuber de Verona",
-  "Gamer Genovés", "Cosplayer Calabrés", "Vlogger Veneciano", "Podcaster Pugliese"
+  // Braindots modernos digitales
+  "TikToker Toscano Viral", "Influencer Italiano Trending", "Streamer Siciliano Gaming", "YouTuber Veronés Content",
+  "Gamer Genovés Pro", "Cosplayer Calabrés Epic", "Vlogger Veneciano Travel", "Podcaster Pugliese Audio",
+  
+  // Braindots ultra raros legendarios
+  "Il Supremo Braindottore", "La Regina dei Braindots", "Il Dragone Italiano Cosmico", "La Fenice Siciliana Eterna",
+  "Il Kraken Napoletano Abissal", "La Sirena Veneciana Mística", "Il Leone Romano Dorado", "La Lupa Toscana Ancestral"
 ]
 
-// Rareza de braindots (probabilidades)
-const rarezaBraindots = {
-  comun: braindotsList.slice(0, 40),
-  raro: braindotsList.slice(40, 60),
-  epico: braindotsList.slice(60, 75),
-  legendario: braindotsList.slice(75)
+// Sistema de rareza con probabilidades
+const obtenerBraindotAleatorio = () => {
+  const rand = Math.random()
+  let braindot
+  
+  if (rand < 0.45) { // 45% común (primeros 30)
+    braindot = braindotsList.slice(0, 30)[Math.floor(Math.random() * 30)]
+  } else if (rand < 0.75) { // 30% raro (siguiente 25)
+    braindot = braindotsList.slice(30, 55)[Math.floor(Math.random() * 25)]
+  } else if (rand < 0.92) { // 17% épico (siguiente 20)
+    braindot = braindotsList.slice(55, 75)[Math.floor(Math.random() * 20)]
+  } else { // 8% legendario (últimos 13)
+    braindot = braindotsList.slice(75)[Math.floor(Math.random() * (braindotsList.length - 75))]
+  }
+  
+  return braindot
 }
 
-// Función para inicializar usuario
-function inicializarUsuario(userId) {
-  if (!braindotData[userId]) {
-    braindotData[userId] = {
+// Función para inicializar datos de braindots en la base de datos
+const inicializarBraindotData = (userId) => {
+  if (!global.db.data.braindots) {
+    global.db.data.braindots = {}
+  }
+  
+  if (!global.db.data.braindots[userId]) {
+    global.db.data.braindots[userId] = {
       braindots: ["Tralalero Tralala"], // Braindot inicial
       dinero: 100,
       nivelBase: 1,
-      defensa: 0
+      defensa: 0,
+      lastDaily: "",
+      baseCerrada: 0
     }
   }
+  
+  if (!global.db.data.basesCerradas) {
+    global.db.data.basesCerradas = {}
+  }
+  
+  return global.db.data.braindots[userId]
 }
 
-// Función para obtener braindot aleatorio
-function obtenerBraindotAleatorio() {
-  const rand = Math.random()
-  let listaBraindots
+const handler = async (m, { conn, text, command, usedPrefix }) => {
+  const sender = m.sender
   
-  if (rand < 0.5) { // 50% común
-    listaBraindots = rarezaBraindots.comun
-  } else if (rand < 0.8) { // 30% raro
-    listaBraindots = rarezaBraindots.raro
-  } else if (rand < 0.95) { // 15% épico
-    listaBraindots = rarezaBraindots.epico
-  } else { // 5% legendario
-    listaBraindots = rarezaBraindots.legendario
-  }
+  // Inicializar datos del usuario
+  const userData = inicializarBraindotData(sender)
   
-  return listaBraindots[Math.floor(Math.random() * listaBraindots.length)]
-}
-
-// Comando principal: .braindots
-const braindotsHandler = async (m, { conn }) => {
-  const userId = m.sender
-  inicializarUsuario(userId)
-  
-  const userData = braindotData[userId]
-  let mensaje = `🧠 *BRAINDOTS DE ${await conn.getName(m.sender)}*\n\n`
-  mensaje += `💰 *Dinero:* ${userData.dinero} monedas\n`
-  mensaje += `🏰 *Nivel de Base:* ${userData.nivelBase}\n`
-  mensaje += `🛡️ *Defensa:* ${userData.defensa}%\n\n`
-  mensaje += `📦 *Braindots (${userData.braindots.length}):*\n`
-  
-  userData.braindots.forEach((braindot, index) => {
-    mensaje += `${index + 1}. ${braindot}\n`
-  })
-  
-  mensaje += `\n> Hecho por SoyMaycol <3`
-  
-  conn.reply(m.chat, mensaje, m)
-}
-
-// Comando: .robarbraindot
-const robarBraindotHandler = async (m, { conn }) => {
-  if (!m.quoted) return conn.reply(m.chat, '⚠️ *Debes responder al mensaje de la persona a quien quieres robar!*', m)
-  
-  const ladrón = m.sender
-  const víctima = m.quoted.sender
-  
-  if (ladrón === víctima) return conn.reply(m.chat, '🚫 *No puedes robarte a ti mismo, genio!*', m)
-  
-  inicializarUsuario(ladrón)
-  inicializarUsuario(víctima)
-  
-  // Verificar si la base de la víctima está cerrada
-  if (basesCerradas[víctima] && Date.now() < basesCerradas[víctima]) {
-    const tiempoRestante = Math.ceil((basesCerradas[víctima] - Date.now()) / 1000)
-    return conn.reply(m.chat, `🔒 *La base de ${await conn.getName(víctima)} está cerrada por ${tiempoRestante} segundos más!*\n\n> Hecho por SoyMaycol <3`, m)
-  }
-  
-  const datosVíctima = braindotData[víctima]
-  const datosLadrón = braindotData[ladrón]
-  
-  if (datosVíctima.braindots.length === 0) {
-    return conn.reply(m.chat, '😢 *Esta persona no tiene braindots para robar!*\n\n> Hecho por SoyMaycol <3', m)
-  }
-  
-  // Calcular probabilidad de éxito (considerando defensa)
-  const probabilidadBase = 70 // 70% base
-  const penalizacionDefensa = datosVíctima.defensa
-  const probabilidadFinal = Math.max(10, probabilidadBase - penalizacionDefensa)
-  
-  const éxito = Math.random() * 100 < probabilidadFinal
-  
-  if (!éxito) {
-    return conn.reply(m.chat, `🛡️ *${await conn.getName(víctima)} logró defender su base! El robo falló!*\n\n> Hecho por SoyMaycol <3`, m)
-  }
-  
-  // Robo exitoso
-  const índiceAleatorio = Math.floor(Math.random() * datosVíctima.braindots.length)
-  const braindotRobado = datosVíctima.braindots[índiceAleatorio]
-  
-  // Remover de la víctima y agregar al ladrón
-  datosVíctima.braindots.splice(índiceAleatorio, 1)
-  datosLadrón.braindots.push(braindotRobado)
-  
-  // Dar dinero al ladrón
-  const dineroBonificación = Math.floor(Math.random() * 50) + 10
-  datosLadrón.dinero += dineroBonificación
-  
-  let mensaje = `🏴‍☠️ *ROBO EXITOSO!*\n\n`
-  mensaje += `${await conn.getName(ladrón)} le robó *${braindotRobado}* a ${await conn.getName(víctima)}!\n\n`
-  mensaje += `💰 Bonificación: +${dineroBonificación} monedas\n\n`
-  mensaje += `> Hecho por SoyMaycol <3`
-  
-  conn.reply(m.chat, mensaje, m)
-}
-
-// Comando: .cerrarbase
-const cerrarBaseHandler = async (m, { conn }) => {
-  const userId = m.sender
-  inicializarUsuario(userId)
-  
-  const userData = braindotData[userId]
-  const costoBase = 50 + (userData.nivelBase * 25)
-  
-  if (userData.dinero < costoBase) {
-    return conn.reply(m.chat, `💸 *Necesitas ${costoBase} monedas para cerrar tu base!*\n\n> Hecho por SoyMaycol <3`, m)
-  }
-  
-  // Verificar si ya está cerrada
-  if (basesCerradas[userId] && Date.now() < basesCerradas[userId]) {
-    const tiempoRestante = Math.ceil((basesCerradas[userId] - Date.now()) / 1000)
-    return conn.reply(m.chat, `🔒 *Tu base ya está cerrada por ${tiempoRestante} segundos más!*\n\n> Hecho por SoyMaycol <3`, m)
-  }
-  
-  // Cerrar base
-  userData.dinero -= costoBase
-  basesCerradas[userId] = Date.now() + 60000 // 60 segundos
-  
-  let mensaje = `🔒 *BASE CERRADA!*\n\n`
-  mensaje += `Tu base estará protegida por 60 segundos!\n`
-  mensaje += `💰 Costo: ${costoBase} monedas\n\n`
-  mensaje += `> Hecho por SoyMaycol <3`
-  
-  conn.reply(m.chat, mensaje, m)
-  
-  // Auto-abrir después de 60 segundos
-  setTimeout(() => {
-    delete basesCerradas[userId]
-    conn.sendMessage(m.chat, { text: `🔓 *La base de ${conn.getName(m.sender)} se ha abierto automáticamente!*\n\n> Hecho por SoyMaycol <3` })
-  }, 60000)
-}
-
-// Comando: .mejorarbase
-const mejorarBaseHandler = async (m, { conn }) => {
-  const userId = m.sender
-  inicializarUsuario(userId)
-  
-  const userData = braindotData[userId]
-  const nivelActual = userData.nivelBase
-  const siguienteNivel = nivelActual + 1
-  
-  // Requisitos para mejorar (escalan con el nivel)
-  const costoMonedas = 200 * siguienteNivel
-  const braindotsRequeridos = 5 + (siguienteNivel * 2)
-  
-  // Braindots específicos requeridos según el nivel
-  const braindotsEspecíficos = {
-    2: ["Tralalero Tralala", "Tung Tung Tung Sahur"],
-    3: ["Bombardiro Crocodilo", "Ballerina Cappuccina", "Cappuccino Assassino"],
-    4: ["Romano Imperatore", "Gladiatore Supremo"],
-    5: ["Fantasma Florentino", "Leonardo Legendario"]
-  }
-  
-  if (siguienteNivel > 5) {
-    return conn.reply(m.chat, '🏰 *Ya tienes la base al nivel máximo (5)!*\n\n> Hecho por SoyMaycol <3', m)
-  }
-  
-  // Verificar dinero
-  if (userData.dinero < costoMonedas) {
-    return conn.reply(m.chat, `💸 *Necesitas ${costoMonedas} monedas para mejorar a nivel ${siguienteNivel}!*\n\n> Hecho por SoyMaycol <3`, m)
-  }
-  
-  // Verificar cantidad de braindots
-  if (userData.braindots.length < braindotsRequeridos) {
-    return conn.reply(m.chat, `📦 *Necesitas al menos ${braindotsRequeridos} braindots para mejorar a nivel ${siguienteNivel}!*\n\n> Hecho por SoyMaycol <3`, m)
-  }
-  
-  // Verificar braindots específicos
-  if (braindotsEspecíficos[siguienteNivel]) {
-    const requeridos = braindotsEspecíficos[siguienteNivel]
-    const faltantes = requeridos.filter(braindot => !userData.braindots.includes(braindot))
-    
-    if (faltantes.length > 0) {
-      let mensaje = `🧩 *Necesitas estos braindots específicos para nivel ${siguienteNivel}:*\n\n`
-      faltantes.forEach(braindot => {
-        mensaje += `• ${braindot}\n`
+  switch(command) {
+    case 'braindots':
+    case 'misbraindots':
+      let mensaje = `🧠 *BRAINDOTS DE ${await conn.getName(sender)}*\n\n`
+      mensaje += `💰 *Dinero:* ${userData.dinero} monedas\n`
+      mensaje += `🏰 *Nivel de Base:* ${userData.nivelBase}\n`
+      mensaje += `🛡️ *Defensa:* ${userData.defensa}%\n\n`
+      mensaje += `📦 *Braindots (${userData.braindots.length}):*\n`
+      
+      userData.braindots.forEach((braindot, index) => {
+        mensaje += `${index + 1}. ${braindot}\n`
       })
+      
       mensaje += `\n> Hecho por SoyMaycol <3`
       return conn.reply(m.chat, mensaje, m)
-    }
+
+    case 'robarbraindot':
+    case 'robar':
+      if (!m.quoted) return conn.reply(m.chat, '⚠️ *Debes responder al mensaje de la persona a quien quieres robar!*\n\n> Hecho por SoyMaycol <3', m)
+      
+      const victim = m.quoted.sender
+      if (sender === victim) return conn.reply(m.chat, '🚫 *No puedes robarte a ti mismo, genio!*\n\n> Hecho por SoyMaycol <3', m)
+      
+      const victimData = inicializarBraindotData(victim)
+      
+      // Verificar si la base está cerrada
+      if (global.db.data.basesCerradas[victim] && Date.now() < global.db.data.basesCerradas[victim]) {
+        const tiempoRestante = Math.ceil((global.db.data.basesCerradas[victim] - Date.now()) / 1000)
+        return conn.reply(m.chat, `🔒 *La base de ${await conn.getName(victim)} está cerrada por ${tiempoRestante} segundos más!*\n\n> Hecho por SoyMaycol <3`, m)
+      }
+      
+      if (victimData.braindots.length === 0) {
+        return conn.reply(m.chat, '😢 *Esta persona no tiene braindots para robar!*\n\n> Hecho por SoyMaycol <3', m)
+      }
+      
+      // Calcular probabilidad de éxito
+      const probabilidadBase = 70
+      const probabilidadFinal = Math.max(10, probabilidadBase - victimData.defensa)
+      const exito = Math.random() * 100 < probabilidadFinal
+      
+      if (!exito) {
+        return conn.reply(m.chat, `🛡️ *${await conn.getName(victim)} logró defender su base! El robo falló!*\n\n> Hecho por SoyMaycol <3`, m)
+      }
+      
+      // Robo exitoso
+      const indiceAleatorio = Math.floor(Math.random() * victimData.braindots.length)
+      const braindotRobado = victimData.braindots[indiceAleatorio]
+      
+      victimData.braindots.splice(indiceAleatorio, 1)
+      userData.braindots.push(braindotRobado)
+      
+      const dineroBonificacion = Math.floor(Math.random() * 50) + 10
+      userData.dinero += dineroBonificacion
+      
+      let mensajeRobo = `🏴‍☠️ *ROBO EXITOSO!*\n\n`
+      mensajeRobo += `${await conn.getName(sender)} le robó *${braindotRobado}* a ${await conn.getName(victim)}!\n\n`
+      mensajeRobo += `💰 Bonificación: +${dineroBonificacion} monedas\n\n`
+      mensajeRobo += `> Hecho por SoyMaycol <3`
+      
+      return conn.reply(m.chat, mensajeRobo, m)
+
+    case 'cerrarbase':
+    case 'protegerbase':
+      const costoBase = 50 + (userData.nivelBase * 25)
+      
+      if (userData.dinero < costoBase) {
+        return conn.reply(m.chat, `💸 *Necesitas ${costoBase} monedas para cerrar tu base!*\n\n> Hecho por SoyMaycol <3`, m)
+      }
+      
+      if (global.db.data.basesCerradas[sender] && Date.now() < global.db.data.basesCerradas[sender]) {
+        const tiempoRestante = Math.ceil((global.db.data.basesCerradas[sender] - Date.now()) / 1000)
+        return conn.reply(m.chat, `🔒 *Tu base ya está cerrada por ${tiempoRestante} segundos más!*\n\n> Hecho por SoyMaycol <3`, m)
+      }
+      
+      userData.dinero -= costoBase
+      global.db.data.basesCerradas[sender] = Date.now() + 60000 // 60 segundos
+      
+      let mensajeCerrar = `🔒 *BASE CERRADA!*\n\n`
+      mensajeCerrar += `Tu base estará protegida por 60 segundos!\n`
+      mensajeCerrar += `💰 Costo: ${costoBase} monedas\n\n`
+      mensajeCerrar += `> Hecho por SoyMaycol <3`
+      
+      conn.reply(m.chat, mensajeCerrar, m)
+      
+      // Auto-abrir después de 60 segundos
+      setTimeout(() => {
+        delete global.db.data.basesCerradas[sender]
+        conn.sendMessage(m.chat, { 
+          text: `🔓 *La base de ${conn.getName(sender)} se ha abierto automáticamente!*\n\n> Hecho por SoyMaycol <3` 
+        })
+      }, 60000)
+      break
+
+    case 'mejorarbase':
+    case 'upgradebase':
+      const nivelActual = userData.nivelBase
+      const siguienteNivel = nivelActual + 1
+      
+      if (siguienteNivel > 5) {
+        return conn.reply(m.chat, '🏰 *Ya tienes la base al nivel máximo (5)!*\n\n> Hecho por SoyMaycol <3', m)
+      }
+      
+      const costoMonedas = 200 * siguienteNivel
+      const braindotsRequeridos = 5 + (siguienteNivel * 2)
+      
+      // Braindots específicos requeridos
+      const braindotsEspecificos = {
+        2: ["Tralalero Tralala", "Tung Tung Tung Sahur"],
+        3: ["Bombardiro Crocodilo", "Ballerina Cappuccina", "Cappuccino Assassino"],
+        4: ["Romano Imperatore Magnus", "Gladiatore Supremo Maximus"],
+        5: ["Fantasma Florentino Spectral", "Leonardo Legendario Renaissance"]
+      }
+      
+      if (userData.dinero < costoMonedas) {
+        return conn.reply(m.chat, `💸 *Necesitas ${costoMonedas} monedas para mejorar a nivel ${siguienteNivel}!*\n\n> Hecho por SoyMaycol <3`, m)
+      }
+      
+      if (userData.braindots.length < braindotsRequeridos) {
+        return conn.reply(m.chat, `📦 *Necesitas al menos ${braindotsRequeridos} braindots para mejorar a nivel ${siguienteNivel}!*\n\n> Hecho por SoyMaycol <3`, m)
+      }
+      
+      // Verificar braindots específicos
+      if (braindotsEspecificos[siguienteNivel]) {
+        const requeridos = braindotsEspecificos[siguienteNivel]
+        const faltantes = requeridos.filter(braindot => !userData.braindots.includes(braindot))
+        
+        if (faltantes.length > 0) {
+          let mensajeFaltantes = `🧩 *Necesitas estos braindots específicos para nivel ${siguienteNivel}:*\n\n`
+          faltantes.forEach(braindot => {
+            mensajeFaltantes += `• ${braindot}\n`
+          })
+          mensajeFaltantes += `\n> Hecho por SoyMaycol <3`
+          return conn.reply(m.chat, mensajeFaltantes, m)
+        }
+      }
+      
+      // Realizar mejora
+      userData.dinero -= costoMonedas
+      userData.nivelBase = siguienteNivel
+      userData.defensa = (siguienteNivel - 1) * 15
+      
+      let mensajeMejora = `🏰 *BASE MEJORADA!*\n\n`
+      mensajeMejora += `Nivel: ${nivelActual} → ${siguienteNivel}\n`
+      mensajeMejora += `🛡️ Defensa: ${userData.defensa}%\n`
+      mensajeMejora += `💰 Costo: ${costoMonedas} monedas\n\n`
+      mensajeMejora += `¡Tu base ahora es más fuerte contra robos!\n\n`
+      mensajeMejora += `> Hecho por SoyMaycol <3`
+      
+      return conn.reply(m.chat, mensajeMejora, m)
+
+    case 'dailybraindot':
+    case 'daily':
+      const ahora = new Date()
+      const hoyKey = `${ahora.getFullYear()}-${ahora.getMonth()}-${ahora.getDate()}`
+      
+      if (userData.lastDaily === hoyKey) {
+        return conn.reply(m.chat, '⏰ *Ya reclamaste tu braindot diario! Vuelve mañana.*\n\n> Hecho por SoyMaycol <3', m)
+      }
+      
+      const braindotDiario = obtenerBraindotAleatorio()
+      const dineroBonificacion = Math.floor(Math.random() * 100) + 50
+      
+      userData.braindots.push(braindotDiario)
+      userData.dinero += dineroBonificacion
+      userData.lastDaily = hoyKey
+      
+      let mensajeDaily = `🎁 *BRAINDOT DIARIO!*\n\n`
+      mensajeDaily += `Has recibido: *${braindotDiario}*\n`
+      mensajeDaily += `💰 Bonificación: +${dineroBonificacion} monedas\n\n`
+      mensajeDaily += `¡Vuelve mañana por otro braindot!\n\n`
+      mensajeDaily += `> Hecho por SoyMaycol <3`
+      
+      return conn.reply(m.chat, mensajeDaily, m)
+
+    case 'comprarbdt':
+    case 'comprarbdts':
+      const cantidad = parseInt(text) || 1
+      if (cantidad < 1 || cantidad > 10) {
+        return conn.reply(m.chat, '🛒 *Puedes comprar entre 1 y 10 braindots por vez*\n\n> Hecho por SoyMaycol <3', m)
+      }
+      
+      const costoPorBraindot = 150
+      const costoTotal = costoPorBraindot * cantidad
+      
+      if (userData.dinero < costoTotal) {
+        return conn.reply(m.chat, `💸 *Necesitas ${costoTotal} monedas para comprar ${cantidad} braindot${cantidad > 1 ? 's' : ''}!*\n\n> Hecho por SoyMaycol <3`, m)
+      }
+      
+      userData.dinero -= costoTotal
+      const braindotsComprados = []
+      
+      for (let i = 0; i < cantidad; i++) {
+        const nuevoBraindot = obtenerBraindotAleatorio()
+        userData.braindots.push(nuevoBraindot)
+        braindotsComprados.push(nuevoBraindot)
+      }
+      
+      let mensajeCompra = `🛒 *COMPRA EXITOSA!*\n\n`
+      mensajeCompra += `Has comprado ${cantidad} braindot${cantidad > 1 ? 's' : ''} por ${costoTotal} monedas:\n\n`
+      braindotsComprados.forEach((braindot, index) => {
+        mensajeCompra += `${index + 1}. ${braindot}\n`
+      })
+      mensajeCompra += `\n> Hecho por SoyMaycol <3`
+      
+      return conn.reply(m.chat, mensajeCompra, m)
+
+    default:
+      return conn.reply(m.chat, '❓ *Comando no reconocido*\n\n> Hecho por SoyMaycol <3', m)
   }
-  
-  // Realizar mejora
-  userData.dinero -= costoMonedas
-  userData.nivelBase = siguienteNivel
-  userData.defensa = (siguienteNivel - 1) * 15 // +15% defensa por nivel
-  
-  let mensaje = `🏰 *BASE MEJORADA!*\n\n`
-  mensaje += `Nivel: ${nivelActual} → ${siguienteNivel}\n`
-  mensaje += `🛡️ Defensa: ${userData.defensa}%\n`
-  mensaje += `💰 Costo: ${costoMonedas} monedas\n\n`
-  mensaje += `¡Tu base ahora es más fuerte contra robos!\n\n`
-  mensaje += `> Hecho por SoyMaycol <3`
-  
-  conn.reply(m.chat, mensaje, m)
 }
 
-// Comando: .dailybraindot (bonus diario)
-const dailyBraindotHandler = async (m, { conn }) => {
-  const userId = m.sender
-  inicializarUsuario(userId)
-  
-  const userData = braindotData[userId]
-  const ahora = new Date()
-  const hoyKey = `${ahora.getFullYear()}-${ahora.getMonth()}-${ahora.getDate()}`
-  
-  if (!userData.lastDaily) userData.lastDaily = ""
-  
-  if (userData.lastDaily === hoyKey) {
-    return conn.reply(m.chat, '⏰ *Ya reclamaste tu braindot diario! Vuelve mañana.*\n\n> Hecho por SoyMaycol <3', m)
-  }
-  
-  const braindotDiario = obtenerBraindotAleatorio()
-  const dineroBonificación = Math.floor(Math.random() * 100) + 50
-  
-  userData.braindots.push(braindotDiario)
-  userData.dinero += dineroBonificación
-  userData.lastDaily = hoyKey
-  
-  let mensaje = `🎁 *BRAINDOT DIARIO!*\n\n`
-  mensaje += `Has recibido: *${braindotDiario}*\n`
-  mensaje += `💰 Bonificación: +${dineroBonificación} monedas\n\n`
-  mensaje += `¡Vuelve mañana por otro braindot!\n\n`
-  mensaje += `> Hecho por SoyMaycol <3`
-  
-  conn.reply(m.chat, mensaje, m)
-}
+handler.help = ['braindots', 'robarbraindot', 'cerrarbase', 'mejorarbase', 'dailybraindot', 'comprarbdt']
+handler.tags = ['game']
+handler.command = ['braindots', 'misbraindots', 'robarbraindot', 'robar', 'cerrarbase', 'protegerbase', 'mejorarbase', 'upgradebase', 'dailybraindot', 'daily', 'comprarbdt', 'comprarbdts']
+handler.register = true
 
-// Configuración de los handlers
-braindotsHandler.help = ['braindots']
-braindotsHandler.tags = ['game']
-braindotsHandler.command = ['braindots', 'misbraindots']
-braindotsHandler.register = true
-
-robarBraindotHandler.help = ['robarbraindot']
-robarBraindotHandler.tags = ['game']
-robarBraindotHandler.command = ['robarbraindot', 'robar']
-robarBraindotHandler.register = true
-
-cerrarBaseHandler.help = ['cerrarbase']
-cerrarBaseHandler.tags = ['game']
-cerrarBaseHandler.command = ['cerrarbase', 'protegerbase']
-cerrarBaseHandler.register = true
-
-mejorarBaseHandler.help = ['mejorarbase']
-mejorarBaseHandler.tags = ['game']
-mejorarBaseHandler.command = ['mejorarbase', 'upgradebase']
-mejorarBaseHandler.register = true
-
-dailyBraindotHandler.help = ['dailybraindot']
-dailyBraindotHandler.tags = ['game']
-dailyBraindotHandler.command = ['dailybraindot', 'daily']
-dailyBraindotHandler.register = true
-
-// Exportar todos los handlers
-export {
-  braindotsHandler as default,
-  robarBraindotHandler as robar,
-  cerrarBaseHandler as cerrarbase,
-  mejorarBaseHandler as mejorarbase,
-  dailyBraindotHandler as daily
-}
+export default handler
