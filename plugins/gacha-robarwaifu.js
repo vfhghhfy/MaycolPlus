@@ -1,24 +1,14 @@
+// Codigo hecho por SoyMaycol <3
 import { promises as fs } from 'fs'
 
-const charactersFilePath = './database/characters.json'
 const haremFilePath = './database/harem.json'
-
 const cooldownsSteal = {}
-
-async function loadCharacters() {
-  const data = await fs.readFile(charactersFilePath, 'utf-8')
-  return JSON.parse(data)
-}
-
-async function saveCharacters(characters) {
-  await fs.writeFile(charactersFilePath, JSON.stringify(characters, null, 2), 'utf-8')
-}
 
 async function loadHarem() {
   try {
     const data = await fs.readFile(haremFilePath, 'utf-8')
     return JSON.parse(data) || {}
-  } catch {
+  } catch (error) {
     return {}
   }
 }
@@ -27,84 +17,67 @@ async function saveHarem(harem) {
   await fs.writeFile(haremFilePath, JSON.stringify(harem, null, 2), 'utf-8')
 }
 
-let handler = async (m, { conn, args }) => {
+let handler = async (m, { conn }) => {
   const userId = m.sender
   const now = Date.now()
 
-  // ⏳ cooldown de 1 hora
+  // ⏳ Cooldown de 30 minutos
   if (cooldownsSteal[userId] && now < cooldownsSteal[userId]) {
     const remainingTime = Math.ceil((cooldownsSteal[userId] - now) / 1000)
     const minutes = Math.floor(remainingTime / 60)
     const seconds = remainingTime % 60
     return conn.reply(m.chat,
-      `《✧》Debes esperar *${minutes}m ${seconds}s* antes de volver a intentar robar una waifu.`,
+      `《✧》Debes esperar *${minutes} minutos y ${seconds} segundos* para volver a usar *#robarwaifu*.`,
       m
     )
   }
 
-  if (!args[0]) return conn.reply(m.chat, `✦ Ejemplo:\n#robarwaifu <id>`, m)
-
-  const waifuId = args[0].trim()
-
   try {
-    const characters = await loadCharacters()
     const harem = await loadHarem()
 
-    const character = characters.find(c => c.id == waifuId)
-    if (!character) return conn.reply(m.chat, `✘ No encontré ninguna waifu con el ID *${waifuId}*`, m)
+    // 🔹 Filtrar usuarios que sí tengan personajes
+    const usersWithHarem = Object.entries(harem).filter(([uid, chars]) => Array.isArray(chars) && chars.length > 0)
 
-    if (!character.user) {
-      return conn.reply(m.chat, `✘ Esa waifu no tiene dueño todavía. Usa *#rw* para reclamarla.`, m)
+    if (usersWithHarem.length === 0) {
+      return conn.reply(m.chat, '✘ No hay personajes para robar UwU 💔', m)
     }
 
-    if (character.user === userId) {
-      return conn.reply(m.chat, `✘ No puedes robarte tu propia waifu XD`, m)
+    // 🔹 Elegir víctima random que NO sea el mismo usuario
+    const possibleVictims = usersWithHarem.filter(([uid]) => uid !== userId)
+    if (possibleVictims.length === 0) {
+      return conn.reply(m.chat, '✘ No puedes robarte a ti mismo jeje (｡•́︿•̀｡)', m)
     }
 
-    // 🎲 50% probabilidad de éxito
-    const success = Math.random() < 0.5
+    const [victimId, victimChars] = possibleVictims[Math.floor(Math.random() * possibleVictims.length)]
 
-    if (success) {
-      // quitarla del dueño anterior
-      for (const [uid, chars] of Object.entries(harem)) {
-        if (Array.isArray(chars)) {
-          const index = chars.findIndex(c => c.id === character.id)
-          if (index !== -1) {
-            chars.splice(index, 1)
-            break
-          }
-        }
-      }
+    // 🔹 Elegir personaje random de la víctima
+    const stolenChar = victimChars[Math.floor(Math.random() * victimChars.length)]
 
-      // asignar nuevo dueño
-      if (!harem[userId]) harem[userId] = []
-      harem[userId].push(character)
-      character.user = userId
+    // 🔹 Sacar de la víctima y meter al ladrón
+    harem[victimId] = victimChars.filter(c => c.id !== stolenChar.id)
+    if (!Array.isArray(harem[userId])) harem[userId] = []
+    harem[userId].push(stolenChar)
 
-      await saveCharacters(characters)
-      await saveHarem(harem)
+    await saveHarem(harem)
 
-      conn.reply(m.chat,
-        `☄︎ Has logrado robar con éxito a *${character.name}* ✨💖\nAhora es tu waifu (≧◡≦)`,
-        m
-      )
-    } else {
-      conn.reply(m.chat,
-        `✘ Intentaste robar a *${character.name}* pero fallaste... fue defendida con amor 💔`,
-        m
-      )
-    }
+    const msg = `✦ 𝚁𝚘𝚋𝚘 𝚎𝚡𝚒𝚝𝚘𝚜𝚘 ✦  
+@${userId.split('@')[0]} ha robado a *${stolenChar.name}*  
+de @${victimId.split('@')[0]} (≧▽≦) 🔥`
 
-    cooldownsSteal[userId] = now + 60 * 60 * 1000 // 1 hora
+    await conn.reply(m.chat, msg, m, {
+      mentions: [userId, victimId]
+    })
+
+    cooldownsSteal[userId] = now + 30 * 60 * 1000 // ⏳ 30 minutos
 
   } catch (error) {
-    await conn.reply(m.chat, `✘ Error al robar waifu: ${error.message}`, m)
+    await conn.reply(m.chat, `✘ Error al intentar robar: ${error.message}`, m)
   }
 }
 
-handler.help = ['robarwaifu <id>']
+handler.help = ['robarwaifu']
 handler.tags = ['gacha']
-handler.command = ['robarwaifu', 'stealwaifu']
-handler.group = true
+handler.command = ['robarwaifu']
+handler.group = false
 handler.register = false
 export default handler
