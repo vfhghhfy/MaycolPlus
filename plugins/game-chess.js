@@ -3,13 +3,20 @@
 
 import fetch from 'node-fetch'
 
+let partidas = {} // aquí guardamos sessionId por usuario
+
 let handler = async (m, { conn, text, command, usedPrefix }) => {
-  let id = m.sender.replace(/[^0-9]/g, '') // sessionId = números random/únicos
-  let sessionId = `${id}${Math.floor(Math.random() * 1000)}`
+  let id = m.sender
   let apikey = "soymaycol<3"
   let level = 5
 
-  // si no se pasa jugada, solo muestra tablero actual
+  // si no hay sessionId para este user, creamos uno fijo
+  if (!partidas[id]) {
+    partidas[id] = `${id.replace(/[^0-9]/g, '') || Date.now()}`
+  }
+  let sessionId = partidas[id]
+
+  // mostrar tablero si no se pasa jugada
   if (!text) {
     let res = await fetch(`https://mayapi.ooguy.com/chess?sessionId=${sessionId}&level=${level}&apikey=${apikey}`)
     let data = await res.json()
@@ -34,6 +41,7 @@ let handler = async (m, { conn, text, command, usedPrefix }) => {
   if (!data.status) return m.reply("⚠️ Movimiento inválido o error con la API")
 
   if (data.message.includes("terminado")) {
+    delete partidas[id] // borrar la partida cuando termine
     return conn.sendMessage(m.chat, { 
       image: { url: data.url },
       caption: `♟️ Tu jugada: *${data.userMove}*\nIA: *${data.aiMove}*\n\n✅ ¡La partida ha terminado!`
