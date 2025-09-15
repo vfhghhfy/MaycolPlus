@@ -1,82 +1,84 @@
-
 // Codigo hecho por SoyMaycol <3
 import { promises as fs } from 'fs'
 
 const haremFilePath = './database/harem.json'
-const cooldownsSteal = {}
 
 async function loadHarem() {
   try {
     const data = await fs.readFile(haremFilePath, 'utf-8')
     return JSON.parse(data) || {}
-  } catch (error) {
+  } catch {
     return {}
   }
 }
 
-async function saveHarem(harem) {
-  await fs.writeFile(haremFilePath, JSON.stringify(harem, null, 2), 'utf-8')
-}
-
-let handler = async (m, { conn }) => {
-  const userId = m.sender
-  const now = Date.now()
-
-  // cooldown de 30 minutos
-  if (cooldownsSteal[userId] && now < cooldownsSteal[userId]) {
-    const remainingTime = Math.ceil((cooldownsSteal[userId] - now) / 1000)
-    const minutes = Math.floor(remainingTime / 60)
-    const seconds = remainingTime % 60
-    return conn.reply(
-      m.chat,
-      `《✧》Ya intentaste robar, espera *${minutes} minutos y ${seconds} segundos* para volver a usar *#robarwaifu*.`,
-      m
-    )
-  }
-
-  // tienes que responder a alguien
-  const targetId = m.quoted?.sender
-  if (!targetId) {
-    return conn.reply(m.chat, `✘ Debes responder al mensaje de alguien para intentar robarle una waifu.`, m)
-  }
-
+let handler = async (m, { conn, args }) => {
   try {
     const harem = await loadHarem()
+    let userId
 
-    const targetHarem = harem[targetId] || []
-    if (!Array.isArray(targetHarem) || targetHarem.length === 0) {
-      return conn.reply(m.chat, `✘ Ese usuario no tiene waifus para robar.`, m)
+    if (m.quoted?.sender) {
+      userId = m.quoted.sender
+    } else if (args[0]?.startsWith('@')) {
+      userId = args[0].replace('@', '') + '@s.whatsapp.net'
+    } else {
+      userId = m.sender
     }
 
-    // elegir personaje random
-    const randomIndex = Math.floor(Math.random() * targetHarem.length)
-    const stolenWaifu = targetHarem[randomIndex]
+    const userCharacters = harem[userId] || []
 
-    // sacar waifu del harem de la víctima
-    harem[targetId] = targetHarem.filter((c, i) => i !== randomIndex)
+    if (!Array.isArray(userCharacters) || userCharacters.length === 0) {
+      await conn.sendMessage(m.chat, {
+        text: 'ꕥ No tienes personajes en tu harem.\n> ● *Usa /rw para conseguir tu primera waifu.*',
+        ...global.rcanal
+      }, { quoted: m })
+      return
+    }
 
-    // añadir al harem del ladrón
-    if (!harem[userId]) harem[userId] = []
-    harem[userId].push(stolenWaifu)
+    const page = parseInt(args[1]) || 1
+    const charactersPerPage = 50
+    const totalCharacters = userCharacters.length
+    const totalPages = Math.ceil(totalCharacters / charactersPerPage)
 
-    await saveHarem(harem)
+    if (page < 1 || page > totalPages) {
+      await conn.sendMessage(m.chat, {
+        text: `ꕥ Página inválida.\n> ● *Tu harem tiene ${totalPages} páginas en total.*`,
+        ...global.rcanal
+      }, { quoted: m })
+      return
+    }
 
-    // mensaje
-    const msg = `✦ @${userId.split('@')[0]} le robó a @${targetId.split('@')[0]} la waifu *${stolenWaifu.name}* ✦\n\n> Ahora pertenece a su harem UwU 💞`
-    await conn.reply(m.chat, msg, m, {
-      mentions: [userId, targetId],
-    })
+    const startIndex = (page - 1) * charactersPerPage
+    const endIndex = Math.min(startIndex + charactersPerPage, totalCharacters)
 
-    cooldownsSteal[userId] = now + 30 * 60 * 1000 // 30 min
+    let message = `*✿ Harem ✿*\n`
+    message += `> ⌦ Dueño » @${userId.split('@')[0]}\n`
+    message += `> ☄︎ Personajes » *${totalCharacters}*\n\n`
+
+    for (let i = startIndex; i < endIndex; i++) {
+      const character = userCharacters[i]
+      message += `» *${character.name}* (*${character.value}*)\n`
+    }
+
+    message += `\n✎ _Página *${page}* de *${totalPages}*_`
+
+    await conn.sendMessage(m.chat, {
+      text: message,
+      mentions: [userId],
+      ...global.rcanal
+    }, { quoted: m })
   } catch (error) {
-    await conn.reply(m.chat, `✘ Error al intentar robar: ${error.message}`, m)
+    await conn.sendMessage(m.chat, {
+      text: `ꕥ Ocurrió un error al cargar tu harem.\n> ● *Error ›* ${error.message}`,
+      ...global.rcanal
+    }, { quoted: m })
   }
 }
 
-handler.help = ['robarwaifu']
+handler.help = ['harem']
 handler.tags = ['gacha']
-handler.command = ['robarwaifu']
-handler.group = true
+handler.command = ['harem', 'claims', 'waifus']
+handler.group = false
 handler.register = false
 
 export default handler
