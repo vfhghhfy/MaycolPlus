@@ -1,4 +1,5 @@
- import { promises as fs } from 'fs'
+// Codigo hecho por SoyMaycol <3
+import { promises as fs } from 'fs'
 
 const charactersFilePath = './database/characters.json'
 const haremFilePath = './database/harem.json'
@@ -18,7 +19,7 @@ async function loadHarem() {
   try {
     const data = await fs.readFile(haremFilePath, 'utf-8')
     return JSON.parse(data) || {} // siempre objeto
-  } catch (error) {
+  } catch {
     return {}
   }
 }
@@ -31,11 +32,13 @@ let handler = async (m, { conn }) => {
   const userId = m.sender
   const now = Date.now()
 
+  // ⏳ Cooldown de 15 min
   if (cooldowns[userId] && now < cooldowns[userId]) {
     const remainingTime = Math.ceil((cooldowns[userId] - now) / 1000)
     const minutes = Math.floor(remainingTime / 60)
     const seconds = remainingTime % 60
-    return conn.reply(m.chat,
+    return conn.reply(
+      m.chat,
       `《✧》Por favor espera *${minutes} minutos y ${seconds} segundos* antes de volver a utilizar el comando *#rw*.`,
       m
     )
@@ -48,11 +51,11 @@ let handler = async (m, { conn }) => {
 
     const harem = await loadHarem()
 
-    // 🔹 Buscar si ya pertenece a alguien
+    // 🔍 Revisar si alguien ya tiene este personaje
     let userEntry = null
     for (const [uid, chars] of Object.entries(harem)) {
       if (Array.isArray(chars) && chars.some(c => c.id === randomCharacter.id)) {
-        userEntry = { userId: uid, character: chars.find(c => c.id === randomCharacter.id) }
+        userEntry = { userId: uid }
         break
       }
     }
@@ -71,8 +74,8 @@ let handler = async (m, { conn }) => {
     const mentions = userEntry ? [userEntry.userId] : []
     await conn.sendFile(m.chat, randomImage, `${randomCharacter.name}.jpg`, message, m, { mentions })
 
+    // 👑 Si está libre, lo añadimos al harem del usuario actual
     if (!userEntry) {
-      // 🔹 Solo guardar si está libre (nadie lo tiene aún)
       randomCharacter.user = userId
       if (!harem[userId]) harem[userId] = []
       harem[userId].push(randomCharacter)
@@ -80,9 +83,7 @@ let handler = async (m, { conn }) => {
       await saveHarem(harem)
     }
 
-    // ⏳ Cooldown de 15 min
     cooldowns[userId] = now + 15 * 60 * 1000
-
   } catch (error) {
     await conn.reply(m.chat, `✘ Error al cargar el personaje: ${error.message}`, m)
   }
