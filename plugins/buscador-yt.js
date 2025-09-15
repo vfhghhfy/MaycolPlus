@@ -1,42 +1,44 @@
-// by SoyMaycol <3
-
+// Codigo hecho por SoyMaycol <3
 import fetch from "node-fetch"
 
 let handler = async (m, { conn, text, command }) => {
-  if (!text) return m.reply(`
-╭─❍「 ✦ MaycolPlus ✦ 」
-│  
-├─ Necesito un nombre para buscar 🐾
-├─ Ejemplo:  *.yts gatos*
-│  
-╰───❍
-  `)
+  if (!text) return m.reply(`✦ Ejemplo:\n.${command} Gato`)
 
   try {
-    let url = `https://mayapi.ooguy.com/yts?query=${encodeURIComponent(text)}&apikey=may-35c2e70b`
-    let res = await fetch(url)
-    let json = await res.json()
+    let api = await fetch(`https://mayapi.ooguy.com/yts?query=${encodeURIComponent(text)}&apikey=may-35c2e70b`)
+    let res = await api.json()
 
-    if (!json.status || !json.result?.length) return m.reply("No encontré nada 🥺")
+    if (!res.status || !res.result?.length) 
+      return m.reply("No encontré nada uwu (╥﹏╥)")
 
-    let txt = `╭─❍「 ✦ YouTube Search ✦ 」\n│\n`
-    for (let i = 0; i < Math.min(5, json.result.length); i++) {
-      let v = json.result[i]
-      txt += `├─ 🎬 *${v.title}*\n`
-      txt += `│ 👤 ${v.autor}\n`
-      txt += `│ ⏳ ${v.duration} | 👀 ${v.views}\n`
-      txt += `│ 📅 ${v.uploaded}\n`
-      txt += `│ 🔗 ${v.url}\n`
-      txt += `│ 🖼️ ${v.banner}\n│\n`
-    }
-    txt += `╰───❍`
+    let vid = res.result[0] // primer resultado
 
-    await conn.sendMessage(m.chat, { text: txt }, { quoted: m })
+    let msg = `
+╭─❍「 ✦ YT Search ✦ 」
+│
+├─ 🎬 *Título:* ${vid.title}
+├─ 👤 *Autor:* ${vid.autor}
+├─ ⏱ *Duración:* ${vid.duration}
+├─ 👀 *Vistas:* ${vid.views}
+├─ 📅 *Subido:* ${vid.uploaded}
+│
+├─ 🔗 *Enlace:* ${vid.url}
+╰──────────────────
+    `.trim()
+
+    await conn.sendMessage(m.chat, { 
+      image: { url: vid.banner }, 
+      caption: msg 
+    }, { quoted: m })
+
   } catch (e) {
     console.error(e)
-    m.reply("Error al buscar 😿")
+    m.reply("Error al buscar (╯︵╰,)")
   }
 }
 
-handler.command = /^(yts|ytsearch)$/i
+handler.help = ["yts <texto>", "ytsearch <texto>"]
+handler.tags = ["search"]
+handler.command = /^yts|ytsearch$/i
+
 export default handler
