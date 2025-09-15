@@ -21,14 +21,17 @@ let handler = async (m, { conn }) => {
   const userId = m.sender
   const now = Date.now()
 
-  // cooldown 30 min
+  // cooldown 1 semana
   if (cooldownsSteal[userId] && now < cooldownsSteal[userId]) {
-    const remainingTime = Math.ceil((cooldownsSteal[userId] - now) / 1000)
-    const minutes = Math.floor(remainingTime / 60)
-    const seconds = remainingTime % 60
+    const remainingTime = cooldownsSteal[userId] - now
+
+    const days = Math.floor(remainingTime / (1000 * 60 * 60 * 24))
+    const hours = Math.floor((remainingTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+    const minutes = Math.floor((remainingTime % (1000 * 60 * 60)) / (1000 * 60))
+
     return conn.reply(
       m.chat,
-      `《✧》Ya intentaste robar, espera *${minutes} minutos y ${seconds} segundos* para volver a usar *#robarwaifu*.`,
+      `《✧》Ya usaste tu intento esta semana 😼\nVuelve en *${days} días, ${hours} horas y ${minutes} minutos* para poder robar otra waifu.`,
       m
     )
   }
@@ -63,7 +66,8 @@ let handler = async (m, { conn }) => {
       mentions: [userId, targetId],
     })
 
-    cooldownsSteal[userId] = now + 30 * 60 * 1000 // 30 minutos
+    // 7 días = 604800000 ms
+    cooldownsSteal[userId] = now + 7 * 24 * 60 * 60 * 1000
   } catch (error) {
     await conn.reply(m.chat, `✘ Error al intentar robar: ${error.message}`, m)
   }
