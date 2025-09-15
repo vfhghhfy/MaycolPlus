@@ -17,7 +17,7 @@ async function saveCharacters(characters) {
 async function loadHarem() {
   try {
     const data = await fs.readFile(haremFilePath, 'utf-8')
-    return JSON.parse(data) || {} // ← objeto en vez de array
+    return JSON.parse(data) || {} // siempre objeto
   } catch (error) {
     return {}
   }
@@ -48,7 +48,7 @@ let handler = async (m, { conn }) => {
 
     const harem = await loadHarem()
 
-    // 🔹 Ahora harem es un objeto: { userId: [personajes], ... }
+    // 🔹 Buscar si ya pertenece a alguien
     let userEntry = null
     for (const [uid, chars] of Object.entries(harem)) {
       if (Array.isArray(chars) && chars.some(c => c.id === randomCharacter.id)) {
@@ -57,8 +57,8 @@ let handler = async (m, { conn }) => {
       }
     }
 
-    const statusMessage = randomCharacter.user
-      ? `Reclamado por @${randomCharacter.user.split('@')[0]}`
+    const statusMessage = userEntry
+      ? `Reclamado por @${userEntry.userId.split('@')[0]}`
       : 'Libre'
 
     const message = `> ☄︎ Nombre *»* *${randomCharacter.name}*
@@ -71,10 +71,16 @@ let handler = async (m, { conn }) => {
     const mentions = userEntry ? [userEntry.userId] : []
     await conn.sendFile(m.chat, randomImage, `${randomCharacter.name}.jpg`, message, m, { mentions })
 
-    if (!randomCharacter.user) {
+    if (!userEntry) {
+      // 🔹 Solo guardar si está libre (nadie lo tiene aún)
+      randomCharacter.user = userId
+      if (!harem[userId]) harem[userId] = []
+      harem[userId].push(randomCharacter)
       await saveCharacters(characters)
+      await saveHarem(harem)
     }
 
+    // ⏳ Cooldown de 15 min
     cooldowns[userId] = now + 15 * 60 * 1000
 
   } catch (error) {
