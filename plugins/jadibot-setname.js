@@ -8,13 +8,18 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
   const botPath = path.join('./MayBots', senderNumber)
   const configPath = path.join(botPath, 'config.json')
 
+  // Verificamos si el sender realmente es un sub bot
   if (!fs.existsSync(botPath)) {
     return m.reply('✧ Este comando es sólo para los sub bots.')
   }
 
+  // 🔒 Comprobamos que solo el propio subbot (su mismo número) pueda usarlo
+  if (senderNumber !== conn.user.jid.split('@')[0]) {
+    return m.reply('🚫 Solo el propio sub bot puede usar este comando.')
+  }
+
   let config = {}
 
-  
   if (fs.existsSync(configPath)) {
     try {
       config = JSON.parse(fs.readFileSync(configPath))
@@ -23,7 +28,6 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
     }
   }
 
-  
   config.name = text.trim()
 
   try {
@@ -36,8 +40,8 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
 }
 
 handler.help = ['setname']
-handler.tags= ['serbot']
+handler.tags = ['serbot']
 handler.command = /^setname$/i
-handler.owner = false // solo el dueño puede usar esto
+handler.owner = false
 
 export default handler
