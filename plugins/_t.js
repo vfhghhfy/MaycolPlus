@@ -8,7 +8,7 @@ async function loadHarem() {
     const data = await fs.readFile(haremFilePath, 'utf-8')
     return JSON.parse(data)
   } catch {
-    return {}
+    return []
   }
 }
 
@@ -20,23 +20,26 @@ let handler = async (m, { conn }) => {
   try {
     let harem = await loadHarem()
 
-    // Si harem es un array viejo -> convertir a objeto
-    if (Array.isArray(harem)) {
-      let fixed = {}
-      for (let entry of harem) {
-        // antes podía ser: { userId: "...", character: {...} }
-        if (entry.userId && entry.character) {
-          if (!fixed[entry.userId]) fixed[entry.userId] = []
-          fixed[entry.userId].push(entry.character)
+    // 🔄 Si harem es objeto (nuevo formato), lo paso a array
+    if (!Array.isArray(harem) && typeof harem === 'object') {
+      let fixed = []
+      for (let userId of Object.keys(harem)) {
+        for (let char of harem[userId]) {
+          fixed.push({
+            userId,
+            characterId: char.id || char.characterId,
+            characterName: char.name || char.characterName,
+            character: char // opcional, por si quieres guardar todo el objeto original
+          })
         }
       }
       await saveHarem(fixed)
-      return conn.reply(m.chat, `✦ Se convirtió el archivo harem.json al nuevo formato sin perder info ✨`, m)
+      return conn.reply(m.chat, `✦ Se convirtió harem.json al formato de array ✅`, m)
     }
 
-    // Si ya es objeto, solo confirmar
-    if (typeof harem === 'object' && !Array.isArray(harem)) {
-      return conn.reply(m.chat, `✦ El archivo harem.json ya está en el formato correcto ✅`, m)
+    // Si ya es array, confirmar
+    if (Array.isArray(harem)) {
+      return conn.reply(m.chat, `✦ El archivo harem.json ya está en formato array correcto ✅`, m)
     }
 
     return conn.reply(m.chat, `✘ Formato de harem.json no reconocido`, m)
