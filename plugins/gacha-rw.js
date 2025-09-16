@@ -56,7 +56,14 @@ let handler = async (m, { conn }) => {
         const randomImage = randomCharacter.img[Math.floor(Math.random() * randomCharacter.img.length)]
 
         const harem = await loadHarem()
-        const userEntry = harem(entry => entry.characterId === randomCharacter.id)
+        // Buscar si el personaje ya está en el harem de alguien
+let userEntry = null
+for (const [uid, chars] of Object.entries(harem)) {
+  if (Array.isArray(chars) && chars.some(c => c.id === randomCharacter.id)) {
+    userEntry = { userId: uid, character: chars.find(c => c.id === randomCharacter.id) }
+    break
+  }
+}
         const statusMessage = randomCharacter.user 
             ? `Reclamado por @${randomCharacter.user.split('@')[0]}` 
             : 'Libre'
