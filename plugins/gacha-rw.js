@@ -56,7 +56,7 @@ let handler = async (m, { conn }) => {
         const randomImage = randomCharacter.img[Math.floor(Math.random() * randomCharacter.img.length)]
 
         const harem = await loadHarem()
-        const userEntry = harem.find(entry => entry.characterId === randomCharacter.id)
+        const userEntry = harem(entry => entry.characterId === randomCharacter.id)
         const statusMessage = randomCharacter.user 
             ? `Reclamado por @${randomCharacter.user.split('@')[0]}` 
             : 'Libre'
