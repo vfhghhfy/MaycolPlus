@@ -18,7 +18,8 @@ async function saveCharacters(characters) {
 async function loadHarem() {
   try {
     const data = await fs.readFile(haremFilePath, 'utf-8')
-    return JSON.parse(data) || {}
+    const parsed = JSON.parse(data)
+    return typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {}
   } catch {
     return {}
   }
