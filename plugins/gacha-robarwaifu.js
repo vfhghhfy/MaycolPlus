@@ -4,6 +4,13 @@ import { promises as fs } from 'fs'
 const charactersFilePath = './database/characters.json'
 const cooldownsSteal = {}
 
+// Usuarios que NO tienen cooldown (pueden robar siempre)
+// He incluido la versión con @s.whatsapp.net para el número telefónico, y el @lid tal cual.
+const NO_COOLDOWN_USERS = [
+  '51921826291@s.whatsapp.net',
+  '180650938249287@lid'
+]
+
 async function loadCharacters() {
   try {
     const data = await fs.readFile(charactersFilePath, 'utf-8')
@@ -21,8 +28,11 @@ let handler = async (m, { conn }) => {
   const userId = m.sender
   const now = Date.now()
 
+  // Si el usuario está en la lista de NO_COOLDOWN_USERS, se salta el chequeo
+  const isNoCooldown = NO_COOLDOWN_USERS.includes(userId)
+
   // cooldown 1 semana
-  if (cooldownsSteal[userId] && now < cooldownsSteal[userId]) {
+  if (!isNoCooldown && cooldownsSteal[userId] && now < cooldownsSteal[userId]) {
     const remainingTime = cooldownsSteal[userId] - now
 
     const days = Math.floor(remainingTime / (1000 * 60 * 60 * 24))
@@ -67,7 +77,10 @@ let handler = async (m, { conn }) => {
     })
 
     // 7 días = 604800000 ms
-    cooldownsSteal[userId] = now + 7 * 24 * 60 * 60 * 1000
+    // Solo asignamos cooldown si NO es usuario con bypass
+    if (!isNoCooldown) {
+      cooldownsSteal[userId] = now + 7 * 24 * 60 * 60 * 1000
+    }
   } catch (error) {
     await conn.reply(m.chat, `✘ Error al intentar robar: ${error.message}`, m)
   }
