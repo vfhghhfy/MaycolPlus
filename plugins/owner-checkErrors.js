@@ -13,7 +13,8 @@ let handler = async (m, { conn }) => {
       if (!file.endsWith('.js')) continue
       const fullPath = path.join(pluginsFolder, file)
       try {
-        await import(fullPath + `?update=${Date.now()}`) // forzar recarga
+        const code = await fs.readFile(fullPath, 'utf-8')
+        new Function(code) // solo verifica sintaxis
       } catch (err) {
         logs.push(`✘ ${file} → ${err.message}`)
       }
