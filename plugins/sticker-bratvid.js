@@ -76,7 +76,7 @@ const bratvid = async (m, { conn, text }) => {
 
   await m.react('🕒')
   try {
-    const apiUrl = `https://mayapi.giize.com/bratvideo?text=${encodeURIComponent(text)}&apikey=soymaycol<3`
+    const apiUrl = `https://mayapi.ooguy.com/bratvideo?text=${encodeURIComponent(text)}&apikey=soymaycol<3`
     const res = await fetch(apiUrl)
     const json = await res.json()
 
