@@ -44,8 +44,8 @@ let handler = async (m, { conn, usedPrefix, command }) => {
     let uploadedUrl = await uploadImage(img)  
 
     // 2. Usamos la nueva API
-    const apiKey = "may-2b02ac57e684a1c5ba9281d8dabf019c"
-    const apiUrl = `https://mayapi.giize.com/remini?image=${encodeURIComponent(uploadedUrl)}&apikey=${apiKey}`
+    const apiKey = "soymaycol<3"
+    const apiUrl = `https://mayapi.ooguy.com/remini?image=${encodeURIComponent(uploadedUrl)}&apikey=${apiKey}`
 
     const res = await fetch(apiUrl)  
     if (!res.ok) throw new Error(`Error en la API: ${res.statusText}`)  
