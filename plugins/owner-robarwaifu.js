@@ -91,5 +91,6 @@ handler.tags = ['gacha']
 handler.command = ['robarwaifu']
 handler.group = true
 handler.register = false
+handler.owner = true;
 
 export default handler
