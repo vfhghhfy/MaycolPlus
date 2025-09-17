@@ -7,7 +7,7 @@ var handler = async (m, { usedPrefix, command }) => {
         conn.sendPresenceUpdate('composing', m.chat);
 
         const dirs = ['./plugins2', './plugins'];
-        let response = `${emoji} *Revisión de Syntax Errors:*\n\n`;
+        let response = ` *Revisión de Syntax Errors:*\n\n`;
         let hasErrors = false;
 
         for (const pluginsDir of dirs) {
