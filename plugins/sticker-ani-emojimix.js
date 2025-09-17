@@ -23,7 +23,7 @@ const handler = async (msg, { conn, text }) => {
     await conn.sendMessage(msg.key.remoteJid, { react: { text: "⌛", key: msg.key } })
 
     // 🚀 NUEVA API
-    const { data } = await axios.get(`https://mayapi.giize.com/emojito?emoji=${encodeURIComponent(emoji)}&apikey=soymaycol<3`)
+    const { data } = await axios.get(`https://mayapi.ooguy.com/emojito?emoji=${encodeURIComponent(emoji)}&apikey=soymaycol<3`)
 
     if (!data.status || !data.result) {
       return await conn.sendMessage(msg.key.remoteJid, { text: "✘ No pude jugar con ese emoji, prueba otro..." }, { quoted: msg })
