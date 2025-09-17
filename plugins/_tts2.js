@@ -5,31 +5,28 @@ let handler = async (m, { conn, args }) => {
   if (!text) return m.reply('✐ Debes escribir el texto para convertir en audio.')
 
   try {
-    const res = await fetch(`https://myapiadonix.vercel.app/tools/tts?text=${encodeURIComponent(text)}`)
+    // Llamada a la nueva API
+    const apiKey = 'may-fc9af0c37575cccc5969460bfb14b6d0'
+    const res = await fetch(`https://mayapi.ooguy.com/tts?text=${encodeURIComponent(text)}&apikey=${apiKey}`)
     const json = await res.json()
 
-    if (!json.status || !Array.isArray(json.result)) {
-      return m.reply('✿ Error al obtener datos de la API.')
+    if (!json.status || !json.url) {
+      return m.reply('✿ Error al obtener el audio de la API.')
     }
 
-    // Buscar siempre la voz de Hatsune Miku
-    const mikuData = json.result.find(v => v.voice_name?.toLowerCase().includes('miku'))
-    if (!mikuData || !mikuData.miku) {
-      return m.reply('✐ No se encontró la voz de Hatsune Miku en la respuesta.')
-    }
-
-    const audioRes = await fetch(mikuData.miku)
+    // Descargar el audio desde la URL proporcionada
+    const audioRes = await fetch(json.url)
     const audioBuffer = await audioRes.arrayBuffer()
 
     await conn.sendMessage(m.chat, {
       audio: Buffer.from(audioBuffer),
-      mimetype: 'audio/mpeg',
+      mimetype: 'audio/wav', // Catbox usa WAV
       ptt: true
     }, { quoted: m })
 
   } catch (e) {
     console.error(e)
-    m.reply('✐ Ocurrió un error al generar el audio con Miku.')
+    m.reply('✐ Ocurrió un error al generar el audio con la API.')
   }
 }
 
