@@ -18,7 +18,7 @@ var handler = async (m, { usedPrefix, command }) => {
                     await import(path.resolve(pluginsDir, file));
                 } catch (error) {
                     hasErrors = true;
-                    response += `${emoji} *Error en:* ${file} (${pluginsDir})\n`;
+                    response += ` *Error en:* ${file} (${pluginsDir})\n`;
                     if (error.loc) {
                         response += `*Línea:* ${error.loc.line}, *Columna:* ${error.loc.column}\n`;
                     }
@@ -28,7 +28,7 @@ var handler = async (m, { usedPrefix, command }) => {
         }
 
         if (!hasErrors) {
-            response += '${emoji} ¡Todo está en orden! No se detectaron errores de sintaxis.';
+            response += ' ¡Todo está en orden! No se detectaron errores de sintaxis.';
         }
 
         await conn.reply(m.chat, response, m, rcanal);
