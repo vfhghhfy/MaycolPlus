@@ -1,69 +1,62 @@
 /* Creditos a SoyMaycol <3
 ---> GitHub: SoySapo6 */
 
-import { Chess } from 'chess.js'
+import fetch from 'node-fetch'
 
-let partidas = {}
+let partidas = {} // aquí guardamos sessionId por usuario
 
 let handler = async (m, { conn, text, command, usedPrefix }) => {
   let id = m.sender
+  let apikey = "soymaycol<3"
+  let level = 5
 
-  if (!partidas[id]) partidas[id] = new Chess()
-  let partida = partidas[id]
+  // si no hay sessionId para este user, creamos uno fijo
+  if (!partidas[id]) {
+    partidas[id] = `${id.replace(/[^0-9]/g, '') || Date.now()}`
+  }
+  let sessionId = partidas[id]
 
-  // mostrar tablero si no se pasó jugada
+  // mostrar tablero si no se pasa jugada
   if (!text) {
-    let url = `https://fen2image.chessvision.ai/${encodeURIComponent(partida.fen())}`
+    let res = await fetch(`https://mayapi.ooguy.com/chess?sessionId=${sessionId}&level=${level}&apikey=${apikey}`)
+    let data = await res.json()
     return conn.sendMessage(m.chat, { 
-      image: { url }, 
+      image: { url: data.url },
       caption: 
 `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <3 ✦ 」
 │
 ├─ [♣️]  𝙿𝚊𝚛𝚝𝚒𝚍𝚊 𝚍𝚎 𝙰𝚓𝚎𝚍𝚛𝚎𝚣
 │
-├─ Estado: ${partida.isGameOver() ? "✅ Finalizada" : "⏳ En juego"}
+├─ Estado: ${data.message}
 │
 │   ⇝ Usa: *${usedPrefix + command} e2e4*
 ╰─✦`
     }, { quoted: m })
   }
 
-  let move = partida.move(text.trim(), { sloppy: true })
-  if (!move) return m.reply("⚠️ Movimiento inválido. Ejemplo: *e2e4*")
+  // movimiento del usuario
+  let res = await fetch(`https://mayapi.ooguy.com/chess?sessionId=${sessionId}&move=${encodeURIComponent(text)}&level=${level}&apikey=${apikey}`)
+  let data = await res.json()
 
-  if (partida.isGameOver()) {
-    let url = `https://fen2image.chessvision.ai/${encodeURIComponent(partida.fen())}`
-    delete partidas[id]
+  if (!data.status) return m.reply("⚠️ Movimiento inválido o error con la API")
+
+  if (data.message.includes("terminado")) {
+    delete partidas[id] // borrar la partida cuando termine
     return conn.sendMessage(m.chat, { 
-      image: { url },
-      caption: `♟️ Tu jugada: *${move.san}*\n\n✅ ¡La partida ha terminado!`
-    }, { quoted: m })
-  }
-
-  // IA random
-  let moves = partida.moves()
-  let iaMove = moves[Math.floor(Math.random() * moves.length)]
-  partida.move(iaMove)
-
-  let url = `https://fen2image.chessvision.ai/${encodeURIComponent(partida.fen())}`
-
-  if (partida.isGameOver()) {
-    delete partidas[id]
-    return conn.sendMessage(m.chat, { 
-      image: { url },
-      caption: `Tú: *${move.san}*\nIA: *${iaMove}*\n\n✅ ¡La partida terminó!`
+      image: { url: data.url },
+      caption: `♟️ Tu jugada: *${data.userMove}*\nIA: *${data.aiMove}*\n\n✅ ¡La partida ha terminado!`
     }, { quoted: m })
   }
 
   conn.sendMessage(m.chat, { 
-    image: { url },
+    image: { url: data.url },
     caption: 
 `╭─❍「 ✦ 𝚂𝚘𝚢𝙼𝚊𝚢𝚌𝚘𝚕 <3 ✦ 」
 │
 ├─ [♣️]  𝙼𝚘𝚟𝚒𝚖𝚒𝚎𝚗𝚝𝚘𝚜
 │
-├─  Tú: *${move.san}*
-│   IA: *${iaMove}*
+├─ Tú: *${data.userMove}*
+│   IA: *${data.aiMove}*
 │
 │   ⇝ Juega con: *${usedPrefix + command} <jugada>*
 ╰─✦`

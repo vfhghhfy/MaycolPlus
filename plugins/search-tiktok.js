@@ -1,42 +1,67 @@
-import axios from 'axios'
-import fs from 'fs'
-import path from 'path'
+
+import axios from 'axios';
+import fs from 'fs';
+import path from 'path';
+
+// ┏━━━━━━━━━━━━━━━━━━━━━━━┓
+// ┃   ♛ MaycolPlus ♛    ┃
+// ┃ Creado por SoyMaycol ┃
+// ┗━━━━━━━━━━━━━━━━━━━━━━━┛
 
 // Forzar Node a usar ./tmp para archivos temporales
-process.env.TMPDIR = path.join(process.cwd(), 'tmp')
+process.env.TMPDIR = path.join(process.cwd(), 'tmp');
 if (!fs.existsSync(process.env.TMPDIR)) {
-  fs.mkdirSync(process.env.TMPDIR, { recursive: true })
+  fs.mkdirSync(process.env.TMPDIR, { recursive: true });
 }
 
 const handler = async (m, { conn, text, usedPrefix, command }) => {
   try {
     if (!text) {
-      return conn.reply(m.chat, `💜 Ejemplo de uso: ${usedPrefix + command} Mini Dog`, m);
+      return conn.reply(
+        m.chat, 
+        `💜 ┏━━━━━━━━━━┓\n┃  Uso ${usedPrefix + command} ┃\n┗━━━━━━━━━━┛\n✨ Ejemplo: ${usedPrefix + command} Mini Dog`, 
+        m
+      );
     }
-    m.react('🕒');
+
+    // Reacción mientras procesa
+    m.react('⏳');
+
     let old = new Date();
+
+    // Buscar videos en TikTok
     let res = await ttks(text);
     let videos = res.data;
+
     if (!videos.length) {
-      return conn.reply(m.chat, "No se encontraron videos.", m);
+      return conn.reply(m.chat, "⚠️ ❌ No se encontraron videos con esa búsqueda.", m);
     }
 
-    let cap = `◜ 𝗧𝗶𝗸𝘁𝗼𝗸 ◞\n\n`
-            + `≡ 🎋 𝖳𝗂́𝗍𝗎𝗅𝗈  : ${videos[0].title}\n`
-            + `≡ ⚜️ 𝖡𝗎́𝗌𝗊𝗎𝖾𝖽𝖺 : ${text}`
+    // Caption decorativo estilo Hanako-kun
+    let cap = `💮 ◈ 𝗧𝗶𝗸𝗧𝗼𝗸 ◈ 💮\n\n` +
+              `🎴 ✦ 𝗧𝗶́𝘁𝘂𝗹𝗼  : ${videos[0].title}\n` +
+              `🌸 ✦ 𝗕𝘂́𝘀𝗾𝘂𝗲𝗱𝗮 : ${text}\n\n` +
+              `👻 𝗕𝗼𝘁: MaycolPlus | Creado por SoyMaycol`;
 
+    // Preparar los medios a enviar
     let medias = videos.map((video, index) => ({
       type: "video",
       data: { url: video.no_wm },
       caption: index === 0
         ? cap
-        : `👤 \`Titulo\` : ${video.title}\n🍟 \`Process\` : ${((new Date() - old) * 1)} ms`
+        : `🎴 ✦ Título : ${video.title}\n⏱️ Tiempo de proceso : ${((new Date() - old) * 1)} ms\n👻 MaycolPlus`
     }));
 
+    // Enviar videos
     await conn.sendSylphy(m.chat, medias, { quoted: m });
     m.react('✅');
+
   } catch (e) {
-    return conn.reply(m.chat, `Ocurrió un problema al obtener los videos:\n\n` + e, m);
+    return conn.reply(
+      m.chat, 
+      `💀 Ocurrió un error al obtener los videos:\n\n` + e, 
+      m
+    );
   }
 };
 
@@ -45,6 +70,9 @@ handler.help = ["tiktoksearch"];
 handler.tags = ["search"];
 export default handler;
 
+// ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+// ┃ Función para buscar TikToks sin watermark ┃
+// ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 async function ttks(query) {
   try {
     const response = await axios({
@@ -64,12 +92,13 @@ async function ttks(query) {
     });
 
     const videos = response.data.data.videos;
-    if (videos.length === 0) throw new Error("⚠️ No se encontraron videos para esa búsqueda.");
+    if (!videos.length) throw new Error("⚠️ ❌ No se encontraron videos para esa búsqueda.");
 
+    // Mezclar resultados y limitar a 5
     const shuffled = videos.sort(() => 0.5 - Math.random()).slice(0, 5);
     return {
       status: true,
-      creator: "Made with Ado",
+      creator: "SoyMaycol",
       data: shuffled.map(video => ({
         title: video.title,
         no_wm: video.play,

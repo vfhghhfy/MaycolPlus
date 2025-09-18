@@ -21,10 +21,10 @@ const handler = async (m, { conn, command, text }) => {
 
     try {
         // Hacer petición a la API de transcript
-        const response = await axios.get('https://mayapi.giize.com/transcript', {
+        const response = await axios.get('https://mayapi.ooguy.com/transcript', {
             params: {
                 url: text,
-                apikey: 'may-2b02ac57e684a1c5ba9281d8dabf019c'
+                apikey: 'soymaycol<3'
             }
         })
 

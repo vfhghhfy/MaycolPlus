@@ -30,6 +30,11 @@ const handler = async (m, { conn, command }) => {
     return m.reply('✧ Este comando es solo para los sub bots.')
   }
 
+  // 🔒 Comprobamos que el que ejecuta sea EL MISMO sub bot
+  if (senderNumber !== conn.user.jid.split('@')[0]) {
+    return m.reply('🚫 Solo el propio sub bot puede usar este comando.')
+  }
+
   try {
     const q = m.quoted || m
     const mime = (q.msg || q).mimetype || q.mediaType || ''
@@ -41,9 +46,7 @@ const handler = async (m, { conn, command }) => {
     }
 
     // Reacción de carga
-    await conn.sendMessage(m.chat, {
-      react: { text: '⏳', key: m.key }
-    })
+    await conn.sendMessage(m.chat, { react: { text: '⏳', key: m.key } })
 
     // Descargar imagen
     const media = await q.download()
@@ -71,9 +74,7 @@ const handler = async (m, { conn, command }) => {
       text: `☁︎ Banner actualizado correctamente:\n${uploadedUrl}`,
     }, { quoted: m })
 
-    await conn.sendMessage(m.chat, {
-      react: { text: '✅', key: m.key }
-    })
+    await conn.sendMessage(m.chat, { react: { text: '✅', key: m.key } })
 
     // Borra el archivo temporal
     fs.unlinkSync(tempPath)
@@ -83,9 +84,7 @@ const handler = async (m, { conn, command }) => {
     await conn.sendMessage(m.chat, {
       text: '❌ No se pudo subir el banner, inténtalo más tarde.',
     }, { quoted: m })
-    await conn.sendMessage(m.chat, {
-      react: { text: '✖️', key: m.key }
-    })
+    await conn.sendMessage(m.chat, { react: { text: '✖️', key: m.key } })
   }
 }
 

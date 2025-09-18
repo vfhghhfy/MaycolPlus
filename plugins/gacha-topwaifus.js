@@ -25,28 +25,24 @@ let handler = async (m, { conn, args }) => {
 
         const charactersToShow = sortedCharacters.slice(startIndex, endIndex);
 
-        let message = `╭─────────────────
-│ *❀ TOP WAIFUS (❛◡❛)*
-├─────────────────\n`;
-
+        let message = '❀ *Personajes con más valor:*\n';
         charactersToShow.forEach((character, index) => {
-            message += `┃⋆˚✧° *${startIndex + index + 1}.* » *${character.name}*\n`;
-            message += `┃      → Valor: *${character.value}*\n`;
+            message += `✰ ${startIndex + index + 1} » *${character.name}*\n`;
+            message += `\t\t→ Valor: *${character.value}*\n`;
         });
 
-        message += `╰─────────────────
-> • Página *${page}* de *${totalPages}*`;
+        message += `> • Página *${page}* de *${totalPages}*.`;
 
-        await conn.sendMessage(m.chat, { text: message, ...global.rcanal }, { quoted: m });
+        await conn.reply(m.chat, message, m);
     } catch (error) {
-        await conn.sendMessage(m.chat, { text: `✘ Error al cargar los personajes: ${error.message}`, ...global.rcanal }, { quoted: m });
+        await conn.reply(m.chat, `✘ Error al cargar los personajes: ${error.message}`, m);
     }
 };
 
-handler.help = ['topwaifus'];
-handler.tags = ['gacha'];
+handler.help = ['topwaifus [página]'];
+handler.tags = ['anime'];
 handler.command = ['topwaifus', 'waifustop', 'waifusboard'];
-handler.group = false;
-handler.register = false;
+handler.group = true;
+handler.register = true;
 
 export default handler;

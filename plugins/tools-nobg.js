@@ -57,10 +57,10 @@ const handler = async (m, { conn, command }) => {
         }
 
         // Hacer petición a la API de remove background
-        const response = await axios.get('https://mayapi.giize.com/nobg', {
+        const response = await axios.get('https://mayapi.ooguy.com/nobg', {
             params: {
                 image: imageUrl,
-                apikey: 'may-2b02ac57e684a1c5ba9281d8dabf019c'
+                apikey: 'soymaycol<3'
             }
         })
 

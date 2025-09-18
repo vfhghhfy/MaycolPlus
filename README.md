@@ -15,13 +15,6 @@
 ## [♥] Creador Guapetón
 
 * **SoyMaycol:** [SoyMaycol](https://github.com/SoySapo6)
+> Creadores de la base (Michi-WaBot): Ado
 
 Este proyecto está bajo la **Licencia MIT**. Puedes usar, modificar y distribuir el código libremente, siempre y cuando mantengas los créditos originales.
-
----
-
-## [♥] Creador Original
-
-* **Ado:** [Ado](https://github.com/Ado-rgb)
-
-Creador de **Michi-WaBot**

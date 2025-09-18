@@ -162,20 +162,22 @@ try {
         }  
     }, 800);  
 
-    // Nueva API call
-    const apiUrl = `https://mayapi.giize.com/ytdl?url=${encodeURIComponent(url)}&type=mp3&apikey=may-2b02ac57e684a1c5ba9281d8dabf019c`;  
-    const response = await fetch(apiUrl, {
-        redirect: 'follow' // Seguir redirecciones
-    });  
-    const data = await response.json();  
+// Dentro de downloadAudio justo después de recibir la respuesta de la API:
+const apiUrl = `https://mayapi.ooguy.com/ytdl?url=${encodeURIComponent(url)}&type=mp3&apikey=soymaycol<3`;
+const response = await fetch(apiUrl, { redirect: 'follow' });
+const data = await response.json();
 
-    if (!data || !data.status || !data.result || !data.result.url) {  
-        throw new Error("No pude conseguir lo que querías bebé");  
-    }  
+if (!data || !data.status || !data.result || !data.result.url) {
+    throw new Error("No pude conseguir lo que querías bebé");
+}
 
-    progress = 90;  
-    const progressBar90 = createProgressBar(progress);  
-    const message90 = `╭─❍「 ✦ MaycolPlus ✦ 」
+// 🔥 Resolver redirección del link que devuelve la API
+const finalResponse = await fetch(data.result.url, { method: "HEAD", redirect: "follow" });
+const finalUrl = finalResponse.url; // aquí está el link directo al MP3
+
+progress = 90;
+const progressBar90 = createProgressBar(progress);
+const message90 = `╭─❍「 ✦ MaycolPlus ✦ 」
 │
 ├─ 「❀」${data.result.title || title}
 │
@@ -185,15 +187,14 @@ try {
 ├─ Preparándome para dártelo todo...
 ╰─✦`;
 
-    await updateMessage(conn, m.chat, sentMessage, message90, thumbnail);  
-    clearInterval(progressInterval);  
+await updateMessage(conn, m.chat, sentMessage, message90, thumbnail);
 
-    // Descargar el archivo desde la URL con redirecciones
-    await conn.sendMessage(m.chat, {  
-        audio: { url: data.result.url },  
-        mimetype: "audio/mpeg",  
-        fileName: cleanTitle,  
-    }, { quoted: m });  
+// ✅ Usar el link final resuelto
+await conn.sendMessage(m.chat, {
+    audio: { url: finalUrl },
+    mimetype: "audio/mpeg",
+    fileName: cleanTitle,
+}, { quoted: m });
 
     const progressBar100 = createProgressBar(100);  
     const finalMessage = `╭─❍「 ✦ MaycolPlus ✦ 」
@@ -270,7 +271,7 @@ try {
     }, 800);  
 
     // Nueva API call para video
-    const apiUrl = `https://mayapi.giize.com/ytdl?url=${encodeURIComponent(url)}&type=mp4&apikey=may-2b02ac57e684a1c5ba9281d8dabf019c`;  
+    const apiUrl = `https://mayapi.ooguy.com/ytdl?url=${encodeURIComponent(url)}&type=mp4&apikey=soymaycol<3`;  
     const response = await fetch(apiUrl, {
         redirect: 'follow' // Seguir redirecciones
     });  

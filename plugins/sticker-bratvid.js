@@ -76,15 +76,15 @@ const bratvid = async (m, { conn, text }) => {
 
   await m.react('🕒')
   try {
-    const apiUrl = `https://mayapi.giize.com/bratvideo?text=${encodeURIComponent(text)}&apikey=may-2b02ac57e684a1c5ba9281d8dabf019c`
+    const apiUrl = `https://mayapi.ooguy.com/bratvideo?text=${encodeURIComponent(text)}&apikey=soymaycol<3`
     const res = await fetch(apiUrl)
     const json = await res.json()
 
     if (!json.status || !json.result) throw new Error('Error en la API')
 
     const videoUrl = json.result
-    const packname = global.packname || '✦ Michi - AI ✦'
-    const author = global.author || '© Made with ☁︎ Wirk ✧'
+    const packname = global.packname || 'MaycolPlus • Bot kwai :3'
+    const author = global.author || 'SoyMaycol • 51921826291'
 
     const stiker = await sticker(false, videoUrl, packname, author)
 
