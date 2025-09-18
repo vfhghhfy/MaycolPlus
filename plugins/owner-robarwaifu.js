@@ -5,7 +5,6 @@ const charactersFilePath = './database/characters.json'
 const cooldownsSteal = {}
 
 // Usuarios que NO tienen cooldown (pueden robar siempre)
-// He incluido la versión con @s.whatsapp.net para el número telefónico, y el @lid tal cual.
 const NO_COOLDOWN_USERS = [
   '51921826291@s.whatsapp.net',
   '180650938249287@lid'
@@ -24,7 +23,7 @@ async function saveCharacters(characters) {
   await fs.writeFile(charactersFilePath, JSON.stringify(characters, null, 2), 'utf-8')
 }
 
-let handler = async (m, { conn }) => {
+let handler = async (m, { conn, args }) => {
   const userId = m.sender
   const now = Date.now()
 
@@ -52,6 +51,9 @@ let handler = async (m, { conn }) => {
     return conn.reply(m.chat, `✘ Debes responder al mensaje de alguien para intentar robarle una waifu.`, m)
   }
 
+  // juntar args como nombre (si existe)
+  const nameArg = (Array.isArray(args) ? args.join(' ').trim() : '').trim() || null
+
   try {
     const characters = await loadCharacters()
 
@@ -62,11 +64,29 @@ let handler = async (m, { conn }) => {
       return conn.reply(m.chat, `✘ Ese usuario no tiene waifus para robar.`, m)
     }
 
-    // elegir waifu random
-    const randomIndex = Math.floor(Math.random() * targetWaifus.length)
-    const stolenWaifu = targetWaifus[randomIndex]
+    let stolenWaifu
 
-    // actualizar dueño
+    if (nameArg) {
+      // intenta coincidencia exacta (case-insensitive)
+      const exact = targetWaifus.find(c => c.name.toLowerCase() === nameArg.toLowerCase())
+      if (exact) {
+        stolenWaifu = exact
+      } else {
+        // si no exacta, intenta coincidencia parcial
+        const partial = targetWaifus.find(c => c.name.toLowerCase().includes(nameArg.toLowerCase()))
+        if (partial) {
+          stolenWaifu = partial
+        } else {
+          return conn.reply(m.chat, `✘ No encontré una waifu llamada "*${nameArg}*" en la colección de ese usuario.`, m)
+        }
+      }
+    } else {
+      // elegir waifu random
+      const randomIndex = Math.floor(Math.random() * targetWaifus.length)
+      stolenWaifu = targetWaifus[randomIndex]
+    }
+
+    // actualizar dueño: quitar al anterior y pasar al ladrón
     stolenWaifu.user = userId
 
     await saveCharacters(characters)
