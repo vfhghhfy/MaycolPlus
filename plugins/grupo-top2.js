@@ -6,11 +6,11 @@ function handler(m, { groupMetadata, command, conn }) {
     if (participants.length < 5) return conn.reply(m.chat, '❌ No hay suficientes participantes en el grupo.', m)
 
     let categorias = [
-        { name: 'personas que hicieron el amor', emoji: '❤️' },
-        { name: 'personas que se gustan', emoji: '💘' },
-        { name: 'personas geys o lesbianas', emoji: '🏳️‍🌈' },
-        { name: 'personas que les gusta Maycol', emoji: '😍' },
-        { name: 'personas pervertidas', emoji: '😏' },
+        { name: 'personas que hicieron el amor', emoji: '❤️', singleLine: true },
+        { name: 'personas que se gustan', emoji: '💘', singleLine: true },
+        { name: 'personas geys o lesbianas', emoji: '🏳️‍🌈', singleLine: false },
+        { name: 'personas que les gusta Maycol', emoji: '😍', singleLine: false },
+        { name: 'personas pervertidas', emoji: '😏', singleLine: false },
     ]
 
     let replyText = ''
@@ -24,11 +24,18 @@ function handler(m, { groupMetadata, command, conn }) {
         }
 
         replyText += `📊 *Top 5 de ${cat.name.toUpperCase()}* ${cat.emoji}\n`
-        replyText += `1. 🥇 ${user(seleccion[0])}\n`
-        replyText += `2. 🥈 ${user(seleccion[1])}\n`
-        replyText += `3. 🥉 ${user(seleccion[2])}\n`
-        replyText += `4. 🎖️ ${user(seleccion[3])}\n`
-        replyText += `5. ✨ ${user(seleccion[4])}\n\n`
+
+        if (cat.singleLine) {
+            // Una sola línea con todos los usuarios separados por " y "
+            replyText += seleccion.map(user).join(' y ') + '\n\n'
+        } else {
+            // Top 5 normal, línea por línea
+            replyText += `1. 🥇 ${user(seleccion[0])}\n`
+            replyText += `2. 🥈 ${user(seleccion[1])}\n`
+            replyText += `3. 🥉 ${user(seleccion[2])}\n`
+            replyText += `4. 🎖️ ${user(seleccion[3])}\n`
+            replyText += `5. ✨ ${user(seleccion[4])}\n\n`
+        }
 
         mentions.push(...seleccion)
 
