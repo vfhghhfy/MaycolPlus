@@ -42,8 +42,8 @@ function handler(m, { groupMetadata, command, conn }) {
     conn.reply(m.chat, replyText, m, { mentions: replyText.match(/@\S+/g) })
 }
 
-handler.help = ['top']
-handler.command = ['top']
+handler.help = ['top2']
+handler.command = ['top2']
 handler.tags = ['group']
 handler.group = true
 handler.register = false
