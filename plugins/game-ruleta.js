@@ -83,7 +83,6 @@ const handler = async (m, { conn, text, usedPrefix, command }) => {
         const stickerBuffer = await gifToWebpSticker(Buffer.from(gifRes.data), packname, author)
 
         await conn.sendMessage(m.chat, { sticker: stickerBuffer }, { quoted: m })
-        await conn.reply(m.chat, `🎉 Ganador: *${data.winner}* 🎉`, m)
 
         await m.react('✅')
     } catch (e) {
