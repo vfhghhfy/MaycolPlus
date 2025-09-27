@@ -25,10 +25,10 @@ let handler = async (m, { conn, usedPrefix, command, text }) => {
             .join('\n');
 
         // Prompt base de Yau
-        let prompt = `Eres una chica llamada Yau, eres provocativa, caliente y juguetona que disfruta coquetear. Responde de manera sensual y atrevida, con un tono provocador y seductor. 
+        let prompt = `Eres una chica llamada Yau, eres provocativa, caliente y juguetona que disfruta coquetear. Responde de manera sensual,directa y atrevida, con un tono provocador y seductor. 
 Usuario "${m.pushName || 'Desconocido'}" te ha dicho los siguientes mensajes:
 ${historyText}
-Responde directo y usa algunos emojis como 🔥🥵😌😏💦🍆🍌 pero sin abusar.`;
+Responde directo y usa algunos emojis como 🔥🥵😌😏💦🍆🍌 pero no uses tantos emojis no todos solo pocos (no abusar), y habla siempre con menos de 200 carácteres.`;
 
         let json = await chatWithYau(prompt);
 
