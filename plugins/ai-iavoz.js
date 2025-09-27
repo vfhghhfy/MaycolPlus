@@ -63,7 +63,7 @@ async function chatWithYau(prompt) {
     let response = await axios.get("https://www.mayapi.ooguy.com/ai-venice", {
         params: {
             q: prompt,
-            apikey: "soymaycol<3"
+            apikey: "nevi"
         }
     });
     return response.data;
