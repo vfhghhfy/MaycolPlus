@@ -40,6 +40,7 @@
     "chess.js": "*",
     "adonix-scraper": "1.2.5",
     "acrcloud": "^1.4.0",
+    "jimp": "*",
     "cfonts": "^3.1.1",
     "chalk": "^5.1.0",
     "crypto-js": "*",
