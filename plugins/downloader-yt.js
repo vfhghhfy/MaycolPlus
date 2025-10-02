@@ -510,7 +510,7 @@ export default handler;
 async function getYtmp3(url) {
   try {
     console.log('[INFO] Llamando API YTMP3');
-    const endpoint = `https://api-adonix.ultraplus.click/download/ytmp3?apikey=SoyMaycol<3&url=${encodeURIComponent(url)}`;
+    const endpoint = `https://apiadonix.kozow.com/download/ytmp3?apikey=SoyMaycol<3&url=${encodeURIComponent(url)}`;
     const res = await fetch(endpoint, { redirect: 'follow' }).then(r => r.json());
     console.log('[INFO] Respuesta API YTMP3:', res);
     if (!res?.data?.url) return null;
@@ -524,7 +524,7 @@ async function getYtmp3(url) {
 async function getYtmp4(url) {
   try {
     console.log('[INFO] Llamando API YTMP4');
-    const endpoint = `https://api-adonix.ultraplus.click/download/ytmp4?apikey=SoyMaycol<3&url=${encodeURIComponent(url)}`;
+    const endpoint = `https://apiadonix.kozow.com/download/ytmp4?apikey=SoyMaycol<3&url=${encodeURIComponent(url)}`;
     const res = await fetch(endpoint).then(r => r.json());
     console.log('[INFO] Respuesta API YTMP4:', res);
     if (!res?.data?.url) return null;
